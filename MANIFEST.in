@@ -1,0 +1,6 @@
+include README.md
+include np
+include nanopub/_version.py
+include requirements.txt
+include requirements-dev.txt
+
