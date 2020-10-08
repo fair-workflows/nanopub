@@ -5,4 +5,4 @@
 
 
 # nanopub
-Python client for Nanopub
+The nanopub python library provides a client for searching, publishing and modifying nanopublications.
