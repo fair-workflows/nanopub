@@ -134,13 +134,13 @@ def test_nanopub_rdf():
     assert (None, Nanopub.NPX.introduces, new_concept) in generated_rdf
 
 
-@patch('fairworkflows.nanopub_wrapper.publish')
-def test_nanopub_claim(nanopub_wrapper_publish_mock):
+@patch('nanopub.java_wrapper.publish')
+def test_nanopub_claim(java_wrapper_publish_mock):
     optional_triple = (rdflib.term.URIRef('http://www.uri1.com'), rdflib.term.URIRef('http://www.uri2.com'), rdflib.Literal('Something'))
     Nanopub.claim('Some controversial statement', rdftriple=optional_triple)
 
-@patch('fairworkflows.nanopub_wrapper.publish')
-def test_nanopub_publish(nanopub_wrapper_publish_mock):
+@patch('nanopub.java_wrapper.publish')
+def test_nanopub_publish(java_wrapper_publish_mock):
 
     assertionrdf = rdflib.Graph()
     assertionrdf.add((Nanopub.AUTHOR.DrBob, Nanopub.HYCL.claims, rdflib.Literal('This is a test')))
