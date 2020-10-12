@@ -1,0 +1,14 @@
+#!/usr/bin/env python
+
+import subprocess
+
+from nanopub.definitions import PKG_FILEPATH
+
+
+def main():
+    np = str(PKG_FILEPATH / 'np')
+    subprocess.run([np, 'mkkeys', '-a', 'RSA'])
+
+
+if __name__ == '__main__':
+    main()

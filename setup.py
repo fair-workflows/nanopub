@@ -38,6 +38,7 @@ setup(
         ],
     },
     include_package_data=True,
+    scripts=['bin/make_nanopub_keys'],
     extras_require={
         'dev': open('requirements-dev.txt', 'r').readlines()
     },
