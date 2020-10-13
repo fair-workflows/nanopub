@@ -8,84 +8,27 @@ import rdflib
 import requests
 from rdflib.namespace import RDF, DC, DCTERMS, XSD
 
-from nanopub import java_wrapper
+from nanopub import java_wrapper, namespaces
+
+DEFAULT_URI = 'http://purl.org/nanopub/temp/mynanopub'
 
 
-class Nanopub:
+@unique
+class Format(Enum):
     """
-    Provides utility functions for searching, creating and publishing RDF graphs as assertions in a nanopublication.
+    Enums to specify the format of nanopub desired
+    """
+    TRIG = 1
+
+
+class NanopubClient:
+    """
+    Provides utility functions for searching, creating and publishing RDF graphs
+    as assertions in a nanopublication.
     """
 
-    NP = rdflib.Namespace("http://www.nanopub.org/nschema#")
-    NPX = rdflib.Namespace("http://purl.org/nanopub/x/")
-    PPLAN = rdflib.Namespace("http://purl.org/net/p-plan#")
-    PROV = rdflib.Namespace("http://www.w3.org/ns/prov#")
-    DUL = rdflib.Namespace("http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#")
-    BPMN = rdflib.Namespace("http://dkm.fbk.eu/index.php/BPMN2_Ontology#")
-    PWO = rdflib.Namespace("http://purl.org/spar/pwo/")
-    HYCL = rdflib.Namespace("http://purl.org/petapico/o/hycl#")
-
-    AUTHOR = rdflib.Namespace("http://purl.org/person#")
-
-    DEFAULT_URI = 'http://purl.org/nanopub/temp/mynanopub'
-
-    @unique
-    class Format(Enum):
-        """
-        Enums to specify the format of nanopub desired
-        """
-        TRIG = 1
-
-
-    class NanopubObj:
-        """
-        Stores the rdf parsed from nanopubs from the nanopub servers etc.
-        """
-
-        def __init__(self, rdf=None, source_uri=None):
-            self._rdf = rdf
-            self._source_uri = source_uri
-
-            # Extract the Head, pubinfo, provenance and assertion graphs from the assigned nanopub rdf
-            self._graphs = {}
-            for c in rdf.contexts():
-                graphid = urldefrag(c.identifier).fragment.lower()
-                self._graphs[graphid] = c
-
-            # Check all four expected graphs are provided
-            expected_graphs = ['head', 'pubinfo', 'provenance', 'assertion']
-            for expected in expected_graphs:
-                if expected not in self._graphs.keys():
-                    raise ValueError(f'Expected to find {expected} graph in nanopub rdf, but not found. Graphs found: {list(self._graphs.keys())}.')
-
-        @property
-        def rdf(self):
-            return self._rdf
-
-        @property
-        def assertion(self):
-            return self._graphs['assertion']
-
-        @property
-        def pubinfo(self):
-            return self._graphs['pubinfo']
-
-        @property
-        def provenance(self):
-            return self._graphs['provenance']
-
-        @property
-        def source_uri(self):
-            return self._source_uri
-
-        def __str__(self):
-            s = f'Original source URI = {self._source_uri}\n'
-            s += self._rdf.serialize(format='trig').decode('utf-8')
-            return s
-
-
-    @staticmethod
-    def search_text(searchtext, max_num_results=1000, apiurl='http://grlc.nanopubs.lod.labs.vu.nl//api/local/local/find_nanopubs_with_text'):
+    def search_text(self, searchtext, max_num_results=1000,
+                    apiurl='http://grlc.nanopubs.lod.labs.vu.nl//api/local/local/find_nanopubs_with_text'):
         """
         Searches the nanopub servers (at the specified grlc API) for any nanopubs matching the given search text,
         up to max_num_results.
@@ -96,11 +39,12 @@ class Nanopub:
 
         searchparams = {'text': searchtext, 'graphpred': '', 'month': '', 'day': '', 'year': ''}
 
-        return Nanopub._search(searchparams=searchparams, max_num_results=max_num_results, apiurl=apiurl)
+        return self._search(searchparams=searchparams,
+                            max_num_results=max_num_results,
+                            apiurl=apiurl)
 
-
-    @staticmethod
-    def search_pattern(subj=None, pred=None, obj=None, max_num_results=1000, apiurl='http://grlc.nanopubs.lod.labs.vu.nl//api/local/local/find_nanopubs_with_pattern'):
+    def search_pattern(self, subj=None, pred=None, obj=None,
+                       max_num_results=1000, apiurl='http://grlc.nanopubs.lod.labs.vu.nl//api/local/local/find_nanopubs_with_pattern'):
         """
         Searches the nanopub servers (at the specified grlc API) for any nanopubs matching the given RDF pattern,
         up to max_num_results.
@@ -114,11 +58,11 @@ class Nanopub:
         if obj:
             searchparams['obj'] = obj
 
-        return Nanopub._search(searchparams=searchparams, max_num_results=max_num_results, apiurl=apiurl)
+        return self._search(searchparams=searchparams,
+                            max_num_results=max_num_results, apiurl=apiurl)
 
-
-    @staticmethod
-    def search_things(thing_type=None, searchterm=' ', max_num_results=1000, apiurl='http://grlc.nanopubs.lod.labs.vu.nl/api/local/local/find_things'):
+    def search_things(self, thing_type=None, searchterm=' ',
+                      max_num_results=1000, apiurl='http://grlc.nanopubs.lod.labs.vu.nl/api/local/local/find_things'):
         """
         Searches the nanopub servers (at the specified grlc API) for any nanopubs of the given type, with given search term,
         up to max_num_results.
@@ -132,8 +76,8 @@ class Nanopub:
         searchparams['type'] = thing_type
         searchparams['searchterm'] = searchterm
 
-        return Nanopub._search(searchparams=searchparams, max_num_results=max_num_results, apiurl=apiurl)
-
+        return self._search(searchparams=searchparams,
+                            max_num_results=max_num_results, apiurl=apiurl)
 
     @staticmethod
     def _search(searchparams=None, max_num_results=None, apiurl=None):
@@ -191,7 +135,6 @@ class Nanopub:
         else:
             return[{'Error': f'Error when searching {apiurl}: Status code {r.status_code}'}]
 
-
     @staticmethod
     def fetch(uri, format=Format.TRIG):
         """
@@ -199,12 +142,11 @@ class Nanopub:
         """
 
         extension = ''
-        if format == Nanopub.Format.TRIG:
+        if format == Format.TRIG:
             extension = '.trig'
             parse_format = 'trig'
         else:
             raise ValueError(f'Format not supported: {format}')
-
 
         r = requests.get(uri + extension)
         r.raise_for_status()
@@ -212,8 +154,7 @@ class Nanopub:
         if r.ok:
             nanopub_rdf = rdflib.ConjunctiveGraph()
             nanopub_rdf.parse(data=r.text, format=parse_format)
-            return Nanopub.NanopubObj(rdf=nanopub_rdf, source_uri=uri)
-
+            return Nanopub(rdf=nanopub_rdf, source_uri=uri)
 
     @staticmethod
     def to_rdf(assertionrdf, uri=DEFAULT_URI, introduces_concept=None, derived_from=None, attributed_to=None, nanopub_author=None):
@@ -267,45 +208,52 @@ class Nanopub:
         head = rdflib.Graph(np_rdf.store, this_np.Head)
         assertion = rdflib.Graph(np_rdf.store, this_np.assertion)
         provenance = rdflib.Graph(np_rdf.store, this_np.provenance)
-        pubInfo = rdflib.Graph(np_rdf.store, this_np.pubInfo)
+        pub_info = rdflib.Graph(np_rdf.store, this_np.pubInfo)
 
         np_rdf.bind("", this_np)
-        np_rdf.bind("np", Nanopub.NP)
-        np_rdf.bind("npx", Nanopub.NPX)
-        np_rdf.bind("p-plan", Nanopub.PPLAN)
-        np_rdf.bind("prov", Nanopub.PROV)
-        np_rdf.bind("dul", Nanopub.DUL)
-        np_rdf.bind("bpmn", Nanopub.BPMN)
-        np_rdf.bind("pwo", Nanopub.PWO)
-        np_rdf.bind("hycl", Nanopub.HYCL)
+        np_rdf.bind("np", namespaces.NP)
+        np_rdf.bind("npx", namespaces.NPX)
+        np_rdf.bind("p-plan", namespaces.PPLAN)
+        np_rdf.bind("prov", namespaces.PROV)
+        np_rdf.bind("dul", namespaces.DUL)
+        np_rdf.bind("bpmn", namespaces.BPMN)
+        np_rdf.bind("pwo", namespaces.PWO)
+        np_rdf.bind("hycl", namespaces.HYCL)
         np_rdf.bind("dc", DC)
         np_rdf.bind("dcterms", DCTERMS)
 
-        head.add((this_np[''], RDF.type, Nanopub.NP.Nanopublication))
-        head.add((this_np[''], Nanopub.NP.hasAssertion, this_np.assertion))
-        head.add((this_np[''], Nanopub.NP.hasProvenance, this_np.provenance))
-        head.add((this_np[''], Nanopub.NP.hasPublicationInfo, this_np.pubInfo))
+        head.add((this_np[''], RDF.type, namespaces.NP.Nanopublication))
+        head.add((this_np[''], namespaces.NP.hasAssertion, this_np.assertion))
+        head.add((this_np[''], namespaces.NP.hasProvenance, this_np.provenance))
+        head.add((this_np[''], namespaces.NP.hasPublicationInfo,
+                  this_np.pubInfo))
 
         assertion += assertionrdf
 
         creationtime = rdflib.Literal(datetime.now(),datatype=XSD.dateTime)
-        provenance.add((this_np.assertion, Nanopub.PROV.generatedAtTime, creationtime))
+        provenance.add((this_np.assertion, namespaces.PROV.generatedAtTime, creationtime))
 
-        pubInfo.add((this_np[''], Nanopub.PROV.generatedAtTime, creationtime))
+        pub_info.add((this_np[''],namespaces.PROV.generatedAtTime, creationtime))
 
         if attributed_to:
             attributed_to = rdflib.URIRef(attributed_to)
-            provenance.add((this_np.assertion, Nanopub.PROV.wasAttributedTo, attributed_to))
+            provenance.add((this_np.assertion,
+                            namespaces.PROV.wasAttributedTo,
+                            attributed_to))
 
         if derived_from:
             # Convert derived_from URI to an rdflib term first (if necessary)
             derived_from = rdflib.URIRef(derived_from)
 
-            provenance.add((this_np.assertion, Nanopub.PROV.wasDerivedFrom, derived_from))
+            provenance.add((this_np.assertion,
+                            namespaces.PROV.wasDerivedFrom,
+                            derived_from))
 
         if nanopub_author:
             nanopub_author = rdflib.URIRef(nanopub_author)
-            pubInfo.add((this_np[''], Nanopub.PROV.wasAttributedTo, nanopub_author))
+            pub_info.add((this_np[''],
+                         namespaces.PROV.wasAttributedTo,
+                         nanopub_author))
 
         if introduces_concept:
             # Convert introduces_concept URI to an rdflib term first (if necessary)
@@ -314,10 +262,11 @@ class Nanopub:
             else:
                 introduces_concept = rdflib.URIRef(introduces_concept)
 
-            pubInfo.add((this_np[''], Nanopub.NPX.introduces, introduces_concept))
+            pub_info.add((this_np[''],
+                         namespaces.NPX.introduces,
+                         introduces_concept))
 
         return np_rdf
-
 
     @staticmethod
     def publish(assertionrdf, uri=None, introduces_concept=None, derived_from=None, attributed_to=None, nanopub_author=None):
@@ -330,9 +279,9 @@ class Nanopub:
         """
 
         if uri is None:
-            np_rdf = Nanopub.to_rdf(assertionrdf, introduces_concept=introduces_concept, derived_from=derived_from, attributed_to=attributed_to, nanopub_author=nanopub_author)
+            np_rdf = NanopubClient.to_rdf(assertionrdf, introduces_concept=introduces_concept, derived_from=derived_from, attributed_to=attributed_to, nanopub_author=nanopub_author)
         else:
-            np_rdf = Nanopub.to_rdf(assertionrdf, uri=uri, introduces_concept=introduces_concept, derived_from=derived_from, attributed_to=attributed_to, nanopub_author=nanopub_author)
+            np_rdf = NanopubClient.to_rdf(assertionrdf, uri=uri, introduces_concept=introduces_concept, derived_from=derived_from, attributed_to=attributed_to, nanopub_author=nanopub_author)
 
         # Create a temporary dir for files created during serializing and signing
         tempdir = tempfile.mkdtemp()
@@ -362,17 +311,61 @@ class Nanopub:
 
         return publication_info
 
-
-    @staticmethod
-    def claim(text, rdftriple=None):
+    def claim(self, text, rdftriple=None):
         """
         Publishes a claim, either as a plain text statement, or as an rdf triple (or both)
         """
         assertionrdf = rdflib.Graph()
 
-        assertionrdf.add((Nanopub.AUTHOR.DrBob, Nanopub.HYCL.claims, rdflib.Literal(text)))
+        assertionrdf.add((namespaces.AUTHOR.DrBob, namespaces.HYCL.claims, rdflib.Literal(text)))
 
         if rdftriple is not None:
             assertionrdf.add(rdftriple)
 
-        Nanopub.publish(assertionrdf)
+        self.publish(assertionrdf)
+
+
+class Nanopub:
+    """
+    Stores the rdf parsed from nanopubs from the nanopub servers etc.
+    """
+    def __init__(self, rdf=None, source_uri=None):
+        self._rdf = rdf
+        self._source_uri = source_uri
+
+        # Extract the Head, pubinfo, provenance and assertion graphs from the assigned nanopub rdf
+        self._graphs = {}
+        for c in rdf.contexts():
+            graphid = urldefrag(c.identifier).fragment.lower()
+            self._graphs[graphid] = c
+
+        # Check all four expected graphs are provided
+        expected_graphs = ['head', 'pubinfo', 'provenance', 'assertion']
+        for expected in expected_graphs:
+            if expected not in self._graphs.keys():
+                raise ValueError(f'Expected to find {expected} graph in nanopub rdf, but not found. Graphs found: {list(self._graphs.keys())}.')
+
+    @property
+    def rdf(self):
+        return self._rdf
+
+    @property
+    def assertion(self):
+        return self._graphs['assertion']
+
+    @property
+    def pubinfo(self):
+        return self._graphs['pubinfo']
+
+    @property
+    def provenance(self):
+        return self._graphs['provenance']
+
+    @property
+    def source_uri(self):
+        return self._source_uri
+
+    def __str__(self):
+        s = f'Original source URI = {self._source_uri}\n'
+        s += self._rdf.serialize(format='trig').decode('utf-8')
+        return s
