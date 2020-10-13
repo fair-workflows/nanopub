@@ -4,10 +4,10 @@ from typing import Union
 
 import rdflib
 
-from nanopub.definitions import ROOT_FILEPATH
+from nanopub.definitions import PKG_FILEPATH
 
 # Location of nanopub tool (currently shipped along with the lib)
-NANOPUB_SCRIPT = str(ROOT_FILEPATH / 'np')
+NANOPUB_SCRIPT = str(PKG_FILEPATH / 'np')
 
 
 def _shell_command(command):

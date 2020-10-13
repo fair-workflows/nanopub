@@ -6,3 +6,14 @@
 
 # nanopub
 The nanopub python library provides a client for searching, publishing and modifying nanopublications.
+
+# Setup
+Install using pip:
+```
+pip install nanopub
+```
+
+To publish to the nanopub server you need to setup RSA keys. This allows the nanopub server to identify you.
+```
+make_nanopub_keys
+```
