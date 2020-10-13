@@ -105,7 +105,7 @@ def test_nanopub_fetch():
     ]
 
     for np_uri in known_nps:
-        np = client.fetch(np_uri)
+        np = client.fetch(np_uri, format='trig')
         assert isinstance(np, Nanopub)
         assert np.source_uri == np_uri
         assert len(np.rdf) > 0

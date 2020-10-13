@@ -14,11 +14,11 @@ DEFAULT_URI = 'http://purl.org/nanopub/temp/mynanopub'
 
 
 @unique
-class Format(Enum):
+class Formats(Enum):
     """
     Enums to specify the format of nanopub desired
     """
-    TRIG = 1
+    TRIG = 'trig'
 
 
 class NanopubClient:
@@ -136,24 +136,26 @@ class NanopubClient:
             return[{'Error': f'Error when searching {apiurl}: Status code {r.status_code}'}]
 
     @staticmethod
-    def fetch(uri, format=Format.TRIG):
+    def fetch(uri, format: str = 'trig'):
         """
-        Download the nanopublication at the specified URI (in specified format). If successful, returns a Nanopub object.
+        Download the nanopublication at the specified URI (in specified format).
+
+        Returns:
+            a Nanopub object.
         """
 
-        extension = ''
-        if format == Format.TRIG:
+        if format == Formats.TRIG.value:
             extension = '.trig'
-            parse_format = 'trig'
         else:
-            raise ValueError(f'Format not supported: {format}')
+            raise ValueError(f'Format not supported: {format}, choose from '
+                             f'{[format.value for format in Formats]})')
 
         r = requests.get(uri + extension)
         r.raise_for_status()
 
         if r.ok:
             nanopub_rdf = rdflib.ConjunctiveGraph()
-            nanopub_rdf.parse(data=r.text, format=parse_format)
+            nanopub_rdf.parse(data=r.text, format=format)
             return Nanopub(rdf=nanopub_rdf, source_uri=uri)
 
     @staticmethod
