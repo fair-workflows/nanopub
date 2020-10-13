@@ -115,35 +115,33 @@ def test_nanopub_fetch():
         assert len(np.__str__()) > 0
 
 
-def test_nanopub_rdf():
+def test_nanopub_from_assertion():
     """
-    Test that Nanopub.to_rdf() is creating an rdf graph with the right features (contexts)
+    Test that Nanopub.from_assertion is creating an rdf graph with the right features (contexts)
     for a nanopub.
     """
-    client = NanopubClient()
+    assertion_rdf = rdflib.Graph()
+    assertion_rdf.add((namespaces.AUTHOR.DrBob, namespaces.HYCL.claims,
+                       rdflib.Literal('This is a test')))
 
-    assertionrdf = rdflib.Graph()
-    assertionrdf.add((namespaces.AUTHOR.DrBob, namespaces.HYCL.claims, rdflib.Literal('This is a '
-                                                                                     'test')))
+    nanopub = Nanopub.from_assertion(assertion_rdf)
 
-    generated_rdf = client.to_rdf(assertionrdf)
-
-    assert generated_rdf is not None
-    assert (None, RDF.type, namespaces.NP.Nanopublication) in generated_rdf
-    assert (None, namespaces.NP.hasAssertion, None) in generated_rdf
-    assert (None, namespaces.NP.hasProvenance, None) in generated_rdf
-    assert (None, namespaces.NP.hasPublicationInfo, None) in generated_rdf
+    assert nanopub.rdf is not None
+    assert (None, RDF.type, namespaces.NP.Nanopublication) in nanopub.rdf
+    assert (None, namespaces.NP.hasAssertion, None) in nanopub.rdf
+    assert (None, namespaces.NP.hasProvenance, None) in nanopub.rdf
+    assert (None, namespaces.NP.hasPublicationInfo, None) in nanopub.rdf
 
     new_concept = rdflib.term.URIRef('www.purl.org/new/concept/test')
-    generated_rdf = client.to_rdf(assertionrdf, introduces_concept=new_concept)
+    nanopub = Nanopub.from_assertion(assertion_rdf, introduces_concept=new_concept)
 
-    assert generated_rdf is not None
-    assert (None, RDF.type, namespaces.NP.Nanopublication) in generated_rdf
-    assert (None, namespaces.NP.hasAssertion, None) in generated_rdf
-    assert (None, namespaces.NP.hasProvenance, None) in generated_rdf
-    assert (None, namespaces.NP.hasPublicationInfo, None) in generated_rdf
+    assert nanopub.rdf is not None
+    assert (None, RDF.type, namespaces.NP.Nanopublication) in nanopub.rdf
+    assert (None, namespaces.NP.hasAssertion, None) in nanopub.rdf
+    assert (None, namespaces.NP.hasProvenance, None) in nanopub.rdf
+    assert (None, namespaces.NP.hasPublicationInfo, None) in nanopub.rdf
 
-    assert (None, namespaces.NPX.introduces, new_concept) in generated_rdf
+    assert (None, namespaces.NPX.introduces, new_concept) in nanopub.rdf
 
 
 @patch('nanopub.java_wrapper.publish')
@@ -158,10 +156,13 @@ def test_nanopub_claim(java_wrapper_publish_mock):
 @patch('nanopub.java_wrapper.publish')
 def test_nanopub_publish(java_wrapper_publish_mock):
     client = NanopubClient()
-    assertionrdf = rdflib.Graph()
-    assertionrdf.add((namespaces.AUTHOR.DrBob, namespaces.HYCL.claims, rdflib.Literal('This is a test')))
+    assertion_rdf = rdflib.Graph()
+    assertion_rdf.add((namespaces.AUTHOR.DrBob, namespaces.HYCL.claims, rdflib.Literal('This is a test')))
 
-    client.publish(assertionrdf,
-                   uri=rdflib.term.URIRef('http://www.example.com/auri'),
-                   introduces_concept=namespaces.AUTHOR.DrBob,
-                   derived_from=rdflib.term.URIRef('http://www.example.com/someuri'))
+    nanopub = Nanopub.from_assertion(
+        assertion_rdf=assertion_rdf,
+        uri=rdflib.term.URIRef('http://www.example.com/auri'),
+        introduces_concept=namespaces.AUTHOR.DrBob,
+        derived_from=rdflib.term.URIRef('http://www.example.com/someuri')
+        )
+    client.publish(nanopub)
