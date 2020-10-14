@@ -5,7 +5,8 @@ import rdflib
 import requests
 from rdflib.namespace import RDF
 
-from nanopub import Nanopub
+from nanopub import NanopubClient, namespaces
+from nanopub.nanopub import Nanopub
 
 DEFAULT_FORMAT = '.trig'
 BAD_GATEWAY = 502
@@ -25,14 +26,14 @@ def test_nanopub_search_text():
     """
         Check that Nanopub text search is returning results for a few common search terms
     """
-
+    client = NanopubClient()
     searches = ['fair', 'heart']
 
     for search in searches:
-        results = Nanopub.search_text(search)
+        results = client.search_text(search)
         assert len(results) > 0
 
-    assert len(Nanopub.search_text('')) == 0
+    assert len(client.search_text('')) == 0
 
 @pytest.mark.flaky(max_runs=10)
 @pytest.mark.skipif(nanopub_server_unavailable(), reason=SERVER_UNAVAILABLE)
@@ -40,6 +41,7 @@ def test_nanopub_search_pattern():
     """
         Check that Nanopub pattern search is returning results
     """
+    client = NanopubClient()
 
     searches = [
         ('', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'https://www.omg.org/spec/BPMN/scriptTask'),
@@ -47,7 +49,7 @@ def test_nanopub_search_pattern():
     ]
 
     for subj, pred, obj in searches:
-        results = Nanopub.search_pattern(subj=subj, pred=pred, obj=obj)
+        results = client.search_pattern(subj=subj, pred=pred, obj=obj)
         assert len(results) > 0
 
 @pytest.mark.flaky(max_runs=10)
@@ -56,28 +58,34 @@ def test_nanopub_search_things():
     """
         Check that Nanopub 'things' search is returning results
     """
-
+    client = NanopubClient()
     searches = [
         'http://dkm.fbk.eu/index.php/BPMN2_Ontology#ManualTask',
         'http://purl.org/net/p-plan#Plan'
     ]
 
     for thing_type in searches:
-        results = Nanopub.search_things(thing_type=thing_type)
+        results = client.search_things(thing_type=thing_type)
         assert len(results) > 0
 
     with pytest.raises(Exception):
-        Nanopub.search_things()
+        client.search_things()
 
 
 def test_nanopub_search():
-
+    client = NanopubClient()
     with pytest.raises(Exception):
-        Nanopub._search(searchparams=None, max_num_results=100, apiurl='http://www.api.url')
+        client._search(searchparams=None,
+                       max_num_results=100,
+                       apiurl='http://www.api.url')
     with pytest.raises(Exception):
-        Nanopub._search(searchparams={'search': 'text'}, max_num_results=None, apiurl='http://www.api.url')
+        client._search(searchparams={'search': 'text'},
+                       max_num_results=None,
+                    apiurl='http://www.api.url')
     with pytest.raises(Exception):
-        Nanopub._search(searchparams={'search': 'text'}, max_num_results=100, apiurl=None)
+        client._search(searchparams={'search': 'text'},
+                       max_num_results=100,
+                       apiurl=None)
 
 
 @pytest.mark.flaky(max_runs=10)
@@ -88,6 +96,7 @@ def test_nanopub_fetch():
         Check that the returned object is of type NNanopubObj, that it has the expected
         source_uri, and that it has non-zero data.
     """
+    client = NanopubClient()
 
     known_nps = [
         'http://purl.org/np/RAFNR1VMQC0AUhjcX2yf94aXmG1uIhteGXpq12Of88l78',
@@ -96,8 +105,8 @@ def test_nanopub_fetch():
     ]
 
     for np_uri in known_nps:
-        np = Nanopub.fetch(np_uri)
-        assert isinstance(np, Nanopub.NanopubObj)
+        np = client.fetch(np_uri, format='trig')
+        assert isinstance(np, Nanopub)
         assert np.source_uri == np_uri
         assert len(np.rdf) > 0
         assert np.assertion is not None
@@ -105,44 +114,55 @@ def test_nanopub_fetch():
         assert np.provenance is not None
         assert len(np.__str__()) > 0
 
-def test_nanopub_rdf():
+
+def test_nanopub_from_assertion():
     """
-    Test that Nanopub.to_rdf() is creating an rdf graph with the right features (contexts)
+    Test that Nanopub.from_assertion is creating an rdf graph with the right features (contexts)
     for a nanopub.
     """
+    assertion_rdf = rdflib.Graph()
+    assertion_rdf.add((namespaces.AUTHOR.DrBob, namespaces.HYCL.claims,
+                       rdflib.Literal('This is a test')))
 
-    assertionrdf = rdflib.Graph()
-    assertionrdf.add((Nanopub.AUTHOR.DrBob, Nanopub.HYCL.claims, rdflib.Literal('This is a test')))
+    nanopub = Nanopub.from_assertion(assertion_rdf)
 
-    generated_rdf = Nanopub.to_rdf(assertionrdf)
-
-    assert generated_rdf is not None
-    assert (None, RDF.type, Nanopub.NP.Nanopublication) in generated_rdf
-    assert (None, Nanopub.NP.hasAssertion, None) in generated_rdf
-    assert (None, Nanopub.NP.hasProvenance, None) in generated_rdf
-    assert (None, Nanopub.NP.hasPublicationInfo, None) in generated_rdf
+    assert nanopub.rdf is not None
+    assert (None, RDF.type, namespaces.NP.Nanopublication) in nanopub.rdf
+    assert (None, namespaces.NP.hasAssertion, None) in nanopub.rdf
+    assert (None, namespaces.NP.hasProvenance, None) in nanopub.rdf
+    assert (None, namespaces.NP.hasPublicationInfo, None) in nanopub.rdf
 
     new_concept = rdflib.term.URIRef('www.purl.org/new/concept/test')
-    generated_rdf = Nanopub.to_rdf(assertionrdf, introduces_concept=new_concept)
+    nanopub = Nanopub.from_assertion(assertion_rdf, introduces_concept=new_concept)
 
-    assert generated_rdf is not None
-    assert (None, RDF.type, Nanopub.NP.Nanopublication) in generated_rdf
-    assert (None, Nanopub.NP.hasAssertion, None) in generated_rdf
-    assert (None, Nanopub.NP.hasProvenance, None) in generated_rdf
-    assert (None, Nanopub.NP.hasPublicationInfo, None) in generated_rdf
+    assert nanopub.rdf is not None
+    assert (None, RDF.type, namespaces.NP.Nanopublication) in nanopub.rdf
+    assert (None, namespaces.NP.hasAssertion, None) in nanopub.rdf
+    assert (None, namespaces.NP.hasProvenance, None) in nanopub.rdf
+    assert (None, namespaces.NP.hasPublicationInfo, None) in nanopub.rdf
 
-    assert (None, Nanopub.NPX.introduces, new_concept) in generated_rdf
+    assert (None, namespaces.NPX.introduces, new_concept) in nanopub.rdf
 
 
 @patch('nanopub.java_wrapper.publish')
 def test_nanopub_claim(java_wrapper_publish_mock):
-    optional_triple = (rdflib.term.URIRef('http://www.uri1.com'), rdflib.term.URIRef('http://www.uri2.com'), rdflib.Literal('Something'))
-    Nanopub.claim('Some controversial statement', rdftriple=optional_triple)
+    client = NanopubClient()
+    optional_triple = (rdflib.term.URIRef('http://www.uri1.com'),
+                       rdflib.term.URIRef('http://www.uri2.com'),
+                       rdflib.Literal('Something'))
+    client.claim('Some controversial statement', rdftriple=optional_triple)
+
 
 @patch('nanopub.java_wrapper.publish')
 def test_nanopub_publish(java_wrapper_publish_mock):
+    client = NanopubClient()
+    assertion_rdf = rdflib.Graph()
+    assertion_rdf.add((namespaces.AUTHOR.DrBob, namespaces.HYCL.claims, rdflib.Literal('This is a test')))
 
-    assertionrdf = rdflib.Graph()
-    assertionrdf.add((Nanopub.AUTHOR.DrBob, Nanopub.HYCL.claims, rdflib.Literal('This is a test')))
-
-    Nanopub.publish(assertionrdf, uri=rdflib.term.URIRef('http://www.example.com/auri'), introduces_concept=Nanopub.AUTHOR.DrBob, derived_from=rdflib.term.URIRef('http://www.example.com/someuri'))
+    nanopub = Nanopub.from_assertion(
+        assertion_rdf=assertion_rdf,
+        uri=rdflib.term.URIRef('http://www.example.com/auri'),
+        introduces_concept=namespaces.AUTHOR.DrBob,
+        derived_from=rdflib.term.URIRef('http://www.example.com/someuri')
+        )
+    client.publish(nanopub)
