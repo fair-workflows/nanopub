@@ -22,9 +22,8 @@ class JavaWrapper:
         rsa_key_messages = ['FileNotFoundException', 'id_rsa']
         stderr = result.stderr.decode('utf8')
         if all(m in stderr for m in rsa_key_messages):
-            message = ('RSA key appears to be missing, see the instructions for making RSA keys'
-                       'in the setup section of the README')
-            raise RuntimeError(message)
+            raise RuntimeError('RSA key appears to be missing, see the instructions for making RSA'
+                               'keys in the setup section of the README')
         elif result.returncode != 0:
             raise RuntimeError(f'Error in nanopub java application: {stderr}')
 
