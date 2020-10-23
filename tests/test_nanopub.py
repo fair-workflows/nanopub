@@ -6,23 +6,21 @@ import requests
 from rdflib.namespace import RDF
 
 from nanopub import NanopubClient, namespaces
-from nanopub.nanopub import Nanopub
-
-
-NANOPUB_SERVER = 'http://purl.org/np/'
+from nanopub.nanopub import Nanopub, NANOPUB_TEST_SERVER
 
 skip_if_nanopub_server_unavailable = (
-    pytest.mark.skipif(requests.get(NANOPUB_SERVER).status_code != 200,
+    pytest.mark.skipif(requests.get(NANOPUB_TEST_SERVER).status_code != 200,
                        reason='Nanopub server is unavailable'))
+
+client = NanopubClient(use_test_server=True)
 
 
 @pytest.mark.flaky(max_runs=10)
 @skip_if_nanopub_server_unavailable
 def test_nanopub_search_text():
     """
-        Check that Nanopub text search is returning results for a few common search terms
+    Check that Nanopub text search is returning results for a few common search terms
     """
-    client = NanopubClient()
     searches = ['fair', 'heart']
 
     for search in searches:
@@ -38,8 +36,6 @@ def test_nanopub_search_pattern():
     """
         Check that Nanopub pattern search is returning results
     """
-    client = NanopubClient()
-
     searches = [
         ('', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'https://www.omg.org/spec/BPMN/scriptTask'),
         ('http://purl.org/np/RANhYfdZCVDQr8ItxDYCZWhvBhzjJTs9Cq-vPnmSBDd5g', '', '')
@@ -48,6 +44,7 @@ def test_nanopub_search_pattern():
     for subj, pred, obj in searches:
         results = client.search_pattern(subj=subj, pred=pred, obj=obj)
         assert len(results) > 0
+        assert 'Error' not in results[0]
 
 
 @pytest.mark.flaky(max_runs=10)
@@ -56,7 +53,6 @@ def test_nanopub_search_things():
     """
         Check that Nanopub 'things' search is returning results
     """
-    client = NanopubClient()
     searches = [
         'http://dkm.fbk.eu/index.php/BPMN2_Ontology#ManualTask',
         'http://purl.org/net/p-plan#Plan'
@@ -71,7 +67,6 @@ def test_nanopub_search_things():
 
 
 def test_nanopub_search():
-    client = NanopubClient()
     with pytest.raises(Exception):
         client._search(searchparams=None,
                        max_num_results=100,
@@ -94,8 +89,6 @@ def test_nanopub_fetch():
         Check that the returned object is of type NNanopubObj, that it has the expected
         source_uri, and that it has non-zero data.
     """
-    client = NanopubClient()
-
     known_nps = [
         'http://purl.org/np/RAFNR1VMQC0AUhjcX2yf94aXmG1uIhteGXpq12Of88l78',
         'http://purl.org/np/RAePO1Fi2Wp1ARk2XfOnTTwtTkAX1FBU3XuCwq7ng0jIo',

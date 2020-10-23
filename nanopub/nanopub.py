@@ -11,6 +11,7 @@ from rdflib.namespace import RDF, DC, DCTERMS, XSD
 from nanopub import java_wrapper, namespaces
 
 DEFAULT_URI = 'http://purl.org/nanopub/temp/mynanopub'
+NANOPUB_TEST_SERVER = 'http://grlc.test-server.nanopubs.lod.labs.vu.nl/'
 
 
 class Nanopub:
@@ -194,12 +195,20 @@ class NanopubClient:
     as assertions in a nanopublication.
     """
 
+    def __init__(self, use_test_server: bool = False):
+        if use_test_server:
+            self.server_url = NANOPUB_TEST_SERVER
+        else:
+            self.server_url = 'http://grlc.nanopubs.lod.labs.vu.nl/'
+
     def search_text(self, searchtext, max_num_results=1000,
-                    apiurl='http://grlc.nanopubs.lod.labs.vu.nl//api/local/local/find_nanopubs_with_text'):
+                    apiurl=None):
         """
         Searches the nanopub servers (at the specified grlc API) for any nanopubs matching the given search text,
         up to max_num_results.
         """
+        if apiurl is None:
+            apiurl = f'{self.server_url}/api/local/local/find_nanopubs_with_text'
 
         if len(searchtext) == 0:
             return []
@@ -211,11 +220,13 @@ class NanopubClient:
                             apiurl=apiurl)
 
     def search_pattern(self, subj=None, pred=None, obj=None,
-                       max_num_results=1000, apiurl='http://grlc.nanopubs.lod.labs.vu.nl//api/local/local/find_nanopubs_with_pattern'):
+                       max_num_results=1000, apiurl=None):
         """
         Searches the nanopub servers (at the specified grlc API) for any nanopubs matching the given RDF pattern,
         up to max_num_results.
         """
+        if apiurl is None:
+            apiurl = f'{self.server_url}/api/local/local/find_nanopubs_with_pattern'
 
         searchparams = {}
         if subj:
@@ -229,12 +240,13 @@ class NanopubClient:
                             max_num_results=max_num_results, apiurl=apiurl)
 
     def search_things(self, thing_type=None, searchterm=' ',
-                      max_num_results=1000, apiurl='http://grlc.nanopubs.lod.labs.vu.nl/api/local/local/find_things'):
+                      max_num_results=1000, apiurl=None):
         """
         Searches the nanopub servers (at the specified grlc API) for any nanopubs of the given type, with given search term,
         up to max_num_results.
         """
-
+        if apiurl is None:
+            apiurl = f'{self.server_url}api/local/local/find_things'
         searchparams = {}
         if not thing_type or not searchterm:
             print(f"Received thing_type='{thing_type}', searchterm='{searchterm}'")
