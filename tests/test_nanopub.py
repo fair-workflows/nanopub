@@ -8,20 +8,16 @@ from rdflib.namespace import RDF
 from nanopub import NanopubClient, namespaces
 from nanopub.nanopub import Nanopub
 
-DEFAULT_FORMAT = '.trig'
-BAD_GATEWAY = 502
+
 NANOPUB_SERVER = 'http://purl.org/np/'
-SERVER_UNAVAILABLE = 'Nanopub server is unavailable'
 
-
-def nanopub_server_unavailable():
-    response = requests.get(NANOPUB_SERVER)
-
-    return response.status_code == BAD_GATEWAY
+skip_if_nanopub_server_unavailable = (
+    pytest.mark.skipif(requests.get(NANOPUB_SERVER).status_code != 200,
+                       reason='Nanopub server is unavailable'))
 
 
 @pytest.mark.flaky(max_runs=10)
-@pytest.mark.skipif(nanopub_server_unavailable(), reason=SERVER_UNAVAILABLE)
+@skip_if_nanopub_server_unavailable
 def test_nanopub_search_text():
     """
         Check that Nanopub text search is returning results for a few common search terms
@@ -35,8 +31,9 @@ def test_nanopub_search_text():
 
     assert len(client.search_text('')) == 0
 
+
 @pytest.mark.flaky(max_runs=10)
-@pytest.mark.skipif(nanopub_server_unavailable(), reason=SERVER_UNAVAILABLE)
+@skip_if_nanopub_server_unavailable
 def test_nanopub_search_pattern():
     """
         Check that Nanopub pattern search is returning results
@@ -52,8 +49,9 @@ def test_nanopub_search_pattern():
         results = client.search_pattern(subj=subj, pred=pred, obj=obj)
         assert len(results) > 0
 
+
 @pytest.mark.flaky(max_runs=10)
-@pytest.mark.skipif(nanopub_server_unavailable(), reason=SERVER_UNAVAILABLE)
+@skip_if_nanopub_server_unavailable
 def test_nanopub_search_things():
     """
         Check that Nanopub 'things' search is returning results
@@ -89,7 +87,7 @@ def test_nanopub_search():
 
 
 @pytest.mark.flaky(max_runs=10)
-@pytest.mark.skipif(nanopub_server_unavailable(), reason=SERVER_UNAVAILABLE)
+@skip_if_nanopub_server_unavailable
 def test_nanopub_fetch():
     """
         Check that Nanopub fetch is returning results for a few known nanopub URIs.
