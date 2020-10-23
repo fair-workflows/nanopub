@@ -33,3 +33,14 @@ def test_sign_fails_on_invalid_nanopub(tmp_path):
 
     with pytest.raises(Exception):
         java_wrapper.sign(invalid_file)
+
+
+@pytest.mark.no_rsa_key
+def test_sign_nanopub_no_rsa_key(tmp_path):
+    """Test signing when no RSA key exists, only run if RSA keys are not set up."""
+    # Work in temporary dir so resulting files do not end up in repo
+    temp_unsigned_file = tmp_path / 'unsigned.trig'
+    shutil.copy(NANOPUB_SAMPLE_UNSIGNED, temp_unsigned_file)
+    with pytest.raises(RuntimeError) as e:
+        java_wrapper.sign(unsigned_file=temp_unsigned_file)
+    assert 'RSA key appears to be missing' in str(e.value)
