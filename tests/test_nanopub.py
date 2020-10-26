@@ -12,7 +12,7 @@ skip_if_nanopub_server_unavailable = (
     pytest.mark.skipif(requests.get(NANOPUB_TEST_SERVER).status_code != 200,
                        reason='Nanopub server is unavailable'))
 
-client = NanopubClient(use_test_server=True)
+client = NanopubClient()
 
 
 @pytest.mark.flaky(max_runs=10)
@@ -66,19 +66,24 @@ def test_nanopub_search_things():
         client.search_things()
 
 
+def test_grlc_url():
+    result = client._grlc_url('http://test.nl', 'search')
+    assert result == 'http://test.nl/api/local/local/search'
+
+
 def test_nanopub_search():
     with pytest.raises(Exception):
         client._search(searchparams=None,
                        max_num_results=100,
-                       apiurl='http://www.api.url')
+                       endpoint='http://www.api.url')
     with pytest.raises(Exception):
         client._search(searchparams={'search': 'text'},
                        max_num_results=None,
-                    apiurl='http://www.api.url')
+                       endpoint='http://www.api.url')
     with pytest.raises(Exception):
         client._search(searchparams={'search': 'text'},
                        max_num_results=100,
-                       apiurl=None)
+                       endpoint=None)
 
 
 @pytest.mark.flaky(max_runs=10)
