@@ -284,16 +284,13 @@ class NanopubClient:
     def _search(self, endpoint, params, max_num_results):
         """
         General nanopub server search method. User should use e.g. search_text() or search_pattern() instead.
+
+        Raises:
+            JSONDecodeError: in case response can't be serialized as JSON, this can happen due to a
+                virtuoso error.
         """
         r = self.query_grlc_endpoint(params, endpoint)
-
-        # Make sure that results are provided
-        try:
-            results_json = r.json()
-        except:
-            # If the returned message can't be serialized as JSON (such as due to virtuoso error) then there are no results
-            print('Error: Could not serialize response as JSON:\n', r.content)
-            return []
+        results_json = r.json()
 
         results_list = results_json['results']['bindings']
         nanopubs = []
