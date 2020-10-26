@@ -237,18 +237,19 @@ class NanopubClient:
                             params=params,
                             max_num_results=max_num_results)
 
-    def search_things(self, thing_type=None, searchterm=' ',
+    def search_things(self, type=None, searchterm=' ',
                       max_num_results=1000):
         """
         Searches the nanopub servers (at the specified grlc API) for any nanopubs of the given type, with given search term,
         up to max_num_results.
         """
-        params = {}
-        if not thing_type or not searchterm:
-            print(f"Received thing_type='{thing_type}', searchterm='{searchterm}'")
-            raise ValueError('thing_type and searchterm must BOTH be specified in calls to Nanopub.search_things')
+        if not type or not searchterm:
+            print(f"Received thing_type='{type}', searchterm='{searchterm}'")
+            raise ValueError(f'type and searchterm must BOTH be specified in calls to'
+                             f'Nanopub.search_things. type: {type}, searchterm: {searchterm}')
 
-        params['type'] = thing_type
+        params = dict()
+        params['type'] = type
         params['searchterm'] = searchterm
 
         return self._search(endpoint=SEARCH_THINGS_ENDPOINT,
@@ -265,7 +266,7 @@ class NanopubClient:
         """
         return f'{server_url}/api/local/local/{endpoint}'
 
-    def query_grlc_endpoint(self, params, endpoint):
+    def _query_grlc(self, params, endpoint):
         """Query the nanopub server grlc endpoint.
 
         Query a nanopub grlc server endpoint (for example: find_text). Try several of the nanopub
@@ -278,7 +279,7 @@ class NanopubClient:
             r = requests.get(url, params=params, headers=headers)
             if r.ok:
                 return r
-        raise requests.HTTPError(f'Could not connect to any of the nanopub servers, '
+        raise requests.HTTPError(f'Could not connect to any of the nanopub grlc endpoints, '
                                  f'last response: {r}')
 
     def _search(self, endpoint, params, max_num_results):
@@ -289,7 +290,7 @@ class NanopubClient:
             JSONDecodeError: in case response can't be serialized as JSON, this can happen due to a
                 virtuoso error.
         """
-        r = self.query_grlc_endpoint(params, endpoint)
+        r = self._query_grlc(params, endpoint)
         results_json = r.json()
 
         results_list = results_json['results']['bindings']

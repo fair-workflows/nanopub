@@ -59,7 +59,7 @@ def test_nanopub_search_things():
     ]
 
     for thing_type in searches:
-        results = client.search_things(thing_type=thing_type)
+        results = client.search_things(type=thing_type)
         assert len(results) > 0
 
     with pytest.raises(Exception):
