@@ -73,15 +73,15 @@ def test_grlc_url():
 
 def test_nanopub_search():
     with pytest.raises(Exception):
-        client._search(searchparams=None,
+        client._search(params=None,
                        max_num_results=100,
                        endpoint='http://www.api.url')
     with pytest.raises(Exception):
-        client._search(searchparams={'search': 'text'},
+        client._search(params={'search': 'text'},
                        max_num_results=None,
                        endpoint='http://www.api.url')
     with pytest.raises(Exception):
-        client._search(searchparams={'search': 'text'},
+        client._search(params={'search': 'text'},
                        max_num_results=100,
                        endpoint=None)
 

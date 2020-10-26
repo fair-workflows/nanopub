@@ -213,11 +213,11 @@ class NanopubClient:
         if len(searchtext) == 0:
             return []
 
-        searchparams = {'text': searchtext, 'graphpred': '', 'month': '', 'day': '', 'year': ''}
+        params = {'text': searchtext, 'graphpred': '', 'month': '', 'day': '', 'year': ''}
 
-        return self._search(searchparams=searchparams,
-                            max_num_results=max_num_results,
-                            endpoint=SEARCH_TEXT_ENDPOINT)
+        return self._search(endpoint=SEARCH_TEXT_ENDPOINT,
+                            params=params,
+                            max_num_results=max_num_results)
 
     def search_pattern(self, subj=None, pred=None, obj=None,
                        max_num_results=1000):
@@ -225,16 +225,17 @@ class NanopubClient:
         Searches the nanopub servers (at the specified grlc API) for any nanopubs matching the given RDF pattern,
         up to max_num_results.
         """
-        searchparams = {}
+        params = {}
         if subj:
-            searchparams['subj'] = subj
+            params['subj'] = subj
         if pred:
-            searchparams['pred'] = pred
+            params['pred'] = pred
         if obj:
-            searchparams['obj'] = obj
+            params['obj'] = obj
 
-        return self._search(searchparams=searchparams, max_num_results=max_num_results,
-                            endpoint=SEARCH_PATTERN_ENDPOINT)
+        return self._search(endpoint=SEARCH_PATTERN_ENDPOINT,
+                            params=params,
+                            max_num_results=max_num_results)
 
     def search_things(self, thing_type=None, searchterm=' ',
                       max_num_results=1000):
@@ -242,16 +243,17 @@ class NanopubClient:
         Searches the nanopub servers (at the specified grlc API) for any nanopubs of the given type, with given search term,
         up to max_num_results.
         """
-        searchparams = {}
+        params = {}
         if not thing_type or not searchterm:
             print(f"Received thing_type='{thing_type}', searchterm='{searchterm}'")
             raise ValueError('thing_type and searchterm must BOTH be specified in calls to Nanopub.search_things')
 
-        searchparams['type'] = thing_type
-        searchparams['searchterm'] = searchterm
+        params['type'] = thing_type
+        params['searchterm'] = searchterm
 
-        return self._search(searchparams=searchparams,
-                            max_num_results=max_num_results, endpoint=SEARCH_THINGS_ENDPOINT)
+        return self._search(endpoint=SEARCH_THINGS_ENDPOINT,
+                            params=params,
+                            max_num_results=max_num_results, )
 
     @staticmethod
     def _grlc_url(server_url: str, endpoint: str) -> str:
@@ -279,22 +281,11 @@ class NanopubClient:
         raise requests.HTTPError(f'Could not connect to any of the nanopub servers, '
                                  f'last response: {r}')
 
-    def _search(self, searchparams=None, max_num_results=None, endpoint=None):
+    def _search(self, endpoint, params, max_num_results):
         """
         General nanopub server search method. User should use e.g. search_text() or search_pattern() instead.
         """
-
-        if endpoint is None:
-            raise ValueError('kwarg "endpoint" must be specified. Consider using search_text() '
-                             'function instead.')
-
-        if max_num_results is None:
-            raise ValueError('kwarg "max_num_results" must be specified. Consider using search_text() function instead.')
-
-        if searchparams is None:
-            raise ValueError('kwarg "searchparams" must be specified. Consider using search_text() function instead.')
-
-        r = self.query_grlc_endpoint(searchparams, endpoint)
+        r = self.query_grlc_endpoint(params, endpoint)
 
         # Make sure that results are provided
         try:
