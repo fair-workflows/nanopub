@@ -15,7 +15,7 @@ NANOPUB_TEST_SERVER = 'http://grlc.test-server.nanopubs.lod.labs.vu.nl/'
 
 SEARCH_TEXT_ENDPOINT = 'find_nanopubs_with_text'
 SEARCH_PATTERN_ENDPOINT = 'find_nanopubs_with_pattern'
-SEARCH_THINGS_ENDPOINT = 'search_things'
+SEARCH_THINGS_ENDPOINT = 'find_things'
 
 
 class Nanopub:
