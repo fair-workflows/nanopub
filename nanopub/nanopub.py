@@ -8,7 +8,8 @@ import rdflib
 import requests
 from rdflib.namespace import RDF, DC, DCTERMS, XSD
 
-from nanopub import java_wrapper, namespaces
+from nanopub import namespaces
+from nanopub.java_wrapper import JavaWrapper
 
 DEFAULT_URI = 'http://purl.org/nanopub/temp/mynanopub'
 
@@ -193,6 +194,8 @@ class NanopubClient:
     Provides utility functions for searching, creating and publishing RDF graphs
     as assertions in a nanopublication.
     """
+    def __init__(self):
+        self.java_wrapper = JavaWrapper()
 
     def search_text(self, searchtext, max_num_results=1000,
                     apiurl='http://grlc.nanopubs.lod.labs.vu.nl//api/local/local/find_nanopubs_with_text'):
@@ -339,8 +342,8 @@ class NanopubClient:
         nanopub.rdf.serialize(destination=unsigned_fname, format='trig')
 
         # Sign the nanopub and publish it
-        signed_file = java_wrapper.sign(unsigned_fname)
-        nanopub_uri = java_wrapper.publish(signed_file)
+        signed_file = self.java_wrapper.sign(unsigned_fname)
+        nanopub_uri = self.java_wrapper.publish(signed_file)
         publication_info = {'nanopub_uri': nanopub_uri}
         print(f'Published to {nanopub_uri}')
 

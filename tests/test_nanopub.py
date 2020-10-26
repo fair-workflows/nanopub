@@ -1,3 +1,4 @@
+from unittest import mock
 from unittest.mock import patch
 
 import pytest
@@ -144,18 +145,18 @@ def test_nanopub_from_assertion():
     assert (None, namespaces.NPX.introduces, new_concept) in nanopub.rdf
 
 
-@patch('nanopub.java_wrapper.publish')
-def test_nanopub_claim(java_wrapper_publish_mock):
+def test_nanopub_claim():
     client = NanopubClient()
+    client.java_wrapper.publish = mock.MagicMock()
     optional_triple = (rdflib.term.URIRef('http://www.uri1.com'),
                        rdflib.term.URIRef('http://www.uri2.com'),
                        rdflib.Literal('Something'))
     client.claim('Some controversial statement', rdftriple=optional_triple)
 
 
-@patch('nanopub.java_wrapper.publish')
-def test_nanopub_publish(java_wrapper_publish_mock):
+def test_nanopub_publish():
     client = NanopubClient()
+    client.java_wrapper.publish = mock.MagicMock()
     assertion_rdf = rdflib.Graph()
     assertion_rdf.add((namespaces.AUTHOR.DrBob, namespaces.HYCL.claims, rdflib.Literal('This is a test')))
 
