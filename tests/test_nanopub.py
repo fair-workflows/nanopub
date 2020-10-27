@@ -86,9 +86,7 @@ def test_nanopub_search():
 @skip_if_nanopub_server_unavailable
 def test_nanopub_fetch():
     """
-        Check that Nanopub fetch is returning results for a few known nanopub URIs.
-        Check that the returned object is of type NNanopubObj, that it has the expected
-        source_uri, and that it has non-zero data.
+    Check that Nanopub fetch is returning results for a few known nanopub URIs.
     """
     known_nps = [
         'http://purl.org/np/RAFNR1VMQC0AUhjcX2yf94aXmG1uIhteGXpq12Of88l78',
