@@ -270,12 +270,14 @@ class NanopubClient:
         for grlc_url in self.grlc_urls:
             url = grlc_url + endpoint
             r = requests.get(url, params=params, headers=headers)
-            if r.ok:
-                return r
+            if r.status_code == 502:  # Server is likely down
+                warnings.warn(f'Could not get response from {grlc_url}, trying other servers')
             else:
-                warnings.warn(f'Could not get response from {grlc_url}, tyring other servers')
+                r.raise_for_status()  # For non-502 errors we don't want to try other servers
+                return r
+
         raise requests.HTTPError(f'Could not get response from any of the nanopub grlc '
-                                 f'endpoints, last response: {r}')
+                                 f'endpoints, last response: {r.status_code}:{r.reason}')
 
     def _search(self, endpoint, params, max_num_results):
         """
