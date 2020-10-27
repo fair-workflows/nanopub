@@ -25,15 +25,15 @@ make_nanopub_keys
 from nanopub import NanopubClient
 
 # Create the client, that allows searching, fetching and publishing nanopubs
-npclient = NanopubClient()
+client = NanopubClient()
 
 # Search for all nanopublications containing the text 'fair'
-results = npclient.search_text('fair')
+results = client.search_text('fair')
 print(results)
 
 # Search for nanopublications whose assertions contain triples that are ```rdf:Statement```s.
 # Return only the first three results.
-results = npclient.search_pattern(
+results = client.search_pattern(
                 pred='http://www.w3.org/1999/02/22-rdf-syntax-ns#type',
                 obj='http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement',
                 max_num_results=3)
@@ -41,14 +41,14 @@ print(results)
 
 # Search for nanopublications that introduce a concept that is a ```p-plan:Step```.
 # Return only one result.
-results = npclient.search_things('http://purl.org/net/p-plan#Step', max_num_results=1)
+results = client.search_things('http://purl.org/net/p-plan#Step', max_num_results=1)
 print(results)
 ```
 
 ### Fetching nanopublications and inspecting them
 ```python
 # Fetch the nanopublication at the specified URI
-np = npclient.fetch('http://purl.org/np/RApJG4fwj0szOMBMiYGmYvd5MCtRle6VbwkMJUb1SxxDM')
+np = client.fetch('http://purl.org/np/RApJG4fwj0szOMBMiYGmYvd5MCtRle6VbwkMJUb1SxxDM')
 
 # Print the RDF contents of the nanopublication
 print(np)
@@ -83,7 +83,7 @@ my_assertion.add( (URIRef('www.example.org/timbernerslee'), RDF.type, FOAF.Perso
 nanopub = Nanopub.from_assertion(assertion_rdf=my_assertion)
 
 # Publish the Nanopub object. The URI at which it is published is returned.
-publication_info = npclient.publish(nanopub)
+publication_info = client.publish(nanopub)
 print(publication_info)
 ```
 
