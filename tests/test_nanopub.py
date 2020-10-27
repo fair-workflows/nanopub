@@ -18,22 +18,22 @@ client = NanopubClient()
 
 @pytest.mark.flaky(max_runs=10)
 @skip_if_nanopub_server_unavailable
-def test_nanopub_search_text():
+def test_find_nanopubs_with_text():
     """
     Check that Nanopub text search is returning results for a few common search terms
     """
     searches = ['fair', 'heart']
 
     for search in searches:
-        results = client.search_text(search)
+        results = client.find_nanopubs_with_text(search)
         assert len(results) > 0
 
-    assert len(client.search_text('')) == 0
+    assert len(client.find_nanopubs_with_text('')) == 0
 
 
 @pytest.mark.flaky(max_runs=10)
 @skip_if_nanopub_server_unavailable
-def test_nanopub_search_pattern():
+def test_find_nanopubs_with_pattern():
     """
         Check that Nanopub pattern search is returning results
     """
@@ -43,7 +43,7 @@ def test_nanopub_search_pattern():
     ]
 
     for subj, pred, obj in searches:
-        results = client.search_pattern(subj=subj, pred=pred, obj=obj)
+        results = client.find_nanopubs_with_pattern(subj=subj, pred=pred, obj=obj)
         assert len(results) > 0
         assert 'Error' not in results[0]
 
@@ -52,7 +52,7 @@ def test_nanopub_search_pattern():
 @skip_if_nanopub_server_unavailable
 def test_nanopub_search_things():
     """
-        Check that Nanopub 'things' search is returning results
+        Check that Nanopub 'find_things' search is returning results
     """
     searches = [
         'http://dkm.fbk.eu/index.php/BPMN2_Ontology#ManualTask',
@@ -60,11 +60,11 @@ def test_nanopub_search_things():
     ]
 
     for thing_type in searches:
-        results = client.search_things(type=thing_type)
+        results = client.find_things(type=thing_type)
         assert len(results) > 0
 
     with pytest.raises(Exception):
-        client.search_things()
+        client.find_things()
 
 
 def test_grlc_url():

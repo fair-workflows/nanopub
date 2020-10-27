@@ -14,10 +14,6 @@ from nanopub.java_wrapper import JavaWrapper
 DEFAULT_URI = 'http://purl.org/nanopub/temp/mynanopub'
 NANOPUB_TEST_SERVER = 'http://grlc.test-server.nanopubs.lod.labs.vu.nl/'
 
-SEARCH_TEXT_ENDPOINT = 'find_nanopubs_with_text'
-SEARCH_PATTERN_ENDPOINT = 'find_nanopubs_with_pattern'
-SEARCH_THINGS_ENDPOINT = 'find_things'
-
 
 class Nanopub:
     """
@@ -210,22 +206,22 @@ class NanopubClient:
         else:
             self.server_urls = ['http://grlc.nanopubs.lod.labs.vu.nl/']
 
-    def search_text(self, searchtext, max_num_results=1000):
+    def find_nanopubs_with_text(self, text, max_num_results=1000):
         """
-        Searches the nanopub servers (at the specified grlc API) for any nanopubs matching the given search text,
-        up to max_num_results.
+        Searches the nanopub servers (at the specified grlc API) for any nanopubs matching the
+        given search text, up to max_num_results.
         """
-        if len(searchtext) == 0:
+        if len(text) == 0:
             return []
 
-        params = {'text': searchtext, 'graphpred': '', 'month': '', 'day': '', 'year': ''}
+        params = {'text': text, 'graphpred': '', 'month': '', 'day': '', 'year': ''}
 
-        return self._search(endpoint=SEARCH_TEXT_ENDPOINT,
+        return self._search(endpoint='find_nanopubs_with_text',
                             params=params,
                             max_num_results=max_num_results)
 
-    def search_pattern(self, subj=None, pred=None, obj=None,
-                       max_num_results=1000):
+    def find_nanopubs_with_pattern(self, subj=None, pred=None, obj=None,
+                                   max_num_results=1000):
         """
         Searches the nanopub servers (at the specified grlc API) for any nanopubs matching the given RDF pattern,
         up to max_num_results.
@@ -238,12 +234,12 @@ class NanopubClient:
         if obj:
             params['obj'] = obj
 
-        return self._search(endpoint=SEARCH_PATTERN_ENDPOINT,
+        return self._search(endpoint='find_nanopubs_with_pattern',
                             params=params,
                             max_num_results=max_num_results)
 
-    def search_things(self, type=None, searchterm=' ',
-                      max_num_results=1000):
+    def find_things(self, type=None, searchterm=' ',
+                    max_num_results=1000):
         """
         Searches the nanopub servers (at the specified grlc API) for any nanopubs of the given type, with given search term,
         up to max_num_results.
@@ -257,7 +253,7 @@ class NanopubClient:
         params['type'] = type
         params['searchterm'] = searchterm
 
-        return self._search(endpoint=SEARCH_THINGS_ENDPOINT,
+        return self._search(endpoint='find_things',
                             params=params,
                             max_num_results=max_num_results, )
 
