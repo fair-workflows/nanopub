@@ -5,7 +5,7 @@
 
 
 # nanopub
-The ```nanopub``` library provides a python interface for searching, publishing and modifying nanopublications.
+The ```nanopub``` library provides a high-level, user-friendly python interface for searching, publishing and modifying nanopublications.
 
 # Setup
 Install using pip:
