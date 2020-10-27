@@ -65,7 +65,7 @@ for s, p, o in np.pubinfo:
 for s, p, o in np.provenance:
     print(s,p,o)
 
-# See the list of concepts that are introduced by this nanopublication
+# See the concept that is introduced by this nanopublication (if any)
 print(np.introduces_concept)
 ```
 
