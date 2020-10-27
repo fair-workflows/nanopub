@@ -5,7 +5,7 @@
 
 
 # nanopub
-The ```nanopub``` library provides a python interface for searching, publishing and modifying nanopublications.
+The ```nanopub``` library provides a python interface for searching, publishing and retracting nanopublications.
 
 # Setup
 Install using pip:
@@ -19,6 +19,26 @@ make_nanopub_keys
 ```
 
 ## Quick Start
+
+
+### Publishing an assertion as a nanopub
+```python
+
+from nanopub import Nanopub, NanopubClient
+from rdflib import Graph, URIRef, RDF, FOAF
+
+# Construct your desired assertion (a graph of RDF triples)
+my_assertion = Graph()
+my_assertion.add( (URIRef('www.example.org/timbernerslee'), RDF.type, FOAF.Person) )
+
+# Make a Nanopub object with this assertion
+nanopub = Nanopub.from_assertion(assertion_rdf=my_assertion)
+
+# Publish the Nanopub object. The URI at which it is published is returned.
+publication_info = client.publish(nanopub)
+print(publication_info)
+```
+
 
 ### Searching for nanopublications
 ```python
@@ -69,23 +89,6 @@ for s, p, o in np.provenance:
 print(np.introduces_concept)
 ```
 
-### Publishing an assertion as a nanopub
-```python
-
-from nanopub import Nanopub, NanopubClient
-from rdflib import Graph, URIRef, RDF, FOAF
-
-# Construct your desired assertion (a graph of RDF triples)
-my_assertion = Graph()
-my_assertion.add( (URIRef('www.example.org/timbernerslee'), RDF.type, FOAF.Person) )
-
-# Make a Nanopub object with this assertion
-nanopub = Nanopub.from_assertion(assertion_rdf=my_assertion)
-
-# Publish the Nanopub object. The URI at which it is published is returned.
-publication_info = client.publish(nanopub)
-print(publication_info)
-```
 
 ### Specifying more information
 You can optionally specify that the ```Nanopub``` introduces a particular concept, or is derived from another nanopublication:
