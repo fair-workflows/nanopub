@@ -27,6 +27,9 @@ make_nanopub_keys
 from nanopub import Nanopub, NanopubClient
 from rdflib import Graph, URIRef, RDF, FOAF
 
+# Create the client, that allows searching, fetching and publishing nanopubs
+client = NanopubClient()
+
 # Construct your desired assertion (a graph of RDF triples)
 my_assertion = Graph()
 my_assertion.add( (URIRef('www.example.org/timbernerslee'), RDF.type, FOAF.Person) )
@@ -43,9 +46,6 @@ print(publication_info)
 ### Searching for nanopublications
 ```python
 from nanopub import NanopubClient
-
-# Create the client, that allows searching, fetching and publishing nanopubs
-client = NanopubClient()
 
 # Search for all nanopublications containing the text 'fair'
 results = client.search_text('fair')
