@@ -8,7 +8,8 @@ import rdflib
 import requests
 from rdflib.namespace import RDF, DC, DCTERMS, XSD
 
-from nanopub import java_wrapper, namespaces
+from nanopub import namespaces
+from nanopub.java_wrapper import JavaWrapper
 
 DEFAULT_URI = 'http://purl.org/nanopub/temp/mynanopub'
 NANOPUB_TEST_SERVER = 'http://grlc.test-server.nanopubs.lod.labs.vu.nl/'
@@ -38,8 +39,6 @@ class Nanopub:
             if expected not in self._graphs.keys():
                 raise ValueError(
                     f'Expected to find {expected} graph in nanopub rdf, but not found. Graphs found: {list(self._graphs.keys())}.')
-
-        self._introduces_concept = None
 
     @classmethod
     def from_assertion(cls, assertion_rdf, uri=DEFAULT_URI, introduces_concept=None,
@@ -150,7 +149,6 @@ class Nanopub:
                           introduces_concept))
 
         obj = cls(rdf=rdf, source_uri=uri)
-        obj._introduces_concept = introduces_concept
         return obj
 
     @property
@@ -175,9 +173,16 @@ class Nanopub:
 
     @property
     def introduces_concept(self):
-        # TODO: This should eventually look at the pubinfo graph for the
-        #  NPX.introduces predicate.
-        return self._introduces_concept
+        concepts_introduced = list()
+        for s, p, o in self.pubinfo.triples((None, namespaces.NPX.introduces, None)):
+            concepts_introduced.append(o)
+
+        if len(concepts_introduced) == 0:
+            return None
+        elif len(concepts_introduced) == 1:
+            return concepts_introduced[0]
+        else:
+            raise ValueError('Nanopub introduces multiple concepts')
 
     def __str__(self):
         s = f'Original source URI = {self._source_uri}\n'
@@ -198,6 +203,8 @@ class NanopubClient:
     Provides utility functions for searching, creating and publishing RDF graphs
     as assertions in a nanopublication.
     """
+    def __init__(self):
+        self.java_wrapper = JavaWrapper()
 
     def __init__(self, use_test_server: bool = False):
         if use_test_server:
@@ -353,8 +360,8 @@ class NanopubClient:
         nanopub.rdf.serialize(destination=unsigned_fname, format='trig')
 
         # Sign the nanopub and publish it
-        signed_file = java_wrapper.sign(unsigned_fname)
-        nanopub_uri = java_wrapper.publish(signed_file)
+        signed_file = self.java_wrapper.sign(unsigned_fname)
+        nanopub_uri = self.java_wrapper.publish(signed_file)
         publication_info = {'nanopub_uri': nanopub_uri}
         print(f'Published to {nanopub_uri}')
 
