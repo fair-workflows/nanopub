@@ -1,5 +1,6 @@
 import os
 import tempfile
+import warnings
 from datetime import datetime
 from enum import Enum, unique
 from urllib.parse import urldefrag
@@ -200,7 +201,12 @@ class NanopubClient:
     """
     def __init__(self):
         self.java_wrapper = JavaWrapper()
-        self.server_urls = ['http://grlc.nanopubs.lod.labs.vu.nl/']
+        self.grlc_urls = ["http://grlc.nanopubs.lod.labs.vu.nl/api/local/local/",
+                          "http://130.60.24.146:7881/api/local/local/",
+                          "https://openphacts.cs.man.ac.uk/nanopub/grlc/api/local/local/",
+                          "https://grlc.nanopubs.knows.idlab.ugent.be/api/local/local/",
+                          "http://grlc.np.scify.org/api/local/local/",
+                          "http://grlc.np.dumontierlab.com/api/local/local/"]
 
     def find_nanopubs_with_text(self, text, max_num_results=1000):
         """
@@ -253,16 +259,6 @@ class NanopubClient:
                             params=params,
                             max_num_results=max_num_results, )
 
-    @staticmethod
-    def _grlc_url(server_url: str, endpoint: str) -> str:
-        """Construct search url for given grlc server and endpoint.
-
-        Returns:
-            url for getting search results, for example: 'http://grlc.nanopubs.lod.labs.vu.nl/
-                /api/local/local/find_nanopubs_with_text'
-        """
-        return f'{server_url}/api/local/local/{endpoint}'
-
     def _query_grlc(self, params, endpoint):
         """Query the nanopub server grlc endpoint.
 
@@ -271,13 +267,15 @@ class NanopubClient:
         """
         headers = {"Accept": "application/json"}
         r = None
-        for server_url in self.server_urls:
-            url = self._grlc_url(server_url, endpoint)
+        for grlc_url in self.grlc_urls:
+            url = grlc_url + endpoint
             r = requests.get(url, params=params, headers=headers)
             if r.ok:
                 return r
-        raise requests.HTTPError(f'Could not connect to any of the nanopub grlc endpoints, '
-                                 f'last response: {r}')
+            else:
+                warnings.warn(f'Could not get response from {grlc_url}, tyring other servers')
+        raise requests.HTTPError(f'Could not get response from any of the nanopub grlc '
+                                 f'endpoints, last response: {r}')
 
     def _search(self, endpoint, params, max_num_results):
         """
