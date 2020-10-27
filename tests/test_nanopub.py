@@ -67,11 +67,6 @@ def test_nanopub_search_things():
         client.find_things()
 
 
-def test_grlc_url():
-    result = client._grlc_url('http://test.nl', 'search')
-    assert result == 'http://test.nl/api/local/local/search'
-
-
 def test_nanopub_search():
     with pytest.raises(Exception):
         client._search(params=None,
