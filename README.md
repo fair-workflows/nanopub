@@ -5,7 +5,7 @@
 
 
 # nanopub
-The ```nanopub``` library provides a python interface for searching, publishing and retracting nanopublications.
+The ```nanopub``` library provides a high-level, user-friendly python interface for searching, publishing and retracting nanopublications.
 
 # Setup
 Install using pip:
@@ -89,13 +89,12 @@ for s, p, o in np.provenance:
 print(np.introduces_concept)
 ```
 
-
 ### Specifying more information
 You can optionally specify that the ```Nanopub``` introduces a particular concept, or is derived from another nanopublication:
 ```python
-nanopub = Nanopub.from_assertion(   assertion_rdf=my_assertion,
-                                    introduces_concept=(URIRef('www.example.org/timbernerslee'),
-                                    derived_from=URIRef('www.example.org/another-nanopublication') )
+nanopub = Nanopub.from_assertion(assertion_rdf=my_assertion,
+                                 introduces_concept=(URIRef('www.example.org/timbernerslee'),
+                                 derived_from=URIRef('www.example.org/another-nanopublication') )
 ```
 
 ## Dependencies
