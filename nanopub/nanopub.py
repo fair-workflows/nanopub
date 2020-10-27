@@ -247,7 +247,6 @@ class NanopubClient:
         up to max_num_results.
         """
         if not type or not searchterm:
-            print(f"Received thing_type='{type}', searchterm='{searchterm}'")
             raise ValueError(f'type and searchterm must BOTH be specified in calls to'
                              f'Nanopub.search_things. type: {type}, searchterm: {searchterm}')
 
