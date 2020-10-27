@@ -7,10 +7,10 @@ import requests
 from rdflib.namespace import RDF
 
 from nanopub import NanopubClient, namespaces
-from nanopub.nanopub import Nanopub, NANOPUB_TEST_SERVER
+from nanopub.nanopub import Nanopub
 
 skip_if_nanopub_server_unavailable = (
-    pytest.mark.skipif(requests.get(NANOPUB_TEST_SERVER).status_code != 200,
+    pytest.mark.skipif(requests.get('http://grlc.nanopubs.lod.labs.vu.nl/').status_code != 200,
                        reason='Nanopub server is unavailable'))
 
 client = NanopubClient()

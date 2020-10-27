@@ -12,7 +12,6 @@ from nanopub import namespaces
 from nanopub.java_wrapper import JavaWrapper
 
 DEFAULT_URI = 'http://purl.org/nanopub/temp/mynanopub'
-NANOPUB_TEST_SERVER = 'http://grlc.test-server.nanopubs.lod.labs.vu.nl/'
 
 
 class Nanopub:
@@ -199,12 +198,9 @@ class NanopubClient:
     Provides utility functions for searching, creating and publishing RDF graphs
     as assertions in a nanopublication.
     """
-    def __init__(self, use_test_server: bool = False):
+    def __init__(self):
         self.java_wrapper = JavaWrapper()
-        if use_test_server:
-            self.server_urls = [NANOPUB_TEST_SERVER]
-        else:
-            self.server_urls = ['http://grlc.nanopubs.lod.labs.vu.nl/']
+        self.server_urls = ['http://grlc.nanopubs.lod.labs.vu.nl/']
 
     def find_nanopubs_with_text(self, text, max_num_results=1000):
         """
