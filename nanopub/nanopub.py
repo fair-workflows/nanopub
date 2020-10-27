@@ -203,10 +203,8 @@ class NanopubClient:
     Provides utility functions for searching, creating and publishing RDF graphs
     as assertions in a nanopublication.
     """
-    def __init__(self):
-        self.java_wrapper = JavaWrapper()
-
     def __init__(self, use_test_server: bool = False):
+        self.java_wrapper = JavaWrapper()
         if use_test_server:
             self.server_urls = [NANOPUB_TEST_SERVER]
         else:
