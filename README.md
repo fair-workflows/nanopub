@@ -90,9 +90,9 @@ print(publication_info['nanopub_uri']) # The URI at which it is published
 ### Specifying more information
 You can optionally specify that the ```Nanopub``` introduces a particular concept, or is derived from another nanopublication:
 ```python
-nanopub = Nanopub.from_assertion(   assertion_rdf=my_assertion,
-                                    introduces_concept=(URIRef('www.example.org/timbernerslee'),
-                                    derived_from=URIRef('www.example.org/another-nanopublication') )
+nanopub = Nanopub.from_assertion(assertion_rdf=my_assertion,
+                                 introduces_concept=(URIRef('www.example.org/timbernerslee'),
+                                 derived_from=URIRef('www.example.org/another-nanopublication') )
 ```
 
 ## Dependencies
