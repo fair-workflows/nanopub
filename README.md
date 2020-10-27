@@ -84,7 +84,7 @@ nanopub = Nanopub.from_assertion(assertion_rdf=my_assertion)
 
 # Publish the Nanopub object. The URI at which it is published is returned.
 publication_info = client.publish(nanopub)
-print(publication_info)
+print(publication_info['nanopub_uri']) # The URI at which it is published
 ```
 
 ### Specifying more information
