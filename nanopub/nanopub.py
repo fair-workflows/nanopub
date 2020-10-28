@@ -12,6 +12,12 @@ from rdflib.namespace import RDF, DC, DCTERMS, XSD
 from nanopub import namespaces
 from nanopub.java_wrapper import JavaWrapper
 
+NANOPUB_GRLC_URLS = ["http://grlc.nanopubs.lod.labs.vu.nl/api/local/local/",
+                     "http://130.60.24.146:7881/api/local/local/",
+                     "https://openphacts.cs.man.ac.uk/nanopub/grlc/api/local/local/",
+                     "https://grlc.nanopubs.knows.idlab.ugent.be/api/local/local/",
+                     "http://grlc.np.scify.org/api/local/local/",
+                     "http://grlc.np.dumontierlab.com/api/local/local/"]
 DEFAULT_URI = 'http://purl.org/nanopub/temp/mynanopub'
 
 
@@ -201,12 +207,7 @@ class NanopubClient:
     """
     def __init__(self):
         self.java_wrapper = JavaWrapper()
-        self.grlc_urls = ["http://grlc.nanopubs.lod.labs.vu.nl/api/local/local/",
-                          "http://130.60.24.146:7881/api/local/local/",
-                          "https://openphacts.cs.man.ac.uk/nanopub/grlc/api/local/local/",
-                          "https://grlc.nanopubs.knows.idlab.ugent.be/api/local/local/",
-                          "http://grlc.np.scify.org/api/local/local/",
-                          "http://grlc.np.dumontierlab.com/api/local/local/"]
+        self.grlc_urls = NANOPUB_GRLC_URLS
 
     def find_nanopubs_with_text(self, text, max_num_results=1000):
         """
