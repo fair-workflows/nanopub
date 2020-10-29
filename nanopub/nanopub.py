@@ -18,6 +18,7 @@ NANOPUB_GRLC_URLS = ["http://grlc.nanopubs.lod.labs.vu.nl/api/local/local/",
                      "https://grlc.nanopubs.knows.idlab.ugent.be/api/local/local/",
                      "http://grlc.np.scify.org/api/local/local/",
                      "http://grlc.np.dumontierlab.com/api/local/local/"]
+NANOPUB_TEST_GRLC_URL = 'http://test-grlc.nanopubs.lod.labs.vu.nl/api/local/local/'
 DEFAULT_URI = 'http://purl.org/nanopub/temp/mynanopub'
 
 
@@ -205,9 +206,18 @@ class NanopubClient:
     Provides utility functions for searching, creating and publishing RDF graphs
     as assertions in a nanopublication.
     """
-    def __init__(self):
+    def __init__(self, use_test_server=False):
+        """Construct NanopubClient.
+
+        Args:
+            use_test_server: Toggle using the test nanopub server.
+        """
         self.java_wrapper = JavaWrapper()
-        self.grlc_urls = NANOPUB_GRLC_URLS
+        if use_test_server:
+            self.grlc_urls = [NANOPUB_TEST_GRLC_URL]
+        else:
+            self.grlc_urls = NANOPUB_GRLC_URLS
+        self.use_test_server = use_test_server
 
     def find_nanopubs_with_text(self, text, max_num_results=1000):
         """
@@ -351,7 +361,7 @@ class NanopubClient:
 
         # Sign the nanopub and publish it
         signed_file = self.java_wrapper.sign(unsigned_fname)
-        nanopub_uri = self.java_wrapper.publish(signed_file)
+        nanopub_uri = self.java_wrapper.publish(signed_file, use_test_server=self.use_test_server)
         publication_info = {'nanopub_uri': nanopub_uri}
         print(f'Published to {nanopub_uri}')
 

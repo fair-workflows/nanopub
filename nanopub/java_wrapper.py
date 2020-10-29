@@ -9,6 +9,7 @@ from nanopub.definitions import PKG_FILEPATH
 
 # Location of nanopub tool (currently shipped along with the lib)
 NANOPUB_SCRIPT = str(PKG_FILEPATH / 'np')
+NANOPUB_TEST_SERVER = 'http://test-server.nanopubs.lod.labs.vu.nl/'
 
 
 class JavaWrapper:
@@ -32,8 +33,11 @@ class JavaWrapper:
         self._run_command(f'{NANOPUB_SCRIPT} sign ' + unsigned_file)
         return self._get_signed_file(unsigned_file)
 
-    def publish(self, signed: str):
-        self._run_command(f'{NANOPUB_SCRIPT} publish ' + signed)
+    def publish(self, signed: str, use_test_server=False):
+        if use_test_server:
+            self._run_command(f'{NANOPUB_SCRIPT} publish -v -u {NANOPUB_TEST_SERVER} ' + signed)
+        else:
+            self._run_command(f'{NANOPUB_SCRIPT} publish ' + signed)
         return self.extract_nanopub_url(signed)
 
     @staticmethod
