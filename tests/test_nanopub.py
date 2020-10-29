@@ -2,15 +2,10 @@ from unittest import mock
 
 import pytest
 import rdflib
-import requests
 from rdflib.namespace import RDF
 
-from nanopub import NanopubClient, namespaces
-from nanopub.nanopub import Nanopub, NANOPUB_TEST_GRLC_URL
-
-skip_if_nanopub_server_unavailable = (
-    pytest.mark.skipif(requests.get(NANOPUB_TEST_GRLC_URL).status_code != 200,
-                       reason='Nanopub server is unavailable'))
+from conftest import skip_if_nanopub_server_unavailable
+from nanopub import NanopubClient, namespaces, Nanopub
 
 client = NanopubClient(use_test_server=True)
 
