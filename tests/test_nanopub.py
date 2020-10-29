@@ -16,7 +16,7 @@ def test_find_nanopubs_with_text():
     """
     Check that Nanopub text search is returning results for a few common search terms
     """
-    searches = ['fair', 'heart']
+    searches = ['test', 'US']
 
     for search in searches:
         results = client.find_nanopubs_with_text(search)
@@ -32,8 +32,8 @@ def test_find_nanopubs_with_pattern():
         Check that Nanopub pattern search is returning results
     """
     searches = [
-        ('', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'https://www.omg.org/spec/BPMN/scriptTask'),
-        ('http://purl.org/np/RANhYfdZCVDQr8ItxDYCZWhvBhzjJTs9Cq-vPnmSBDd5g', '', '')
+        ('', 'http://example.org/transmits', 'http://example.org/malaria'),
+        ('http://purl.org/np/RA8ui7ddvV25m1qdyxR4lC8q8-G0yb3SN8AC0Bu5q8Yeg', '', '')
     ]
 
     for subj, pred, obj in searches:
