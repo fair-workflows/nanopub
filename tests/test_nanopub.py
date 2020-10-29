@@ -13,6 +13,8 @@ skip_if_nanopub_server_unavailable = (
     pytest.mark.skipif(requests.get('http://grlc.nanopubs.lod.labs.vu.nl/').status_code != 200,
                        reason='Nanopub server is unavailable'))
 
+client = NanopubClient()
+
 def test_nanopub_construction_with_bnode_introduced_concept():
     """
     Test Nanopub construction from assertion where a BNode is introduced as a concept.
