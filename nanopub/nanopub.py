@@ -363,7 +363,7 @@ class NanopubClient:
             # with name 'step' was passed as introduces_concept, the concept will be published with a URI
             # that looks like [published nanopub URI]#step.
 
-            concept_uri = nanopub_uri + '#' + str(nanopub.introduces_concept)
+            concept_uri = str(nanopub.introduces_concept)
             publication_info['concept_uri'] = concept_uri
             print(f'Published concept to {concept_uri}')
 
