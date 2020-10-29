@@ -9,9 +9,6 @@ from rdflib.namespace import RDF
 from nanopub import NanopubClient, namespaces
 from nanopub.nanopub import Nanopub
 
-BAD_GATEWAY = 502
-NANOPUB_SERVER = 'http://purl.org/np/'
-
 skip_if_nanopub_server_unavailable = (
     pytest.mark.skipif(requests.get('http://grlc.nanopubs.lod.labs.vu.nl/').status_code != 200,
                        reason='Nanopub server is unavailable'))
@@ -37,13 +34,6 @@ def test_nanopub_construction_with_bnode_introduced_concept():
         )
     assert str(nanopub.introduces_concept) == test_concept_uri
 
-
-def nanopub_server_unavailable():
-    response = requests.get(NANOPUB_SERVER)
-
-    return response.status_code == BAD_GATEWAY
-
-  
 @pytest.mark.flaky(max_runs=10)
 @skip_if_nanopub_server_unavailable
 def test_find_nanopubs_with_text():
