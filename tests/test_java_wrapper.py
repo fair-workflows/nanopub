@@ -49,3 +49,9 @@ def test_sign_nanopub_no_rsa_key(tmp_path):
     with pytest.raises(RuntimeError) as e:
         java_wrapper.sign(unsigned_file=temp_unsigned_file)
     assert 'RSA key appears to be missing' in str(e.value)
+
+
+def test_publish():
+    java_wrapper = JavaWrapper(use_test_server=True)
+    pubinfo = java_wrapper.publish(NANOPUB_SAMPLE_SIGNED)
+    assert pubinfo

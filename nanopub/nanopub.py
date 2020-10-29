@@ -212,12 +212,12 @@ class NanopubClient:
         Args:
             use_test_server: Toggle using the test nanopub server.
         """
-        self.java_wrapper = JavaWrapper()
+        self.use_test_server = use_test_server
+        self.java_wrapper = JavaWrapper(use_test_server=use_test_server)
         if use_test_server:
             self.grlc_urls = [NANOPUB_TEST_GRLC_URL]
         else:
             self.grlc_urls = NANOPUB_GRLC_URLS
-        self.use_test_server = use_test_server
 
     def find_nanopubs_with_text(self, text, max_num_results=1000):
         """
@@ -361,7 +361,7 @@ class NanopubClient:
 
         # Sign the nanopub and publish it
         signed_file = self.java_wrapper.sign(unsigned_fname)
-        nanopub_uri = self.java_wrapper.publish(signed_file, use_test_server=self.use_test_server)
+        nanopub_uri = self.java_wrapper.publish(signed_file)
         publication_info = {'nanopub_uri': nanopub_uri}
         print(f'Published to {nanopub_uri}')
 
