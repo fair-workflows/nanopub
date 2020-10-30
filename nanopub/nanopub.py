@@ -1,4 +1,5 @@
 import os
+import random
 import tempfile
 import warnings
 from datetime import datetime
@@ -267,6 +268,7 @@ class NanopubClient:
         """
         headers = {"Accept": "application/json"}
         r = None
+        random.shuffle(self.grlc_urls)  # To balance load across servers
         for grlc_url in self.grlc_urls:
             url = grlc_url + endpoint
             r = requests.get(url, params=params, headers=headers)
