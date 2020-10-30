@@ -4,11 +4,13 @@ from pathlib import Path
 from typing import Union
 
 import rdflib
+import requests
 
 from nanopub.definitions import PKG_FILEPATH
 
 # Location of nanopub tool (currently shipped along with the lib)
 NANOPUB_SCRIPT = str(PKG_FILEPATH / 'np')
+NANOPUB_TEST_SERVER = 'http://test-server.nanopubs.lod.labs.vu.nl/'
 
 
 class JavaWrapper:
@@ -16,6 +18,14 @@ class JavaWrapper:
     Wrapper around 'np' java tool that is used to sign and publish nanopublications to
     a nanopub server.
     """
+    def __init__(self, use_test_server=False):
+        """Construct JavaWrapper.
+
+        Args:
+            use_test_server: Toggle using the test nanopub server.
+        """
+        self.use_test_server = use_test_server
+
     @staticmethod
     def _run_command(command):
         result = subprocess.run(command, shell=True, stderr=subprocess.PIPE)
@@ -33,7 +43,20 @@ class JavaWrapper:
         return self._get_signed_file(unsigned_file)
 
     def publish(self, signed: str):
-        self._run_command(f'{NANOPUB_SCRIPT} publish ' + signed)
+        """ Publish.
+
+        Publish the signed nanopub to the nanopub server. Publishing to the real server depends
+        on nanopub-java, for the test server we do a simple POST request.
+
+        TODO: Use nanopub-java for publishing to test once it supports it.
+        """
+        if self.use_test_server:
+            headers = {'content-type': 'application/x-www-form-urlencoded'}
+            with open(signed, 'rb') as data:
+                r = requests.post(NANOPUB_TEST_SERVER, headers=headers, data=data)
+            r.raise_for_status()
+        else:
+            self._run_command(f'{NANOPUB_SCRIPT} publish ' + signed)
         return self.extract_nanopub_url(signed)
 
     @staticmethod
@@ -47,5 +70,4 @@ class JavaWrapper:
     @staticmethod
     def _get_signed_file(unsigned_file: str):
         unsigned_file = Path(unsigned_file)
-
         return str(unsigned_file.parent / f'signed.{unsigned_file.name}')

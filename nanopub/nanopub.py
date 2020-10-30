@@ -19,6 +19,7 @@ NANOPUB_GRLC_URLS = ["http://grlc.nanopubs.lod.labs.vu.nl/api/local/local/",
                      "https://grlc.nanopubs.knows.idlab.ugent.be/api/local/local/",
                      "http://grlc.np.scify.org/api/local/local/",
                      "http://grlc.np.dumontierlab.com/api/local/local/"]
+NANOPUB_TEST_GRLC_URL = 'http://test-grlc.nanopubs.lod.labs.vu.nl/api/local/local/'
 DEFAULT_URI = 'http://purl.org/nanopub/temp/mynanopub'
 
 
@@ -206,9 +207,18 @@ class NanopubClient:
     Provides utility functions for searching, creating and publishing RDF graphs
     as assertions in a nanopublication.
     """
-    def __init__(self):
-        self.java_wrapper = JavaWrapper()
-        self.grlc_urls = NANOPUB_GRLC_URLS
+    def __init__(self, use_test_server=False):
+        """Construct NanopubClient.
+
+        Args:
+            use_test_server: Toggle using the test nanopub server.
+        """
+        self.use_test_server = use_test_server
+        self.java_wrapper = JavaWrapper(use_test_server=use_test_server)
+        if use_test_server:
+            self.grlc_urls = [NANOPUB_TEST_GRLC_URL]
+        else:
+            self.grlc_urls = NANOPUB_GRLC_URLS
 
     def find_nanopubs_with_text(self, text, max_num_results=1000):
         """

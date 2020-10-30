@@ -1,19 +1,13 @@
 from unittest import mock
-from unittest.mock import patch
 
 import pytest
 import rdflib
-import requests
 from rdflib.namespace import RDF
 
-from nanopub import NanopubClient, namespaces
-from nanopub.nanopub import Nanopub
+from conftest import skip_if_nanopub_server_unavailable
+from nanopub import NanopubClient, namespaces, Nanopub
 
-skip_if_nanopub_server_unavailable = (
-    pytest.mark.skipif(requests.get('http://grlc.nanopubs.lod.labs.vu.nl/').status_code != 200,
-                       reason='Nanopub server is unavailable'))
-
-client = NanopubClient()
+client = NanopubClient(use_test_server=True)
 
 def test_nanopub_construction_with_bnode_introduced_concept():
     """
@@ -34,13 +28,14 @@ def test_nanopub_construction_with_bnode_introduced_concept():
         )
     assert str(nanopub.introduces_concept) == test_concept_uri
 
+
 @pytest.mark.flaky(max_runs=10)
 @skip_if_nanopub_server_unavailable
 def test_find_nanopubs_with_text():
     """
     Check that Nanopub text search is returning results for a few common search terms
     """
-    searches = ['fair', 'heart']
+    searches = ['test', 'US']
 
     for search in searches:
         results = client.find_nanopubs_with_text(search)
@@ -50,14 +45,27 @@ def test_find_nanopubs_with_text():
 
 
 @pytest.mark.flaky(max_runs=10)
+def test_find_nanopubs_with_text_prod():
+    """
+    Check that Nanopub text search is returning results for a few common search terms on the
+    production nanopub server
+    """
+    prod_client = NanopubClient()
+    searches = ['test', 'US']
+    for search in searches:
+        results = prod_client.find_nanopubs_with_text(search)
+        assert len(results) > 0
+
+
+@pytest.mark.flaky(max_runs=10)
 @skip_if_nanopub_server_unavailable
 def test_find_nanopubs_with_pattern():
     """
         Check that Nanopub pattern search is returning results
     """
     searches = [
-        ('', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'https://www.omg.org/spec/BPMN/scriptTask'),
-        ('http://purl.org/np/RANhYfdZCVDQr8ItxDYCZWhvBhzjJTs9Cq-vPnmSBDd5g', '', '')
+        ('', 'http://example.org/transmits', 'http://example.org/malaria'),
+        ('http://purl.org/np/RA8ui7ddvV25m1qdyxR4lC8q8-G0yb3SN8AC0Bu5q8Yeg', '', '')
     ]
 
     for subj, pred, obj in searches:
@@ -68,18 +76,12 @@ def test_find_nanopubs_with_pattern():
 
 @pytest.mark.flaky(max_runs=10)
 @skip_if_nanopub_server_unavailable
-def test_nanopub_search_things():
+def test_nanopub_find_things():
     """
-        Check that Nanopub 'find_things' search is returning results
+    Check that Nanopub 'find_things' search is returning results
     """
-    searches = [
-        'http://dkm.fbk.eu/index.php/BPMN2_Ontology#ManualTask',
-        'http://purl.org/net/p-plan#Plan'
-    ]
-
-    for thing_type in searches:
-        results = client.find_things(type=thing_type)
-        assert len(results) > 0
+    results = client.find_things(type='http://purl.org/net/p-plan#Plan')
+    assert len(results) > 0
 
     with pytest.raises(Exception):
         client.find_things()

@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+from conftest import skip_if_nanopub_server_unavailable
 from nanopub.definitions import TEST_RESOURCES_FILEPATH
 from nanopub.java_wrapper import JavaWrapper
 
@@ -49,3 +50,11 @@ def test_sign_nanopub_no_rsa_key(tmp_path):
     with pytest.raises(RuntimeError) as e:
         java_wrapper.sign(unsigned_file=temp_unsigned_file)
     assert 'RSA key appears to be missing' in str(e.value)
+
+
+@pytest.mark.flaky(max_runs=10)
+@skip_if_nanopub_server_unavailable
+def test_publish():
+    java_wrapper = JavaWrapper(use_test_server=True)
+    pubinfo = java_wrapper.publish(NANOPUB_SAMPLE_SIGNED)
+    assert pubinfo
