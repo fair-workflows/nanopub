@@ -48,14 +48,8 @@ def test_nanopub_search_things():
     """
         Check that Nanopub 'find_things' search is returning results
     """
-    searches = [
-        'http://dkm.fbk.eu/index.php/BPMN2_Ontology#ManualTask',
-        'http://purl.org/net/p-plan#Plan'
-    ]
-
-    for thing_type in searches:
-        results = client.find_things(type=thing_type)
-        assert len(results) > 0
+    results = client.find_things(type='http://purl.org/net/p-plan#Plan')
+    assert len(results) > 0
 
     with pytest.raises(Exception):
         client.find_things()
