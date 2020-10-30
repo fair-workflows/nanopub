@@ -28,6 +28,7 @@ def test_nanopub_construction_with_bnode_introduced_concept():
         )
     assert str(nanopub.introduces_concept) == test_concept_uri
 
+
 @pytest.mark.flaky(max_runs=10)
 @skip_if_nanopub_server_unavailable
 def test_find_nanopubs_with_text():
@@ -41,6 +42,19 @@ def test_find_nanopubs_with_text():
         assert len(results) > 0
 
     assert len(client.find_nanopubs_with_text('')) == 0
+
+
+@pytest.mark.flaky(max_runs=10)
+def test_find_nanopubs_with_text_prod():
+    """
+    Check that Nanopub text search is returning results for a few common search terms on the
+    production nanopub server
+    """
+    prod_client = NanopubClient()
+    searches = ['test', 'US']
+    for search in searches:
+        results = prod_client.find_nanopubs_with_text(search)
+        assert len(results) > 0
 
 
 @pytest.mark.flaky(max_runs=10)
