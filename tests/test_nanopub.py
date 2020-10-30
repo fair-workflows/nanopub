@@ -9,11 +9,11 @@ from rdflib.namespace import RDF
 from nanopub import NanopubClient, namespaces
 from nanopub.nanopub import Nanopub
 
-DEFAULT_FORMAT = '.trig'
-BAD_GATEWAY = 502
-NANOPUB_SERVER = 'http://purl.org/np/'
-SERVER_UNAVAILABLE = 'Nanopub server is unavailable'
+skip_if_nanopub_server_unavailable = (
+    pytest.mark.skipif(requests.get('http://grlc.nanopubs.lod.labs.vu.nl/').status_code != 200,
+                       reason='Nanopub server is unavailable'))
 
+client = NanopubClient()
 
 def test_nanopub_construction_with_bnode_introduced_concept():
     """
@@ -34,91 +34,78 @@ def test_nanopub_construction_with_bnode_introduced_concept():
         )
     assert str(nanopub.introduces_concept) == test_concept_uri
 
-
-def nanopub_server_unavailable():
-    response = requests.get(NANOPUB_SERVER)
-
-    return response.status_code == BAD_GATEWAY
-
-
 @pytest.mark.flaky(max_runs=10)
-@pytest.mark.skipif(nanopub_server_unavailable(), reason=SERVER_UNAVAILABLE)
-def test_nanopub_search_text():
+@skip_if_nanopub_server_unavailable
+def test_find_nanopubs_with_text():
     """
-        Check that Nanopub text search is returning results for a few common search terms
+    Check that Nanopub text search is returning results for a few common search terms
     """
-    client = NanopubClient()
     searches = ['fair', 'heart']
 
     for search in searches:
-        results = client.search_text(search)
+        results = client.find_nanopubs_with_text(search)
         assert len(results) > 0
 
-    assert len(client.search_text('')) == 0
+    assert len(client.find_nanopubs_with_text('')) == 0
+
 
 @pytest.mark.flaky(max_runs=10)
-@pytest.mark.skipif(nanopub_server_unavailable(), reason=SERVER_UNAVAILABLE)
-def test_nanopub_search_pattern():
+@skip_if_nanopub_server_unavailable
+def test_find_nanopubs_with_pattern():
     """
         Check that Nanopub pattern search is returning results
     """
-    client = NanopubClient()
-
     searches = [
         ('', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'https://www.omg.org/spec/BPMN/scriptTask'),
         ('http://purl.org/np/RANhYfdZCVDQr8ItxDYCZWhvBhzjJTs9Cq-vPnmSBDd5g', '', '')
     ]
 
     for subj, pred, obj in searches:
-        results = client.search_pattern(subj=subj, pred=pred, obj=obj)
+        results = client.find_nanopubs_with_pattern(subj=subj, pred=pred, obj=obj)
         assert len(results) > 0
+        assert 'Error' not in results[0]
+
 
 @pytest.mark.flaky(max_runs=10)
-@pytest.mark.skipif(nanopub_server_unavailable(), reason=SERVER_UNAVAILABLE)
+@skip_if_nanopub_server_unavailable
 def test_nanopub_search_things():
     """
-        Check that Nanopub 'things' search is returning results
+        Check that Nanopub 'find_things' search is returning results
     """
-    client = NanopubClient()
     searches = [
         'http://dkm.fbk.eu/index.php/BPMN2_Ontology#ManualTask',
         'http://purl.org/net/p-plan#Plan'
     ]
 
     for thing_type in searches:
-        results = client.search_things(thing_type=thing_type)
+        results = client.find_things(type=thing_type)
         assert len(results) > 0
 
     with pytest.raises(Exception):
-        client.search_things()
+        client.find_things()
 
 
 def test_nanopub_search():
-    client = NanopubClient()
     with pytest.raises(Exception):
-        client._search(searchparams=None,
+        client._search(params=None,
                        max_num_results=100,
-                       apiurl='http://www.api.url')
+                       endpoint='http://www.api.url')
     with pytest.raises(Exception):
-        client._search(searchparams={'search': 'text'},
+        client._search(params={'search': 'text'},
                        max_num_results=None,
-                    apiurl='http://www.api.url')
+                       endpoint='http://www.api.url')
     with pytest.raises(Exception):
-        client._search(searchparams={'search': 'text'},
+        client._search(params={'search': 'text'},
                        max_num_results=100,
-                       apiurl=None)
+                       endpoint=None)
 
 
 @pytest.mark.flaky(max_runs=10)
-@pytest.mark.skipif(nanopub_server_unavailable(), reason=SERVER_UNAVAILABLE)
+@skip_if_nanopub_server_unavailable
 def test_nanopub_fetch():
     """
-        Check that Nanopub fetch is returning results for a few known nanopub URIs.
-        Check that the returned object is of type NNanopubObj, that it has the expected
-        source_uri, and that it has non-zero data.
+    Check that Nanopub fetch is returning results for a few known nanopub URIs.
     """
-    client = NanopubClient()
-
     known_nps = [
         'http://purl.org/np/RAFNR1VMQC0AUhjcX2yf94aXmG1uIhteGXpq12Of88l78',
         'http://purl.org/np/RAePO1Fi2Wp1ARk2XfOnTTwtTkAX1FBU3XuCwq7ng0jIo',

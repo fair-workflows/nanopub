@@ -1,5 +1,7 @@
 import os
+import random
 import tempfile
+import warnings
 from datetime import datetime
 from enum import Enum, unique
 from urllib.parse import urldefrag
@@ -11,6 +13,12 @@ from rdflib.namespace import RDF, DC, DCTERMS, XSD
 from nanopub import namespaces
 from nanopub.java_wrapper import JavaWrapper
 
+NANOPUB_GRLC_URLS = ["http://grlc.nanopubs.lod.labs.vu.nl/api/local/local/",
+                     "http://130.60.24.146:7881/api/local/local/",
+                     "https://openphacts.cs.man.ac.uk/nanopub/grlc/api/local/local/",
+                     "https://grlc.nanopubs.knows.idlab.ugent.be/api/local/local/",
+                     "http://grlc.np.scify.org/api/local/local/",
+                     "http://grlc.np.dumontierlab.com/api/local/local/"]
 DEFAULT_URI = 'http://purl.org/nanopub/temp/mynanopub'
 
 
@@ -200,114 +208,118 @@ class NanopubClient:
     """
     def __init__(self):
         self.java_wrapper = JavaWrapper()
+        self.grlc_urls = NANOPUB_GRLC_URLS
 
-    def search_text(self, searchtext, max_num_results=1000,
-                    apiurl='http://grlc.nanopubs.lod.labs.vu.nl//api/local/local/find_nanopubs_with_text'):
+    def find_nanopubs_with_text(self, text, max_num_results=1000):
         """
-        Searches the nanopub servers (at the specified grlc API) for any nanopubs matching the given search text,
-        up to max_num_results.
+        Searches the nanopub servers (at the specified grlc API) for any nanopubs matching the
+        given search text, up to max_num_results.
         """
-
-        if len(searchtext) == 0:
+        if len(text) == 0:
             return []
 
-        searchparams = {'text': searchtext, 'graphpred': '', 'month': '', 'day': '', 'year': ''}
+        params = {'text': text, 'graphpred': '', 'month': '', 'day': '', 'year': ''}
 
-        return self._search(searchparams=searchparams,
-                            max_num_results=max_num_results,
-                            apiurl=apiurl)
+        return self._search(endpoint='find_nanopubs_with_text',
+                            params=params,
+                            max_num_results=max_num_results)
 
-    def search_pattern(self, subj=None, pred=None, obj=None,
-                       max_num_results=1000, apiurl='http://grlc.nanopubs.lod.labs.vu.nl//api/local/local/find_nanopubs_with_pattern'):
+    def find_nanopubs_with_pattern(self, subj=None, pred=None, obj=None,
+                                   max_num_results=1000):
         """
         Searches the nanopub servers (at the specified grlc API) for any nanopubs matching the given RDF pattern,
         up to max_num_results.
         """
-
-        searchparams = {}
+        params = {}
         if subj:
-            searchparams['subj'] = subj
+            params['subj'] = subj
         if pred:
-            searchparams['pred'] = pred
+            params['pred'] = pred
         if obj:
-            searchparams['obj'] = obj
+            params['obj'] = obj
 
-        return self._search(searchparams=searchparams,
-                            max_num_results=max_num_results, apiurl=apiurl)
+        return self._search(endpoint='find_nanopubs_with_pattern',
+                            params=params,
+                            max_num_results=max_num_results)
 
-    def search_things(self, thing_type=None, searchterm=' ',
-                      max_num_results=1000, apiurl='http://grlc.nanopubs.lod.labs.vu.nl/api/local/local/find_things'):
+    def find_things(self, type=None, searchterm=' ',
+                    max_num_results=1000):
         """
         Searches the nanopub servers (at the specified grlc API) for any nanopubs of the given type, with given search term,
         up to max_num_results.
         """
+        if not type or not searchterm:
+            raise ValueError(f'type and searchterm must BOTH be specified in calls to'
+                             f'Nanopub.search_things. type: {type}, searchterm: {searchterm}')
 
-        searchparams = {}
-        if not thing_type or not searchterm:
-            print(f"Received thing_type='{thing_type}', searchterm='{searchterm}'")
-            raise ValueError('thing_type and searchterm must BOTH be specified in calls to Nanopub.search_things')
+        params = dict()
+        params['type'] = type
+        params['searchterm'] = searchterm
 
-        searchparams['type'] = thing_type
-        searchparams['searchterm'] = searchterm
+        return self._search(endpoint='find_things',
+                            params=params,
+                            max_num_results=max_num_results, )
 
-        return self._search(searchparams=searchparams,
-                            max_num_results=max_num_results, apiurl=apiurl)
+    def _query_grlc(self, params, endpoint):
+        """Query the nanopub server grlc endpoint.
 
-    @staticmethod
-    def _search(searchparams=None, max_num_results=None, apiurl=None):
+        Query a nanopub grlc server endpoint (for example: find_text). Try several of the nanopub
+        garlic servers.
         """
-        General nanopub server search method. User should use e.g. search_text() or search_pattern() instead.
-        """
-
-        if apiurl is None:
-            raise ValueError('kwarg "apiurl" must be specified. Consider using search_text() function instead.')
-
-        if max_num_results is None:
-            raise ValueError('kwarg "max_num_results" must be specified. Consider using search_text() function instead.')
-
-        if searchparams is None:
-            raise ValueError('kwarg "searchparams" must be specified. Consider using search_text() function instead.')
-
-
-        # Query the nanopub server for the specified text
         headers = {"Accept": "application/json"}
-        r = requests.get(apiurl, params=searchparams, headers=headers)
+        r = None
+        random.shuffle(self.grlc_urls)  # To balance load across servers
+        for grlc_url in self.grlc_urls:
+            url = grlc_url + endpoint
+            r = requests.get(url, params=params, headers=headers)
+            if r.status_code == 502:  # Server is likely down
+                warnings.warn(f'Could not get response from {grlc_url}, trying other servers')
+            else:
+                r.raise_for_status()  # For non-502 errors we don't want to try other servers
+                return r
 
-        if r.ok:
+        raise requests.HTTPError(f'Could not get response from any of the nanopub grlc '
+                                 f'endpoints, last response: {r.status_code}:{r.reason}')
 
-            # Make sure that results are provided
-            try:
-                results_json = r.json()
-            except:
-                # If the returned message can't be serialized as JSON (such as due to virtuoso error) then there are no results
-                print('Error: Could not serialize response as JSON:\n', r.content)
-                return []
+    def _search(self, endpoint: str, params: dict, max_num_results: int):
+        """
+        General nanopub server search method. User should use e.g. find_nanopubs_with_text,
+        find_things etc.
 
-            results_list = results_json['results']['bindings']
-            nanopubs = []
+        Args:
+            endpoint: garlic endpoint to query, for example: find_things
+            params: dictionary with parameters for get request
+            max_num_results: Maximum number of results to return
 
-            for result in results_list:
-                nanopub = {}
-                nanopub['np'] = result['np']['value']
+        Raises:
+            JSONDecodeError: in case response can't be serialized as JSON, this can happen due to a
+                virtuoso error.
+        """
+        r = self._query_grlc(params, endpoint)
+        results_json = r.json()
 
-                if 'v' in result:
-                    nanopub['description'] = result['v']['value']
-                elif 'description' in result:
-                    nanopub['description'] = result['description']['value']
-                else:
-                    nanopub['v'] = ''
+        results_list = results_json['results']['bindings']
+        nanopubs = []
 
-                nanopub['date'] = result['date']['value']
+        for result in results_list:
+            nanopub = {}
+            nanopub['np'] = result['np']['value']
 
-                nanopubs.append(nanopub)
+            if 'v' in result:
+                nanopub['description'] = result['v']['value']
+            elif 'description' in result:
+                nanopub['description'] = result['description']['value']
+            else:
+                nanopub['v'] = ''
 
-                if len(nanopubs) >= max_num_results:
-                    break
+            nanopub['date'] = result['date']['value']
 
-            return nanopubs
+            nanopubs.append(nanopub)
 
-        else:
-            return[{'Error': f'Error when searching {apiurl}: Status code {r.status_code}'}]
+            if len(nanopubs) >= max_num_results:
+                break
+
+        return nanopubs
 
     @staticmethod
     def fetch(uri, format: str = 'trig'):
