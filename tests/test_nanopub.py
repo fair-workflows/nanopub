@@ -9,6 +9,24 @@ from nanopub import NanopubClient, namespaces, Nanopub
 
 client = NanopubClient(use_test_server=True)
 
+def test_nanopub_construction_with_bnode_introduced_concept():
+    """
+    Test Nanopub construction from assertion where a BNode is introduced as a concept.
+    """
+    test_uri = 'http://www.example.com/my-nanopub'
+    test_concept_uri = 'http://www.example.com/my-nanopub#DrBob'  # This nanopub introduced DrBob
+    assertion_rdf = rdflib.Graph()
+    assertion_rdf.add((rdflib.term.BNode('DrBob'),
+                       namespaces.HYCL.claims,
+                       rdflib.Literal('This is a test')))
+
+    nanopub = Nanopub.from_assertion(
+        assertion_rdf=assertion_rdf,
+        uri=rdflib.term.URIRef(test_uri),
+        introduces_concept=rdflib.term.BNode('DrBob'),
+        derived_from=rdflib.term.URIRef('http://www.example.com/another-nanopub')
+        )
+    assert str(nanopub.introduces_concept) == test_concept_uri
 
 @pytest.mark.flaky(max_runs=10)
 @skip_if_nanopub_server_unavailable
@@ -132,15 +150,19 @@ def test_nanopub_claim():
 
 
 def test_nanopub_publish():
+    test_uri = 'http://www.example.com/my-nanopub'
+    test_concept_uri = 'http://purl.org/person#DrBob'  # This nanopub introduced DrBob
     client = NanopubClient()
-    client.java_wrapper.publish = mock.MagicMock()
+    client.java_wrapper.publish = mock.MagicMock(return_value=test_uri)
     assertion_rdf = rdflib.Graph()
     assertion_rdf.add((namespaces.AUTHOR.DrBob, namespaces.HYCL.claims, rdflib.Literal('This is a test')))
 
     nanopub = Nanopub.from_assertion(
         assertion_rdf=assertion_rdf,
-        uri=rdflib.term.URIRef('http://www.example.com/auri'),
+        uri=rdflib.term.URIRef(test_uri),
         introduces_concept=namespaces.AUTHOR.DrBob,
-        derived_from=rdflib.term.URIRef('http://www.example.com/someuri')
+        derived_from=rdflib.term.URIRef('http://www.example.com/another-nanopub')
         )
-    client.publish(nanopub)
+    pubinfo = client.publish(nanopub)
+    assert pubinfo['nanopub_uri'] == test_uri
+    assert pubinfo['concept_uri'] == test_concept_uri

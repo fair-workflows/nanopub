@@ -1,4 +1,5 @@
 import os
+import random
 import tempfile
 import warnings
 from datetime import datetime
@@ -277,6 +278,7 @@ class NanopubClient:
         """
         headers = {"Accept": "application/json"}
         r = None
+        random.shuffle(self.grlc_urls)  # To balance load across servers
         for grlc_url in self.grlc_urls:
             url = grlc_url + endpoint
             r = requests.get(url, params=params, headers=headers)
@@ -289,9 +291,15 @@ class NanopubClient:
         raise requests.HTTPError(f'Could not get response from any of the nanopub grlc '
                                  f'endpoints, last response: {r.status_code}:{r.reason}')
 
-    def _search(self, endpoint, params, max_num_results):
+    def _search(self, endpoint: str, params: dict, max_num_results: int):
         """
-        General nanopub server search method. User should use e.g. search_text() or search_pattern() instead.
+        General nanopub server search method. User should use e.g. find_nanopubs_with_text,
+        find_things etc.
+
+        Args:
+            endpoint: garlic endpoint to query, for example: find_things
+            params: dictionary with parameters for get request
+            max_num_results: Maximum number of results to return
 
         Raises:
             JSONDecodeError: in case response can't be serialized as JSON, this can happen due to a
@@ -373,7 +381,7 @@ class NanopubClient:
             # with name 'step' was passed as introduces_concept, the concept will be published with a URI
             # that looks like [published nanopub URI]#step.
 
-            concept_uri = nanopub_uri + '#' + str(nanopub.introduces_concept)
+            concept_uri = str(nanopub.introduces_concept)
             publication_info['concept_uri'] = concept_uri
             print(f'Published concept to {concept_uri}')
 
