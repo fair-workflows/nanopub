@@ -44,9 +44,9 @@ def test_find_nanopubs_with_pattern():
 
 @pytest.mark.flaky(max_runs=10)
 @skip_if_nanopub_server_unavailable
-def test_nanopub_search_things():
+def test_nanopub_find_things():
     """
-        Check that Nanopub 'find_things' search is returning results
+    Check that Nanopub 'find_things' search is returning results
     """
     results = client.find_things(type='http://purl.org/net/p-plan#Plan')
     assert len(results) > 0
