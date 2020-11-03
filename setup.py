@@ -38,7 +38,7 @@ setup(
         ],
     },
     include_package_data=True,
-    scripts=['bin/make_nanopub_keys'],
+    scripts=['bin/make_nanopub_keys', 'bin/setup_profile.py'],
     extras_require={
         'dev': open('requirements-dev.txt', 'r').readlines()
     },

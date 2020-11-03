@@ -1,7 +1,6 @@
 from pathlib import Path
 from unittest.mock import patch
 
-from click.testing import CliRunner
 import setup_profile
 
 MOCK_PUBLIC_KEY = 'this is not a real rsa public key'
