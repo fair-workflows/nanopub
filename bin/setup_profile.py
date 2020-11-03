@@ -1,0 +1,101 @@
+#! /usr/bin/env python3
+
+import shutil
+import subprocess
+from pathlib import Path
+from typing import Union, Tuple
+
+import click
+from rdflib import Graph, FOAF, BNode, Literal
+
+from nanopub import NanopubClient, Nanopub
+from nanopub.definitions import USER_CONFIG_DIR, PKG_FILEPATH
+from nanopub.namespaces import NPX, ORCID
+import os
+
+PRIVATE_KEY_FILE = 'id_rsa'
+PUBLIC_KEY_FILE = 'id_rsa.pub'
+DEFAULT_PRIVATE_KEY_PATH = USER_CONFIG_DIR / PRIVATE_KEY_FILE
+DEFAULT_PUBLIC_KEY_PATH = USER_CONFIG_DIR / PUBLIC_KEY_FILE
+RSA = 'RSA'
+
+
+@click.command()
+@click.option('--orcid', type=str, prompt=True, help='Your ORCID')
+@click.option('--publish', type=bool, is_flag=True, default=False,
+              help='If this option is present a nanopub with the user profile will be published.',
+              prompt='Would you like to publish your profile to the nanopub servers?')
+@click.option('--name', type=str, prompt=True, help='Your name')
+@click.option('--keypair', nargs=2, type=Path,
+              prompt="If you would like to use an existing RSA keypair for signing your nanopubs, provide the paths to "
+                     "public and  private key file. Leave empty if you want to generate anew keypair.",
+              help='Your RSA public and private keys with which your nanopubs will be signed',
+              default=None)
+def main(orcid, publish, name, keypair: Union[Tuple[Path, Path], None]):
+    click.echo('Setting up nanopub profile...')
+
+    if not keypair:
+        if _rsa_keys_exist():
+            if _check_erase_existing_keys():
+                _delete_keys()
+                _make_keys()
+                click.echo(f'Your RSA keys are stored in {USER_CONFIG_DIR}')
+    else:
+        public_key, private_key = keypair
+
+        # Copy the keypair to the default location
+        shutil.copy(public_key, USER_CONFIG_DIR / PUBLIC_KEY_FILE)
+        shutil.copy(private_key, USER_CONFIG_DIR / PRIVATE_KEY_FILE)
+
+        click.echo(f'Your RSA keys have been copied to {USER_CONFIG_DIR}')
+
+    # Public key can always be found at DEFAULT_PUBLIC_KEY_PATH. Either new keys have been generated there or
+    # existing keys have been copy to that location.
+    public_key = DEFAULT_PUBLIC_KEY_PATH
+    public_key = public_key.read_text()
+
+    # Declare the user to nanopub
+    if publish:
+        assertion, concept = _declare_this_is_me(orcid, public_key, name)
+        np = Nanopub.from_assertion(assertion, introduces_concept=concept)
+
+        client = NanopubClient()
+        client.publish(np)
+
+
+def _delete_keys():
+    os.remove(DEFAULT_PUBLIC_KEY_PATH)
+    os.remove(DEFAULT_PRIVATE_KEY_PATH)
+
+
+def _declare_this_is_me(orcid: str, public_key: str, private_key: str, name: str) -> Tuple[Graph, BNode]:
+    # Construct your desired assertion (a graph of RDF triples)
+    my_assertion = Graph()
+
+    key_declaration = BNode('keyDeclaration')
+    orcid_node = ORCID[orcid]
+
+    my_assertion.add(key_declaration, NPX.declaredBy, orcid_node)
+    my_assertion.add(key_declaration, NPX.hasAlgorithm, Literal(RSA))
+    my_assertion.add(key_declaration, NPX.hasPublicKey, public_key)
+    my_assertion.add(orcid_node, FOAF.name, name)
+
+    return my_assertion, key_declaration
+
+
+def _rsa_keys_exist():
+    return DEFAULT_PRIVATE_KEY_PATH.exists() or DEFAULT_PUBLIC_KEY_PATH
+
+
+def _check_erase_existing_keys():
+    return click.confirm('It seems you already have RSA keys for nanopub. Would you like to replace them?',
+                         default=False)
+
+
+def _make_keys():
+    np = str(PKG_FILEPATH / 'np')
+    subprocess.run([np, 'mkkeys', '-a', 'RSA'])
+
+
+if __name__ == '__main__':
+    main()
