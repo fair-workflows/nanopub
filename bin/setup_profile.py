@@ -29,11 +29,14 @@ RSA = 'RSA'
               default=None)
 @click.option('--orcid', type=str, prompt=True, help='Your ORCID')
 @click.option('--name', type=str, prompt=True, help='Your name')
-@click.option('--publish', type=bool, is_flag=True, default=False,
-              help='If this option is present a nanopub with the user profile will be published.',
+@click.option('--publish/--no-publish', type=bool, is_flag=True, default=False,
+              help='If true, nanopub will be published to nanopub servers',
               prompt='Would you like to publish your profile to the nanopub servers?')
 def main(orcid, publish, name, keypair: Union[Tuple[Path, Path], None]):
     click.echo('Setting up nanopub profile...')
+
+    if not USER_CONFIG_DIR.exists():
+        USER_CONFIG_DIR.mkdir()
 
     if not keypair:
         if _rsa_keys_exist():
