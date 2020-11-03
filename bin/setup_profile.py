@@ -2,7 +2,6 @@
 
 import os
 import shutil
-import subprocess
 from pathlib import Path
 from typing import Union, Tuple
 
@@ -10,8 +9,9 @@ import click
 from rdflib import Graph, FOAF, BNode, Literal
 
 from nanopub import NanopubClient, Nanopub
-from nanopub.definitions import USER_CONFIG_DIR, PKG_FILEPATH
+from nanopub.definitions import USER_CONFIG_DIR
 from nanopub.namespaces import NPX, ORCID
+from nanopub.java_wrapper import JavaWrapper
 
 PRIVATE_KEY_FILE = 'id_rsa'
 PUBLIC_KEY_FILE = 'id_rsa.pub'
@@ -39,7 +39,7 @@ def main(orcid, publish, name, keypair: Union[Tuple[Path, Path], None]):
         if _rsa_keys_exist():
             if _check_erase_existing_keys():
                 _delete_keys()
-                _make_keys()
+                JavaWrapper.make_keys()
                 click.echo(f'Your RSA keys are stored in {USER_CONFIG_DIR}')
     else:
         public_key, private_key = keypair
@@ -91,11 +91,6 @@ def _rsa_keys_exist():
 def _check_erase_existing_keys():
     return click.confirm('It seems you already have RSA keys for nanopub. Would you like to replace them?',
                          default=False)
-
-
-def _make_keys():
-    np = str(PKG_FILEPATH / 'np')
-    subprocess.run([np, 'mkkeys', '-a', 'RSA'])
 
 
 if __name__ == '__main__':
