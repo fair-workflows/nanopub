@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+import os
 import shutil
 import subprocess
 from pathlib import Path
@@ -11,7 +12,6 @@ from rdflib import Graph, FOAF, BNode, Literal
 from nanopub import NanopubClient, Nanopub
 from nanopub.definitions import USER_CONFIG_DIR, PKG_FILEPATH
 from nanopub.namespaces import NPX, ORCID
-import os
 
 PRIVATE_KEY_FILE = 'id_rsa'
 PUBLIC_KEY_FILE = 'id_rsa.pub'
@@ -21,16 +21,17 @@ RSA = 'RSA'
 
 
 @click.command()
+@click.option('--keypair', nargs=2, type=Path,
+              prompt=f'If the public and private key you would like to use are not in {USER_CONFIG_DIR}, '
+                     f'provide them here. If they are in this directory or you wish to generate new keys, '
+                     f'leave empty.',
+              help='Your RSA public and private keys with which your nanopubs will be signed',
+              default=None)
 @click.option('--orcid', type=str, prompt=True, help='Your ORCID')
+@click.option('--name', type=str, prompt=True, help='Your name')
 @click.option('--publish', type=bool, is_flag=True, default=False,
               help='If this option is present a nanopub with the user profile will be published.',
               prompt='Would you like to publish your profile to the nanopub servers?')
-@click.option('--name', type=str, prompt=True, help='Your name')
-@click.option('--keypair', nargs=2, type=Path,
-              prompt="If you would like to use an existing RSA keypair for signing your nanopubs, provide the paths to "
-                     "public and  private key file. Leave empty if you want to generate anew keypair.",
-              help='Your RSA public and private keys with which your nanopubs will be signed',
-              default=None)
 def main(orcid, publish, name, keypair: Union[Tuple[Path, Path], None]):
     click.echo('Setting up nanopub profile...')
 
@@ -68,17 +69,17 @@ def _delete_keys():
     os.remove(DEFAULT_PRIVATE_KEY_PATH)
 
 
-def _declare_this_is_me(orcid: str, public_key: str, private_key: str, name: str) -> Tuple[Graph, BNode]:
+def _declare_this_is_me(orcid: str, public_key: str, name: str) -> Tuple[Graph, BNode]:
     # Construct your desired assertion (a graph of RDF triples)
     my_assertion = Graph()
 
     key_declaration = BNode('keyDeclaration')
     orcid_node = ORCID[orcid]
 
-    my_assertion.add(key_declaration, NPX.declaredBy, orcid_node)
-    my_assertion.add(key_declaration, NPX.hasAlgorithm, Literal(RSA))
-    my_assertion.add(key_declaration, NPX.hasPublicKey, public_key)
-    my_assertion.add(orcid_node, FOAF.name, name)
+    my_assertion.add((key_declaration, NPX.declaredBy, orcid_node))
+    my_assertion.add((key_declaration, NPX.hasAlgorithm, Literal(RSA)))
+    my_assertion.add((key_declaration, NPX.hasPublicKey, Literal(public_key)))
+    my_assertion.add((orcid_node, FOAF.name, Literal(name)))
 
     return my_assertion, key_declaration
 
