@@ -10,7 +10,7 @@ import rdflib
 import requests
 from rdflib.namespace import RDF, DC, DCTERMS, XSD
 
-from nanopub import namespaces
+from nanopub import namespaces, profile
 from nanopub.java_wrapper import JavaWrapper
 
 NANOPUB_GRLC_URLS = ["http://grlc.nanopubs.lod.labs.vu.nl/api/local/local/",
@@ -27,6 +27,7 @@ class Nanopub:
     """
     Representation of the rdf that comprises a nanopublication
     """
+
     def __init__(self, rdf=None, source_uri=None):
         self._rdf = rdf
         self._source_uri = source_uri
@@ -65,6 +66,9 @@ class Nanopub:
         if nanopub_author is given (string or rdflib.URIRef), the pubinfo graph will note that this nanopub prov:wasAttributedTo the given URI.
 
         """
+
+        if not attributed_to and not nanopub_author:
+            nanopub_author = rdflib.URIRef(profile.get_orcid())
 
         # Make sure passed URI is defrag'd
         uri = str(uri)

@@ -9,6 +9,9 @@ from nanopub import NanopubClient, namespaces, Nanopub
 
 client = NanopubClient(use_test_server=True)
 
+TEST_ASSERTION = (namespaces.AUTHOR.DrBob, namespaces.HYCL.claims, rdflib.Literal('This is a test'))
+
+
 def test_nanopub_construction_with_bnode_introduced_concept():
     """
     Test Nanopub construction from assertion where a BNode is introduced as a concept.
@@ -25,7 +28,7 @@ def test_nanopub_construction_with_bnode_introduced_concept():
         uri=rdflib.term.URIRef(test_uri),
         introduces_concept=rdflib.term.BNode('DrBob'),
         derived_from=rdflib.term.URIRef('http://www.example.com/another-nanopub')
-        )
+    )
     assert str(nanopub.introduces_concept) == test_concept_uri
 
 
@@ -169,14 +172,14 @@ def test_nanopub_publish():
     client = NanopubClient()
     client.java_wrapper.publish = mock.MagicMock(return_value=test_uri)
     assertion_rdf = rdflib.Graph()
-    assertion_rdf.add((namespaces.AUTHOR.DrBob, namespaces.HYCL.claims, rdflib.Literal('This is a test')))
+    assertion_rdf.add(TEST_ASSERTION)
 
     nanopub = Nanopub.from_assertion(
         assertion_rdf=assertion_rdf,
         uri=rdflib.term.URIRef(test_uri),
         introduces_concept=namespaces.AUTHOR.DrBob,
         derived_from=rdflib.term.URIRef('http://www.example.com/another-nanopub')
-        )
+    )
     pubinfo = client.publish(nanopub)
     assert pubinfo['nanopub_uri'] == test_uri
     assert pubinfo['concept_uri'] == test_concept_uri
@@ -200,3 +203,19 @@ def test_nanopub_publish_blanknode():
     assert pubinfo['nanopub_uri'] == test_published_uri
     assert pubinfo['concept_uri'] == expected_concept_uri
 
+
+def test_nanopub_from_assertion_use_profile():
+    orcid = 'http://example.org/pietje'
+
+    mock_profile = mock.MagicMock()
+    mock_profile.get_orcid.return_value = orcid
+
+    assertion = rdflib.Graph()
+    assertion.add(TEST_ASSERTION)
+
+    with mock.patch('nanopub.nanopub.profile', mock_profile):
+        result = Nanopub.from_assertion(assertion_rdf=assertion)
+
+        prov_entries = list(result.rdf[:namespaces.PROV.wasAttributedTo: rdflib.URIRef(orcid)])
+
+        assert len(prov_entries) > 0
