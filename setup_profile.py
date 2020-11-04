@@ -21,7 +21,10 @@ PROFILE_PATH = USER_CONFIG_DIR / 'profile.yml'
 RSA = 'RSA'
 
 
-@click.command()
+@click.command(help='Interactive CLI to create a nanopub user profile. A local version of the profile will be stored '
+                    'in the '
+                    'user config dir (by default HOMEDIR/.nanopub/). The profile will also be published to the '
+                    'nanopub servers.')
 @click.option('--keypair', nargs=2, type=Path,
               prompt=f'If the public and private key you would like to use are not in {USER_CONFIG_DIR}, '
                      f'provide them here. If they are in this directory or you wish to generate new keys, '
@@ -36,6 +39,16 @@ RSA = 'RSA'
                       'this links your ORCID to your RSA key, thereby making all your'
                       'publications linkable to you'))
 def main(orcid, publish, name, keypair: Union[Tuple[Path, Path], None]):
+    """
+    Interactive CLI to create a user profile.
+
+    :param orcid: the users orcid or other form of universal identifier
+    :param publish: if True, profile will be published to nanopub servers
+    :param name: the name of the user
+    :param keypair: a tuple containing the paths to the public and private RSA key to be used to sign nanopubs. If
+                    empty, new keys will be generated.
+    :return:
+    """
     click.echo('Setting up nanopub profile...')
 
     if not USER_CONFIG_DIR.exists():
