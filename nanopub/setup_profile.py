@@ -1,17 +1,18 @@
 #! /usr/bin/env python3
-import yaml
 import os
+import re
 import shutil
 from pathlib import Path
 from typing import Union, Tuple
 
 import click
+import yaml
 from rdflib import Graph, FOAF, BNode, Literal
 
 from nanopub import NanopubClient, Nanopub
 from nanopub.definitions import USER_CONFIG_DIR
-from nanopub.namespaces import NPX, ORCID
 from nanopub.java_wrapper import JavaWrapper
+from nanopub.namespaces import NPX, ORCID
 
 PRIVATE_KEY_FILE = 'id_rsa'
 PUBLIC_KEY_FILE = 'id_rsa.pub'
@@ -19,6 +20,17 @@ DEFAULT_PRIVATE_KEY_PATH = USER_CONFIG_DIR / PRIVATE_KEY_FILE
 DEFAULT_PUBLIC_KEY_PATH = USER_CONFIG_DIR / PUBLIC_KEY_FILE
 PROFILE_PATH = USER_CONFIG_DIR / 'profile.yml'
 RSA = 'RSA'
+
+
+def is_valid_orcid_id(ctx, orcid_id: str):
+    """
+    Check if valid ORCID iD, should be 16 digit in form: 0000-0000-0000-0000
+    """
+    if re.match(r'^(\d{4}-){3}\d{4}$', orcid_id):
+        return orcid_id
+    else:
+        raise ValueError('Your ORCID iD is not valid, please provide a valid ORCID iD that '
+                         'looks like: 0000-0000-0000-0000')
 
 
 @click.command(help='Interactive CLI to create a nanopub user profile. A local version of the profile will be stored '
@@ -31,8 +43,11 @@ RSA = 'RSA'
                      f'leave empty.',
               help='Your RSA public and private keys with which your nanopubs will be signed',
               default=None)
-@click.option('--orcid_id', type=str, prompt=True, help='Your ORCID iD')
-@click.option('--name', type=str, prompt=True, help='Your name')
+@click.option('--orcid_id', type=str,
+              prompt='What is your ORCID iD (i.e. 0000-0000-0000-0000)? Optionally leave empty',
+              help='Your ORCID iD (i.e. 0000-0000-0000-0000), optionally leave empty',
+              callback=is_valid_orcid_id)
+@click.option('--name', type=str, prompt='What is your full name?', help='Your full name')
 @click.option('--publish/--no-publish', type=bool, is_flag=True, default=True,
               help='If true, nanopub will be published to nanopub servers',
               prompt=('Would you like to publish your profile to the nanopub servers?'
