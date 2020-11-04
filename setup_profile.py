@@ -32,8 +32,8 @@ RSA = 'RSA'
 @click.option('--publish/--no-publish', type=bool, is_flag=True, default=True,
               help='If true, nanopub will be published to nanopub servers',
               prompt=('Would you like to publish your profile to the nanopub servers?'
-                               'this links your ORCID to your RSA key, thereby making all your'
-                               'publications linkable to you'))
+                      'this links your ORCID to your RSA key, thereby making all your'
+                      'publications linkable to you'))
 def main(orcid, publish, name, keypair: Union[Tuple[Path, Path], None]):
     click.echo('Setting up nanopub profile...')
 
