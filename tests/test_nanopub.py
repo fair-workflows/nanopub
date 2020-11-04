@@ -180,3 +180,23 @@ def test_nanopub_publish():
     pubinfo = client.publish(nanopub)
     assert pubinfo['nanopub_uri'] == test_uri
     assert pubinfo['concept_uri'] == test_concept_uri
+
+
+def test_nanopub_publish_blanknode():
+    test_concept = rdflib.term.BNode('test')
+    test_published_uri = 'http://www.example.com/my-nanopub'
+    expected_concept_uri = 'http://www.example.com/my-nanopub#test'
+    client = NanopubClient()
+    client.java_wrapper.publish = mock.MagicMock(return_value=test_published_uri)
+    assertion_rdf = rdflib.Graph()
+    assertion_rdf.add(
+        (test_concept, namespaces.HYCL.claims, rdflib.Literal('This is a test')))
+
+    nanopub = Nanopub.from_assertion(
+        assertion_rdf=assertion_rdf,
+        introduces_concept=test_concept,
+    )
+    pubinfo = client.publish(nanopub)
+    assert pubinfo['nanopub_uri'] == test_published_uri
+    assert pubinfo['concept_uri'] == expected_concept_uri
+
