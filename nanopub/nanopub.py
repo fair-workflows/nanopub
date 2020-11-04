@@ -374,14 +374,14 @@ class NanopubClient:
         print(f'Published to {nanopub_uri}')
 
         if nanopub.introduces_concept:
-            # Construct the (actually published) URI of the concept being introduced by this nanopub.
-            # This is only necessary if a blank node was passed as introduces_concept. In that case
-            # the Nanopub.from_assertion method replaces the blank node with the base nanopub's URI
-            # and appends a fragment, given by the 'name' of the blank node. For example, if a blank node
-            # with name 'step' was passed as introduces_concept, the concept will be published with a URI
-            # that looks like [published nanopub URI]#step.
-
             concept_uri = str(nanopub.introduces_concept)
+            # Replace the DEFAULT_URI with the actually published nanopub uri. # This is
+            # necessary if a blank node was passed as introduces_concept. In that case the
+            # Nanopub.from_assertion method replaces the blank node with the base nanopub's URI
+            # and appends a fragment, given by the 'name' of the blank node. For example, if a
+            # blank node with name 'step' was passed as introduces_concept, the concept will be
+            # published with a URI that looks like [published nanopub URI]#step.
+            concept_uri = concept_uri.replace(DEFAULT_URI, nanopub_uri)
             publication_info['concept_uri'] = concept_uri
             print(f'Published concept to {concept_uri}')
 
