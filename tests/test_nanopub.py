@@ -165,7 +165,9 @@ def test_nanopub_claim():
     optional_triple = (rdflib.term.URIRef('http://www.uri1.com'),
                        rdflib.term.URIRef('http://www.uri2.com'),
                        rdflib.Literal('Something'))
-    client.claim('Some controversial statement', rdftriple=optional_triple)
+
+    with mock.patch('nanopub.nanopub.profile', _get_mock_profile()):
+        client.claim('Some controversial statement', rdftriple=optional_triple)
 
 
 def test_nanopub_publish():
