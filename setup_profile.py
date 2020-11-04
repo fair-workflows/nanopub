@@ -88,7 +88,7 @@ def _declare_this_is_me(orcid: str, public_key: str, name: str) -> Tuple[Graph, 
 
 
 def _rsa_keys_exist():
-    return DEFAULT_PRIVATE_KEY_PATH.exists() or DEFAULT_PUBLIC_KEY_PATH
+    return DEFAULT_PRIVATE_KEY_PATH.exists() or DEFAULT_PUBLIC_KEY_PATH.exists()
 
 
 def _check_erase_existing_keys():
