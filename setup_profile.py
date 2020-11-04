@@ -1,5 +1,5 @@
 #! /usr/bin/env python3
-
+import yaml
 import os
 import shutil
 from pathlib import Path
@@ -17,6 +17,7 @@ PRIVATE_KEY_FILE = 'id_rsa'
 PUBLIC_KEY_FILE = 'id_rsa.pub'
 DEFAULT_PRIVATE_KEY_PATH = USER_CONFIG_DIR / PRIVATE_KEY_FILE
 DEFAULT_PUBLIC_KEY_PATH = USER_CONFIG_DIR / PUBLIC_KEY_FILE
+PROFILE_PATH = USER_CONFIG_DIR / 'profile.yml'
 RSA = 'RSA'
 
 
@@ -63,13 +64,31 @@ def main(orcid, publish, name, keypair: Union[Tuple[Path, Path], None]):
     public_key = DEFAULT_PUBLIC_KEY_PATH
     public_key = public_key.read_text()
 
+    profile_nanopub_uri = None
+
     # Declare the user to nanopub
     if publish:
         assertion, concept = _create_this_is_me_rdf(orcid, public_key, name)
         np = Nanopub.from_assertion(assertion, introduces_concept=concept)
 
         client = NanopubClient()
-        client.publish(np)
+        result = client.publish(np)
+
+        profile_nanopub_uri = result['concept_uri']
+
+    _store_profile(name, orcid, public_key, profile_nanopub_uri)
+
+
+def _store_profile(name: str, orcid: str, public_key: str, profile_nanopub_uri: str = None):
+    profile = {'name': name, 'orcid': orcid, "public_key": public_key}
+
+    if profile_nanopub_uri:
+        profile['profile_nanopub'] = profile_nanopub_uri
+
+    with PROFILE_PATH.open('w') as f:
+        yaml.dump(profile, f)
+
+    click.echo(f'Stored profile in {str(PROFILE_PATH)}')
 
 
 def _delete_keys():
