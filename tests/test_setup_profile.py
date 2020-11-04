@@ -1,7 +1,7 @@
 from pathlib import Path
 from unittest.mock import patch
 
-import setup_profile
+from nanopub import setup_profile
 
 MOCK_PUBLIC_KEY = 'this is not a real rsa public key'
 MOCK_PRIVATE_KEY = 'this is not a real rsa private key'
@@ -33,9 +33,9 @@ def test_provided_keypair_copied_to_nanopub_dir(tmp_path: Path):
     new_public_keyfile = nanopub_path / PUBLIC_KEYFILE
     new_private_keyfile = nanopub_path / PRIVATE_KEYFILE
 
-    with patch('setup_profile.USER_CONFIG_DIR', nanopub_path), \
-         patch('setup_profile.DEFAULT_PUBLIC_KEY_PATH', new_public_keyfile), \
-         patch('setup_profile.DEFAULT_PRIVATE_KEY_PATH', new_private_keyfile):
+    with patch('nanopub.setup_profile.USER_CONFIG_DIR', nanopub_path), \
+         patch('nanopub.setup_profile.DEFAULT_PUBLIC_KEY_PATH', new_public_keyfile), \
+         patch('nanopub.setup_profile.DEFAULT_PRIVATE_KEY_PATH', new_private_keyfile):
 
         setup_profile.main(args=['--keypair', str(custom_public_key_path), str(custom_private_key_path), '--name',
                                  NAME, '--orcid', ORCID, '--no-publish'], standalone_mode=False)
