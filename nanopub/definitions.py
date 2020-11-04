@@ -5,4 +5,5 @@ PKG_FILEPATH = Path(__file__).parent
 TESTS_FILEPATH = ROOT_FILEPATH / 'tests'
 TEST_RESOURCES_FILEPATH = TESTS_FILEPATH / 'resources'
 USER_CONFIG_DIR = Path.home() / '.nanopub'
+PROFILE_PATH = USER_CONFIG_DIR / 'profile.yml'
 

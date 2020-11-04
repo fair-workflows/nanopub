@@ -9,7 +9,7 @@ import click
 from rdflib import Graph, FOAF, BNode, Literal
 
 from nanopub import NanopubClient, Nanopub
-from nanopub.definitions import USER_CONFIG_DIR
+from nanopub.definitions import USER_CONFIG_DIR, PROFILE_PATH
 from nanopub.namespaces import NPX, ORCID
 from nanopub.java_wrapper import JavaWrapper
 
@@ -17,7 +17,6 @@ PRIVATE_KEY_FILE = 'id_rsa'
 PUBLIC_KEY_FILE = 'id_rsa.pub'
 DEFAULT_PRIVATE_KEY_PATH = USER_CONFIG_DIR / PRIVATE_KEY_FILE
 DEFAULT_PUBLIC_KEY_PATH = USER_CONFIG_DIR / PUBLIC_KEY_FILE
-PROFILE_PATH = USER_CONFIG_DIR / 'profile.yml'
 RSA = 'RSA'
 
 
