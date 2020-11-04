@@ -42,12 +42,12 @@ def main(orcid, publish, name, keypair: Union[Tuple[Path, Path], None]):
     """
     Interactive CLI to create a user profile.
 
-    :param orcid: the users orcid or other form of universal identifier
-    :param publish: if True, profile will be published to nanopub servers
-    :param name: the name of the user
-    :param keypair: a tuple containing the paths to the public and private RSA key to be used to sign nanopubs. If
-                    empty, new keys will be generated.
-    :return:
+    Args:
+        orcid: the users orcid or other form of universal identifier
+        publish: if True, profile will be published to nanopub servers
+        name: the name of the user
+        keypair: a tuple containing the paths to the public and private RSA key to be used to sign
+            nanopubs. If empty, new keys will be generated.
     """
     click.echo('Setting up nanopub profile...')
 
@@ -113,11 +113,6 @@ def _delete_keys():
 def _create_this_is_me_rdf(orcid: str, public_key: str, name: str) -> Tuple[Graph, BNode]:
     """
     Create a set of RDF triples declaring the existence of the user with associated ORCID.
-
-    :param orcid:
-    :param public_key:
-    :param name:
-    :return:
     """
     my_assertion = Graph()
 
