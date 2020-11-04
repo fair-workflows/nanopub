@@ -22,7 +22,7 @@ PROFILE_PATH = USER_CONFIG_DIR / 'profile.yml'
 RSA = 'RSA'
 
 
-def is_valid_orcid_id(ctx, orcid_id: str):
+def validate_orcid_id(ctx, orcid_id: str):
     """
     Check if valid ORCID iD, should be 16 digit in form: 0000-0000-0000-0000
     """
@@ -48,7 +48,7 @@ def is_valid_orcid_id(ctx, orcid_id: str):
 @click.option('--orcid_id', type=str,
               prompt='What is your ORCID iD (i.e. 0000-0000-0000-0000)? Optionally leave empty',
               help='Your ORCID iD (i.e. 0000-0000-0000-0000), optionally leave empty',
-              callback=is_valid_orcid_id,
+              callback=validate_orcid_id,
               default='')
 @click.option('--name', type=str, prompt='What is your full name?', help='Your full name')
 @click.option('--publish/--no-publish', type=bool, is_flag=True, default=True,

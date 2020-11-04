@@ -4,7 +4,7 @@ from unittest.mock import patch
 import pytest
 
 from nanopub import setup_profile
-from nanopub.setup_profile import is_valid_orcid_id
+from nanopub.setup_profile import validate_orcid_id
 
 MOCK_PUBLIC_KEY = 'this is not a real rsa public key'
 MOCK_PRIVATE_KEY = 'this is not a real rsa private key'
@@ -54,11 +54,11 @@ def test_provided_keypair_copied_to_nanopub_dir(tmp_path: Path):
     assert new_private_keyfile.read_text() == MOCK_PRIVATE_KEY
 
 
-def test_is_valid_orcid_id():
+def test_validate_orcid_id():
     valid_ids = ['1234-5678-1234-5678', '']
     for orcid_id in valid_ids:
-        is_valid_orcid_id(ctx=None, orcid_id=orcid_id)
+        validate_orcid_id(ctx=None, orcid_id=orcid_id)
     invalid_ids = ['abcd-efgh-abcd-efgh', '1234-5678-1234-567', '1234-5678-1234-56789']
     for orcid_id in invalid_ids:
         with pytest.raises(ValueError):
-            is_valid_orcid_id(ctx=None, orcid_id=orcid_id)
+            validate_orcid_id(ctx=None, orcid_id=orcid_id)
