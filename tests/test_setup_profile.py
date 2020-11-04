@@ -55,7 +55,9 @@ def test_provided_keypair_copied_to_nanopub_dir(tmp_path: Path):
 
 
 def test_is_valid_orcid_id():
-    is_valid_orcid_id(ctx=None, orcid_id='1234-5678-1234-5678')
+    valid_ids = ['1234-5678-1234-5678', '']
+    for orcid_id in valid_ids:
+        is_valid_orcid_id(ctx=None, orcid_id=orcid_id)
     invalid_ids = ['abcd-efgh-abcd-efgh', '1234-5678-1234-567', '1234-5678-1234-56789']
     for orcid_id in invalid_ids:
         with pytest.raises(ValueError):
