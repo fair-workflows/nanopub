@@ -38,7 +38,7 @@ setup(
         ],
     },
     include_package_data=True,
-    scripts=['bin/setup_profile.py'],
+    scripts=['setup_profile.py'],
     extras_require={
         'dev': open('requirements-dev.txt', 'r').readlines()
     },
