@@ -29,7 +29,7 @@ RSA = 'RSA'
               default=None)
 @click.option('--orcid', type=str, prompt=True, help='Your ORCID')
 @click.option('--name', type=str, prompt=True, help='Your name')
-@click.option('--publish/--no-publish', type=bool, is_flag=True, default=False,
+@click.option('--publish/--no-publish', type=bool, is_flag=True, default=True,
               help='If true, nanopub will be published to nanopub servers',
               prompt=('Would you like to publish your profile to the nanopub servers?'
                                'this links your ORCID to your RSA key, thereby making all your'
@@ -46,6 +46,9 @@ def main(orcid, publish, name, keypair: Union[Tuple[Path, Path], None]):
                 _delete_keys()
                 JavaWrapper.make_keys()
                 click.echo(f'Your RSA keys are stored in {USER_CONFIG_DIR}')
+        else:
+            JavaWrapper.make_keys()
+            click.echo(f'Your RSA keys are stored in {USER_CONFIG_DIR}')
     else:
         public_key, private_key = keypair
 
@@ -74,8 +77,15 @@ def _delete_keys():
     os.remove(DEFAULT_PRIVATE_KEY_PATH)
 
 
-def _declare_this_is_me(orcid: str, public_key: str, name: str) -> Tuple[Graph, BNode]:
-    # Construct your desired assertion (a graph of RDF triples)
+def _create_this_is_me_rdf(orcid: str, public_key: str, name: str) -> Tuple[Graph, BNode]:
+    """
+    Create a set of RDF triples declaring the existence of the user with associated ORCID.
+
+    :param orcid:
+    :param public_key:
+    :param name:
+    :return:
+    """
     my_assertion = Graph()
 
     key_declaration = BNode('keyDeclaration')
