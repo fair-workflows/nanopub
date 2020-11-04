@@ -51,18 +51,18 @@ def main(orcid, publish, name, keypair: Union[Tuple[Path, Path], None]):
             JavaWrapper.make_keys()
             click.echo(f'Your RSA keys are stored in {USER_CONFIG_DIR}')
     else:
-        public_key, private_key = keypair
+        public_key_path, private_key = keypair
 
         # Copy the keypair to the default location
-        shutil.copy(public_key, USER_CONFIG_DIR / PUBLIC_KEY_FILE)
+        shutil.copy(public_key_path, USER_CONFIG_DIR / PUBLIC_KEY_FILE)
         shutil.copy(private_key, USER_CONFIG_DIR / PRIVATE_KEY_FILE)
 
         click.echo(f'Your RSA keys have been copied to {USER_CONFIG_DIR}')
 
     # Public key can always be found at DEFAULT_PUBLIC_KEY_PATH. Either new keys have been generated there or
     # existing keys have been copy to that location.
-    public_key = DEFAULT_PUBLIC_KEY_PATH
-    public_key = public_key.read_text()
+    public_key_path = DEFAULT_PUBLIC_KEY_PATH
+    public_key = public_key_path.read_text()
 
     profile_nanopub_uri = None
 
@@ -76,11 +76,12 @@ def main(orcid, publish, name, keypair: Union[Tuple[Path, Path], None]):
 
         profile_nanopub_uri = result['concept_uri']
 
-    _store_profile(name, orcid, public_key, profile_nanopub_uri)
+    # Keys are always stored or copied to default location
+    _store_profile(name, orcid, public_key_path, DEFAULT_PRIVATE_KEY_PATH, profile_nanopub_uri)
 
 
-def _store_profile(name: str, orcid: str, public_key: str, profile_nanopub_uri: str = None):
-    profile = {'name': name, 'orcid': orcid, "public_key": public_key}
+def _store_profile(name: str, orcid: str, public_key: Path, private_key: Path, profile_nanopub_uri: str = None):
+    profile = {'name': name, 'orcid': orcid, "public_key": str(public_key), 'private_key': str(private_key)}
 
     if profile_nanopub_uri:
         profile['profile_nanopub'] = profile_nanopub_uri
