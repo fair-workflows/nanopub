@@ -71,3 +71,7 @@ class JavaWrapper:
     def _get_signed_file(unsigned_file: str):
         unsigned_file = Path(unsigned_file)
         return str(unsigned_file.parent / f'signed.{unsigned_file.name}')
+
+    @staticmethod
+    def make_keys():
+        subprocess.run([NANOPUB_SCRIPT, 'mkkeys', '-a', 'RSA'])

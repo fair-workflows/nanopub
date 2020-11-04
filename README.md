@@ -13,10 +13,14 @@ Install using pip:
 pip install nanopub
 ```
 
-To publish to the nanopub server you need to setup RSA keys. This allows the nanopub server to identify you.
+To publish to the nanopub server you need to setup your profile. This allows the nanopub server to identify you. Run 
+the following interactive command:
 ```
-make_nanopub_keys
+setup_profile
 ```
+It will add and store RSA keys to sign your nanopublications, publish a nanopublication with your name and ORCID iD to
+declare that you are using using these RSA keys, and store your ORCID iD to automatically add as author to the
+provenance of any nanopublication you will publish using this library.
 
 ## Quick Start
 
