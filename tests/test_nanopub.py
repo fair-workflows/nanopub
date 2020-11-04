@@ -1,3 +1,4 @@
+from pathlib import Path
 from unittest import mock
 
 import pytest
@@ -10,7 +11,7 @@ from nanopub import NanopubClient, namespaces, Nanopub
 client = NanopubClient(use_test_server=True)
 
 TEST_ASSERTION = (namespaces.AUTHOR.DrBob, namespaces.HYCL.claims, rdflib.Literal('This is a test'))
-
+TEST_ORCID = rdflib.URIRef('http://example.org/pietje')
 
 def test_nanopub_construction_with_bnode_introduced_concept():
     """
@@ -27,7 +28,8 @@ def test_nanopub_construction_with_bnode_introduced_concept():
         assertion_rdf=assertion_rdf,
         uri=rdflib.term.URIRef(test_uri),
         introduces_concept=rdflib.term.BNode('DrBob'),
-        derived_from=rdflib.term.URIRef('http://www.example.com/another-nanopub')
+        derived_from=rdflib.term.URIRef('http://www.example.com/another-nanopub'),
+        attributed_to=TEST_ORCID
     )
     assert str(nanopub.introduces_concept) == test_concept_uri
 
@@ -137,7 +139,7 @@ def test_nanopub_from_assertion():
     assertion_rdf.add((namespaces.AUTHOR.DrBob, namespaces.HYCL.claims,
                        rdflib.Literal('This is a test')))
 
-    nanopub = Nanopub.from_assertion(assertion_rdf)
+    nanopub = Nanopub.from_assertion(assertion_rdf, attributed_to=TEST_ORCID)
 
     assert nanopub.rdf is not None
     assert (None, RDF.type, namespaces.NP.Nanopublication) in nanopub.rdf
@@ -178,7 +180,8 @@ def test_nanopub_publish():
         assertion_rdf=assertion_rdf,
         uri=rdflib.term.URIRef(test_uri),
         introduces_concept=namespaces.AUTHOR.DrBob,
-        derived_from=rdflib.term.URIRef('http://www.example.com/another-nanopub')
+        derived_from=rdflib.term.URIRef('http://www.example.com/another-nanopub'),
+        attributed_to=TEST_ORCID
     )
     pubinfo = client.publish(nanopub)
     assert pubinfo['nanopub_uri'] == test_uri
@@ -198,6 +201,7 @@ def test_nanopub_publish_blanknode():
     nanopub = Nanopub.from_assertion(
         assertion_rdf=assertion_rdf,
         introduces_concept=test_concept,
+        attributed_to=TEST_ORCID
     )
     pubinfo = client.publish(nanopub)
     assert pubinfo['nanopub_uri'] == test_published_uri
@@ -205,17 +209,18 @@ def test_nanopub_publish_blanknode():
 
 
 def test_nanopub_from_assertion_use_profile():
-    orcid = 'http://example.org/pietje'
-
-    mock_profile = mock.MagicMock()
-    mock_profile.get_orcid.return_value = orcid
-
     assertion = rdflib.Graph()
     assertion.add(TEST_ASSERTION)
 
-    with mock.patch('nanopub.nanopub.profile', mock_profile):
+    with mock.patch('nanopub.nanopub.profile', _get_mock_profile()):
         result = Nanopub.from_assertion(assertion_rdf=assertion)
 
-        prov_entries = list(result.rdf[:namespaces.PROV.wasAttributedTo: rdflib.URIRef(orcid)])
+        prov_entries = list(result.rdf[:namespaces.PROV.wasAttributedTo: rdflib.URIRef( 'http://example.org/pietje')])
 
         assert len(prov_entries) > 0
+
+
+def _get_mock_profile():
+    mock_profile = mock.MagicMock()
+    mock_profile.get_orcid.return_value = TEST_ORCID
+    return mock_profile
