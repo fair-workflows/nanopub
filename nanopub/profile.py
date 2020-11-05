@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Dict
 
 import yaml
 
@@ -12,10 +13,12 @@ def get_orcid_id():
 
 
 @lru_cache()
-def get_profile():
+def get_profile() -> Dict[str, any]:
     """
-    Retrieve nanopub user profile
-    :return:
+    Retrieve nanopub user profile. By default the profile is stored in `HOME_DIR/.nanopub/profile.yaml`.
+
+    Returns: A dict with all settings stored in the user profile yaml file.
+
     """
     path = PROFILE_PATH
     with path.open('r') as f:
