@@ -23,6 +23,5 @@ def get_profile():
 
 
 def _load_profile():
-    path = PROFILE_PATH
-    with path.open('r') as f:
+    with  PROFILE_PATH.open('r') as f:
         return yaml.load(f)
