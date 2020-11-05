@@ -15,7 +15,7 @@ TEST_ORCID = rdflib.URIRef('https://orcid.org/pietje')
 
 def _get_mock_profile():
     mock_profile = mock.MagicMock()
-    mock_profile.get_orcid.return_value = TEST_ORCID
+    mock_profile.get_orcid_id.return_value = TEST_ORCID
 
     return mock_profile
 
@@ -213,6 +213,6 @@ class NanopubTest(TestCase):
         result = Nanopub.from_assertion(assertion_rdf=assertion)
 
         prov_entries = list(
-            result.rdf[:namespaces.PROV.wasAttributedTo: rdflib.URIRef('http://example.org/pietje')])
+            result.rdf[:namespaces.PROV.wasAttributedTo: rdflib.URIRef(TEST_ORCID)])
 
         assert len(prov_entries) > 0
