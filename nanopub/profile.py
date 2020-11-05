@@ -1,27 +1,22 @@
-from pathlib import Path
+from functools import lru_cache
+
+import yaml
 
 from nanopub.definitions import PROFILE_PATH
-import yaml
 
 _profile = None
 
 
-def get_orcid():
+def get_orcid_id():
     return get_profile()['orcid']
 
 
+@lru_cache()
 def get_profile():
     """
     Retrieve nanopub user profile
     :return:
     """
-
-    global _profile
-    if not _profile:
-        _profile = _load_profile()
-    return _profile
-
-
-def _load_profile():
-    with  PROFILE_PATH.open('r') as f:
+    path = PROFILE_PATH
+    with path.open('r') as f:
         return yaml.load(f)

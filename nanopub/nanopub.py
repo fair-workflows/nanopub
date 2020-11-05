@@ -68,7 +68,7 @@ class Nanopub:
         """
 
         if not attributed_to and not nanopub_author:
-            nanopub_author = rdflib.URIRef(profile.get_orcid())
+            nanopub_author = rdflib.URIRef(profile.get_orcid_id())
 
         # Make sure passed URI is defrag'd
         uri = str(uri)

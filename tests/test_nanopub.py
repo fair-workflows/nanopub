@@ -10,7 +10,7 @@ from nanopub import NanopubClient, namespaces, Nanopub
 client = NanopubClient(use_test_server=True)
 
 TEST_ASSERTION = (namespaces.AUTHOR.DrBob, namespaces.HYCL.claims, rdflib.Literal('This is a test'))
-TEST_ORCID = rdflib.URIRef('http://example.org/pietje')
+TEST_ORCID = rdflib.URIRef('https://orcid.org/pietje')
 
 
 def _get_mock_profile():
@@ -210,10 +210,9 @@ class NanopubTest(TestCase):
         assertion = rdflib.Graph()
         assertion.add(TEST_ASSERTION)
 
-        with mock.patch('nanopub.nanopub.profile', _get_mock_profile()):
-            result = Nanopub.from_assertion(assertion_rdf=assertion)
+        result = Nanopub.from_assertion(assertion_rdf=assertion)
 
-            prov_entries = list(
-                result.rdf[:namespaces.PROV.wasAttributedTo: rdflib.URIRef('http://example.org/pietje')])
+        prov_entries = list(
+            result.rdf[:namespaces.PROV.wasAttributedTo: rdflib.URIRef('http://example.org/pietje')])
 
-            assert len(prov_entries) > 0
+        assert len(prov_entries) > 0
