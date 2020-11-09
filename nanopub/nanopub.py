@@ -48,7 +48,7 @@ class Nanopub:
     @classmethod
     def from_assertion(cls, assertion_rdf, uri=DEFAULT_URI, introduces_concept=None,
                        derived_from=None,
-                       attributed_to=None, nanopub_author=None):
+                       attributed_to=None, nanopub_author=None, use_profile=True):
         """
         Construct Nanopub object based on given assertion, with given assertion and (defrag'd) URI.
         Any blank nodes in the rdf graph are replaced with the nanopub's URI, with the blank node name
@@ -67,7 +67,7 @@ class Nanopub:
 
         """
 
-        if not attributed_to and not nanopub_author:
+        if not attributed_to and not nanopub_author and use_profile:
             nanopub_author = rdflib.URIRef(profile.get_orcid_id())
 
         # Make sure passed URI is defrag'd
