@@ -1,4 +1,4 @@
-from unittest import mock, TestSuite, TestCase
+from unittest import mock
 
 import pytest
 import rdflib
@@ -10,19 +10,19 @@ from nanopub import NanopubClient, namespaces, Nanopub
 client = NanopubClient(use_test_server=True)
 
 TEST_ASSERTION = (namespaces.AUTHOR.DrBob, namespaces.HYCL.claims, rdflib.Literal('This is a test'))
-TEST_ORCID = rdflib.URIRef('https://orcid.org/pietje')
+TEST_ORCID_ID = 'https://orcid.org/0000-0000-0000-0000'
 
 
 def _get_mock_profile():
     mock_profile = mock.MagicMock()
-    mock_profile.get_orcid_id.return_value = TEST_ORCID
+    mock_profile.get_orcid_id.return_value = TEST_ORCID_ID
 
     return mock_profile
 
 
 # Created a class so profile can be mocked for all tests at once
 @mock.patch('nanopub.nanopub.profile', _get_mock_profile())
-class NanopubTest(TestCase):
+class TestNanopub:
 
     def test_nanopub_construction_with_bnode_introduced_concept(self):
         """
@@ -40,7 +40,7 @@ class NanopubTest(TestCase):
             uri=rdflib.term.URIRef(test_uri),
             introduces_concept=rdflib.term.BNode('DrBob'),
             derived_from=rdflib.term.URIRef('http://www.example.com/another-nanopub'),
-            attributed_to=TEST_ORCID
+            attributed_to=TEST_ORCID_ID
         )
         assert str(nanopub.introduces_concept) == test_concept_uri
 
@@ -212,7 +212,4 @@ class NanopubTest(TestCase):
 
         result = Nanopub.from_assertion(assertion_rdf=assertion)
 
-        prov_entries = list(
-            result.rdf[:namespaces.PROV.wasAttributedTo: rdflib.URIRef(TEST_ORCID)])
-
-        assert len(prov_entries) > 0
+        assert (None, None, rdflib.URIRef(TEST_ORCID_ID)) in result.rdf
