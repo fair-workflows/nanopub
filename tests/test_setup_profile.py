@@ -9,7 +9,7 @@ PUBLIC_KEYFILE = 'id_rsa.pub'
 PRIVATE_KEYFILE = 'id_rsa'
 NANOPUB_DIR = '.nanopub'
 
-ORCID = '123'
+TEST_ORCID_ID = 'https://orcid.org/0000-0000-0000-0000'
 NAME = 'pietje'
 PUBLISH = False
 
@@ -36,9 +36,8 @@ def test_provided_keypair_copied_to_nanopub_dir(tmp_path: Path):
     with patch('nanopub.setup_profile.USER_CONFIG_DIR', nanopub_path), \
          patch('nanopub.setup_profile.DEFAULT_PUBLIC_KEY_PATH', new_public_keyfile), \
          patch('nanopub.setup_profile.DEFAULT_PRIVATE_KEY_PATH', new_private_keyfile):
-
         setup_profile.main(args=['--keypair', str(custom_public_key_path), str(custom_private_key_path), '--name',
-                                 NAME, '--orcid', ORCID, '--no-publish'], standalone_mode=False)
+                                 NAME, '--orcid', TEST_ORCID_ID, '--no-publish'], standalone_mode=False)
 
     nanopub_path = mock_homedir / NANOPUB_DIR
 
