@@ -19,6 +19,7 @@ PUBLIC_KEY_FILE = 'id_rsa.pub'
 DEFAULT_PRIVATE_KEY_PATH = USER_CONFIG_DIR / PRIVATE_KEY_FILE
 DEFAULT_PUBLIC_KEY_PATH = USER_CONFIG_DIR / PUBLIC_KEY_FILE
 RSA = 'RSA'
+ORCID_ID_REGEX = r'^https://orcid.org/(\d{4}-){3}\d{4}$'
 
 
 def validate_orcid_id(ctx, orcid_id: str):
@@ -28,7 +29,7 @@ def validate_orcid_id(ctx, orcid_id: str):
     """
     if not orcid_id:
         return None
-    elif re.match(r'^https://orcid.org/(\d{4}-){3}\d{4}$', orcid_id):
+    elif re.match(ORCID_ID_REGEX, orcid_id):
         return orcid_id
     else:
         raise ValueError('Your ORCID iD is not valid, please provide a valid ORCID iD that '
