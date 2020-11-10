@@ -23,15 +23,16 @@ RSA = 'RSA'
 
 def validate_orcid_id(ctx, orcid_id: str):
     """
-    Check if valid ORCID iD, should be 16 digit in form: 0000-0000-0000-0000
+    Check if valid ORCID iD, should be https://orcid.org/ + 16 digit in form:
+        https://orcid.org/0000-0000-0000-0000
     """
     if not orcid_id:
         return None
-    elif re.match(r'^(\d{4}-){3}\d{4}$', orcid_id):
+    elif re.match(r'^https://orcid.org/(\d{4}-){3}\d{4}$', orcid_id):
         return orcid_id
     else:
         raise ValueError('Your ORCID iD is not valid, please provide a valid ORCID iD that '
-                         'looks like: 0000-0000-0000-0000')
+                         'looks like: https://orcid.org/0000-0000-0000-0000')
 
 
 @click.command(help='Interactive CLI to create a nanopub user profile. A local version of the profile will be stored '
@@ -45,8 +46,10 @@ def validate_orcid_id(ctx, orcid_id: str):
               help='Your RSA public and private keys with which your nanopubs will be signed',
               default=None)
 @click.option('--orcid_id', type=str,
-              prompt='What is your ORCID iD (i.e. 0000-0000-0000-0000)? Optionally leave empty',
-              help='Your ORCID iD (i.e. 0000-0000-0000-0000), optionally leave empty',
+              prompt='What is your ORCID iD (i.e. https://orcid.org/0000-0000-0000-0000)? '
+                     'Optionally leave empty',
+              help='Your ORCID iD (i.e. https://orcid.org/0000-0000-0000-0000), '
+                   'optionally leave empty',
               callback=validate_orcid_id,
               default='')
 @click.option('--name', type=str, prompt='What is your full name?', help='Your full name')
