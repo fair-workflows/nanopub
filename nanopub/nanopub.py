@@ -71,7 +71,7 @@ class Nanopub:
 
         """
 
-        if nanopub_author is None:
+        if nanopub_author is None and profile.get_orcid_id() is not None:
             nanopub_author = rdflib.URIRef(profile.get_orcid_id())
 
         if attributed_to and attribute_to_profile:
@@ -80,7 +80,7 @@ class Nanopub:
                              'attributed to the value passed in attributed_to argument. Set '
                              'attribute_to_profile=False or do not pass the attributed_to '
                              'argument.')
-        if attribute_to_profile:
+        if attribute_to_profile and profile.get_orcid_id() is not None:
             attributed_to = rdflib.URIRef(profile.get_orcid_id())
 
         # Make sure passed URI is defrag'd
