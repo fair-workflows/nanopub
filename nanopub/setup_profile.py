@@ -9,7 +9,7 @@ import click
 import yaml
 from rdflib import Graph, FOAF, BNode, Literal
 
-from nanopub import NanopubClient, Nanopub
+from nanopub import NanopubClient, Nanopub, profile
 from nanopub.definitions import USER_CONFIG_DIR
 from nanopub.java_wrapper import JavaWrapper
 from nanopub.namespaces import NPX, ORCID
@@ -18,7 +18,6 @@ PRIVATE_KEY_FILE = 'id_rsa'
 PUBLIC_KEY_FILE = 'id_rsa.pub'
 DEFAULT_PRIVATE_KEY_PATH = USER_CONFIG_DIR / PRIVATE_KEY_FILE
 DEFAULT_PUBLIC_KEY_PATH = USER_CONFIG_DIR / PUBLIC_KEY_FILE
-PROFILE_PATH = USER_CONFIG_DIR / 'profile.yml'
 RSA = 'RSA'
 
 
@@ -61,7 +60,8 @@ def main(orcid_id, publish, name, keypair: Union[Tuple[Path, Path], None]):
     Interactive CLI to create a user profile.
 
     Args:
-        orcid_id: the users ORCID iD or other form of universal identifier
+        orcid_id: the users ORCID iD or other form of universal identifier. Example:
+            `https://orcid.org/0000-0000-0000-0000`
         publish: if True, profile will be published to nanopub servers
         name: the name of the user
         keypair: a tuple containing the paths to the public and private RSA key to be used to sign
@@ -100,7 +100,8 @@ def main(orcid_id, publish, name, keypair: Union[Tuple[Path, Path], None]):
     # Declare the user to nanopub
     if publish:
         assertion, concept = _create_this_is_me_rdf(orcid_id, public_key, name)
-        np = Nanopub.from_assertion(assertion, introduces_concept=concept)
+        np = Nanopub.from_assertion(assertion, introduces_concept=concept, nanopub_author=orcid_id,
+                                    attributed_to=orcid_id)
 
         client = NanopubClient()
         result = client.publish(np)
@@ -108,20 +109,8 @@ def main(orcid_id, publish, name, keypair: Union[Tuple[Path, Path], None]):
         profile_nanopub_uri = result['concept_uri']
 
     # Keys are always stored or copied to default location
-    _store_profile(name, orcid_id, public_key_path, DEFAULT_PRIVATE_KEY_PATH, profile_nanopub_uri)
-
-
-def _store_profile(name: str, orcid_id: str, public_key: Path, private_key: Path, profile_nanopub_uri: str = None):
-    profile = {'name': name, 'orcid_id': orcid_id, "public_key": str(public_key), 'private_key':
-        str(private_key)}
-
-    if profile_nanopub_uri:
-        profile['profile_nanopub'] = profile_nanopub_uri
-
-    with PROFILE_PATH.open('w') as f:
-        yaml.dump(profile, f)
-
-    click.echo(f'Stored profile in {str(PROFILE_PATH)}')
+    profile.store_profile(name, orcid_id, public_key_path, DEFAULT_PRIVATE_KEY_PATH,
+                          profile_nanopub_uri)
 
 
 def _delete_keys():
