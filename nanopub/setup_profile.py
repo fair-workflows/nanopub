@@ -96,14 +96,14 @@ def _delete_keys():
     os.remove(DEFAULT_PRIVATE_KEY_PATH)
 
 
-def _create_this_is_me_rdf(orcid: str, public_key: str, name: str) -> Tuple[Graph, BNode]:
+def _create_this_is_me_rdf(orcid_id: str, public_key: str, name: str) -> Tuple[Graph, BNode]:
     """
     Create a set of RDF triples declaring the existence of the user with associated ORCID.
     """
     my_assertion = Graph()
 
     key_declaration = BNode('keyDeclaration')
-    orcid_node = ORCID[orcid]
+    orcid_node = ORCID[orcid_id]
 
     my_assertion.add((key_declaration, NPX.declaredBy, orcid_node))
     my_assertion.add((key_declaration, NPX.hasAlgorithm, Literal(RSA)))

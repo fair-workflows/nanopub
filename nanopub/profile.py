@@ -10,10 +10,11 @@ ORCID_ID = 'orcid_id'
 NAME = 'name'
 PUBLIC_KEY = 'public_key'
 PRIVATE_KEY = 'private_key'
+PROFILE_NANOPUB = 'profile_nanopub'
 
 
 def get_orcid_id():
-    return get_profile()['orcid_id']
+    return get_profile()[ORCID_ID]
 
 
 @lru_cache()
@@ -29,11 +30,13 @@ def get_profile() -> Dict[str, any]:
         return yaml.load(f)
 
 
-def store_profile(name: str, orcid: str, public_key: Path, private_key: Path, profile_nanopub_uri: str = None):
-    profile = {NAME: name, ORCID_ID: orcid, PUBLIC_KEY: str(public_key), PRIVATE_KEY: str(private_key)}
+def store_profile(name: str, orcid_id: str, public_key: Path, private_key: Path,
+                  profile_nanopub_uri: str = None):
+    profile = {NAME: name, ORCID_ID: orcid_id, PUBLIC_KEY: str(public_key),
+               PRIVATE_KEY: str(private_key)}
 
     if profile_nanopub_uri:
-        profile['profile_nanopub'] = profile_nanopub_uri
+        profile[PROFILE_NANOPUB] = profile_nanopub_uri
 
     with PROFILE_PATH.open('w') as f:
         yaml.dump(profile, f)
