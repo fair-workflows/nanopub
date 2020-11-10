@@ -55,8 +55,8 @@ def validate_orcid_id(ctx, orcid_id: str):
 @click.option('--name', type=str, prompt='What is your full name?', help='Your full name')
 @click.option('--publish/--no-publish', type=bool, is_flag=True, default=True,
               help='If true, nanopub will be published to nanopub servers',
-              prompt=('Would you like to publish your profile to the nanopub servers?'
-                      'this links your ORCID to your RSA key, thereby making all your'
+              prompt=('Would you like to publish your profile to the nanopub servers? '
+                      'This links your ORCID iD to your RSA key, thereby making all your '
                       'publications linkable to you'))
 def main(orcid_id, publish, name, keypair: Union[Tuple[Path, Path], None]):
     """
