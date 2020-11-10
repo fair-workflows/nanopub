@@ -47,8 +47,8 @@ class Nanopub:
 
     @classmethod
     def from_assertion(cls, assertion_rdf, uri=DEFAULT_URI, introduces_concept=None,
-                       derived_from=None,
-                       attributed_to=None, nanopub_author=None, use_profile=True):
+                       derived_from=None, attributed_to=None,
+                       attribute_to_profile: bool = False, nanopub_author=None):
         """
         Construct Nanopub object based on given assertion, with given assertion and (defrag'd) URI.
         Any blank nodes in the rdf graph are replaced with the nanopub's URI, with the blank node name
@@ -59,16 +59,29 @@ class Nanopub:
         If a blank node (rdflib.term.BNode) is given instead of a URI, the blank node will be converted to a URI
         derived from the nanopub's URI with a fragment (#) made from the blank node's name.
 
-        If derived_from is given (string or rdflib.URIRef), the provenance graph will note that this nanopub prov:wasDerivedFrom the given URI.
-
-        If attributed_to is given (string or rdflib.URIRef), the provenance graph will note that this nanopub prov:wasAttributedTo the given URI.
-
-        if nanopub_author is given (string or rdflib.URIRef), the pubinfo graph will note that this nanopub prov:wasAttributedTo the given URI.
+        Args:
+            derived_from: Add that this nanopub prov:wasDerivedFrom the given URI to the provenance
+                graph
+            attributed_to: the provenance graph will note that this nanopub prov:wasAttributedTo
+                the given URI.
+            attribute_to_profile: Attribute the nanopub to the ORCID iD in the profile
+            nanopub_author: the pubinfo graph will note that this nanopub prov:wasAttributedTo the
+                given URI. If no nanopub_author is provided we default to the author from the
+                profile
 
         """
 
-        if not attributed_to and not nanopub_author and use_profile:
+        if nanopub_author is None:
             nanopub_author = rdflib.URIRef(profile.get_orcid_id())
+
+        if attributed_to and attribute_to_profile:
+            raise ValueError('If you pass a URI for the attributed_to argument, you cannot pass '
+                             'attribute_to_profile=True, because the nanopub will already be '
+                             'attributed to the value passed in attributed_to argument. Set '
+                             'attribute_to_profile=False or do not pass the attributed_to '
+                             'argument.')
+        if attribute_to_profile:
+            attributed_to = rdflib.URIRef(profile.get_orcid_id())
 
         # Make sure passed URI is defrag'd
         uri = str(uri)
