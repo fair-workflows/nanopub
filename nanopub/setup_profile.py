@@ -1,10 +1,12 @@
 #! /usr/bin/env python3
 import os
+import re
 import shutil
 from pathlib import Path
 from typing import Union, Tuple
 
 import click
+import yaml
 from rdflib import Graph, FOAF, BNode, Literal
 
 from nanopub import NanopubClient, Nanopub, profile
@@ -17,6 +19,21 @@ PUBLIC_KEY_FILE = 'id_rsa.pub'
 DEFAULT_PRIVATE_KEY_PATH = USER_CONFIG_DIR / PRIVATE_KEY_FILE
 DEFAULT_PUBLIC_KEY_PATH = USER_CONFIG_DIR / PUBLIC_KEY_FILE
 RSA = 'RSA'
+ORCID_ID_REGEX = r'^https://orcid.org/(\d{4}-){3}\d{4}$'
+
+
+def validate_orcid_id(ctx, orcid_id: str):
+    """
+    Check if valid ORCID iD, should be https://orcid.org/ + 16 digit in form:
+        https://orcid.org/0000-0000-0000-0000
+    """
+    if not orcid_id:
+        return None
+    elif re.match(ORCID_ID_REGEX, orcid_id):
+        return orcid_id
+    else:
+        raise ValueError('Your ORCID iD is not valid, please provide a valid ORCID iD that '
+                         'looks like: https://orcid.org/0000-0000-0000-0000')
 
 
 @click.command(help='Interactive CLI to create a nanopub user profile. A local version of the profile will be stored '
@@ -29,19 +46,26 @@ RSA = 'RSA'
                      f'leave empty.',
               help='Your RSA public and private keys with which your nanopubs will be signed',
               default=None)
-@click.option('--orcid', type=str, prompt=True, help='Your ORCID')
-@click.option('--name', type=str, prompt=True, help='Your name')
+@click.option('--orcid_id', type=str,
+              prompt='What is your ORCID iD (i.e. https://orcid.org/0000-0000-0000-0000)? '
+                     'Optionally leave empty',
+              help='Your ORCID iD (i.e. https://orcid.org/0000-0000-0000-0000), '
+                   'optionally leave empty',
+              callback=validate_orcid_id,
+              default='')
+@click.option('--name', type=str, prompt='What is your full name?', help='Your full name')
 @click.option('--publish/--no-publish', type=bool, is_flag=True, default=True,
               help='If true, nanopub will be published to nanopub servers',
-              prompt=('Would you like to publish your profile to the nanopub servers?'
-                      'this links your ORCID to your RSA key, thereby making all your'
+              prompt=('Would you like to publish your profile to the nanopub servers? '
+                      'This links your ORCID iD to your RSA key, thereby making all your '
                       'publications linkable to you'))
-def main(orcid, publish, name, keypair: Union[Tuple[Path, Path], None]):
+def main(orcid_id, publish, name, keypair: Union[Tuple[Path, Path], None]):
     """
     Interactive CLI to create a user profile.
 
     Args:
-        orcid: the users orcid or other form of universal identifier. Example: `https://orcid.org/0000-0000-0000-0000`
+        orcid_id: the users ORCID iD or other form of universal identifier. Example:
+            `https://orcid.org/0000-0000-0000-0000`
         publish: if True, profile will be published to nanopub servers
         name: the name of the user
         keypair: a tuple containing the paths to the public and private RSA key to be used to sign
@@ -79,9 +103,9 @@ def main(orcid, publish, name, keypair: Union[Tuple[Path, Path], None]):
 
     # Declare the user to nanopub
     if publish:
-        assertion, concept = _create_this_is_me_rdf(orcid, public_key, name)
-        np = Nanopub.from_assertion(assertion, introduces_concept=concept, nanopub_author=orcid,
-                                    attributed_to=orcid)
+        assertion, concept = _create_this_is_me_rdf(orcid_id, public_key, name)
+        np = Nanopub.from_assertion(assertion, introduces_concept=concept, nanopub_author=orcid_id,
+                                    attributed_to=orcid_id)
 
         client = NanopubClient()
         result = client.publish(np)
@@ -89,7 +113,8 @@ def main(orcid, publish, name, keypair: Union[Tuple[Path, Path], None]):
         profile_nanopub_uri = result['concept_uri']
 
     # Keys are always stored or copied to default location
-    profile.store_profile(name, orcid, public_key_path, DEFAULT_PRIVATE_KEY_PATH, profile_nanopub_uri)
+    profile.store_profile(name, orcid_id, public_key_path, DEFAULT_PRIVATE_KEY_PATH,
+                          profile_nanopub_uri)
 
 
 def _delete_keys():
@@ -99,7 +124,7 @@ def _delete_keys():
 
 def _create_this_is_me_rdf(orcid_id: str, public_key: str, name: str) -> Tuple[Graph, BNode]:
     """
-    Create a set of RDF triples declaring the existence of the user with associated ORCID.
+    Create a set of RDF triples declaring the existence of the user with associated ORCID iD.
     """
     my_assertion = Graph()
 
