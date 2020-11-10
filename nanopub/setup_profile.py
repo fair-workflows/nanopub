@@ -80,7 +80,8 @@ def main(orcid, publish, name, keypair: Union[Tuple[Path, Path], None]):
     # Declare the user to nanopub
     if publish:
         assertion, concept = _create_this_is_me_rdf(orcid, public_key, name)
-        np = Nanopub.from_assertion(assertion, introduces_concept=concept, use_profile=False)
+        np = Nanopub.from_assertion(assertion, introduces_concept=concept, nanopub_author=orcid,
+                                    attributed_to=orcid)
 
         client = NanopubClient()
         result = client.publish(np)
