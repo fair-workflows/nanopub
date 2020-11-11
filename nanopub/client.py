@@ -8,7 +8,8 @@ import rdflib
 import requests
 
 from nanopub import namespaces
-from nanopub.models import Nanopub, DEFAULT_URI
+from nanopub.definitions import DEFAULT_NANOPUB_URI
+from nanopub.models import Nanopub
 from nanopub.java_wrapper import JavaWrapper
 
 NANOPUB_GRLC_URLS = ["http://grlc.nanopubs.lod.labs.vu.nl/api/local/local/",
@@ -201,13 +202,13 @@ class NanopubClient:
 
         if nanopub.introduces_concept:
             concept_uri = str(nanopub.introduces_concept)
-            # Replace the DEFAULT_URI with the actually published nanopub uri. # This is
+            # Replace the DEFAULT_NANOPUB_URI with the actually published nanopub uri. # This is
             # necessary if a blank node was passed as introduces_concept. In that case the
             # Nanopub.from_assertion method replaces the blank node with the base nanopub's URI
             # and appends a fragment, given by the 'name' of the blank node. For example, if a
             # blank node with name 'step' was passed as introduces_concept, the concept will be
             # published with a URI that looks like [published nanopub URI]#step.
-            concept_uri = concept_uri.replace(DEFAULT_URI, nanopub_uri)
+            concept_uri = concept_uri.replace(DEFAULT_NANOPUB_URI, nanopub_uri)
             publication_info['concept_uri'] = concept_uri
             print(f'Published concept to {concept_uri}')
 
