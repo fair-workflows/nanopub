@@ -58,7 +58,7 @@ class TestNanopub:
 
         assert (None, namespaces.NPX.introduces, new_concept) in nanopub.rdf
 
-    @mock.patch('nanopub.nanopub.profile')
+    @mock.patch('nanopub.models.profile')
     def test_nanopub_from_assertion_use_profile(self, mock_profile):
         mock_profile.get_orcid_id.return_value = TEST_ORCID_ID
         assertion = rdflib.Graph()
