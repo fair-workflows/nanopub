@@ -8,7 +8,7 @@ import rdflib
 import requests
 
 from nanopub import namespaces
-from nanopub.nanopub import Nanopub, DEFAULT_URI
+from nanopub.models import Nanopub, DEFAULT_URI
 from nanopub.java_wrapper import JavaWrapper
 
 NANOPUB_GRLC_URLS = ["http://grlc.nanopubs.lod.labs.vu.nl/api/local/local/",

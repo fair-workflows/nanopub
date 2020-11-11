@@ -6,10 +6,9 @@ from pathlib import Path
 from typing import Union, Tuple
 
 import click
-import yaml
 from rdflib import Graph, FOAF, BNode, Literal
 
-from nanopub import NanopubClient, Nanopub, profile
+from nanopub import profile, Nanopub, NanopubClient
 from nanopub.definitions import USER_CONFIG_DIR
 from nanopub.java_wrapper import JavaWrapper
 from nanopub.namespaces import NPX, ORCID
