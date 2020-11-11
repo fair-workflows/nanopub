@@ -10,17 +10,7 @@ client = NanopubClient(use_test_server=True)
 
 TEST_ASSERTION = (namespaces.AUTHOR.DrBob, namespaces.HYCL.claims, rdflib.Literal('This is a test'))
 
-TEST_ORCID_ID = 'https://orcid.org/0000-0000-0000-0000'
 
-
-def _get_mock_profile():
-    mock_profile = mock.MagicMock()
-    mock_profile.get_orcid_id.return_value = TEST_ORCID_ID
-
-    return mock_profile
-
-
-@mock.patch('nanopub.nanopub.profile', _get_mock_profile())
 class TestNanopubClient:
 
     @pytest.mark.flaky(max_runs=10)

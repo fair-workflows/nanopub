@@ -9,14 +9,6 @@ TEST_ASSERTION = (namespaces.AUTHOR.DrBob, namespaces.HYCL.claims, rdflib.Litera
 TEST_ORCID_ID = 'https://orcid.org/0000-0000-0000-0000'
 
 
-def _get_mock_profile():
-    mock_profile = mock.MagicMock()
-    mock_profile.get_orcid_id.return_value = TEST_ORCID_ID
-
-    return mock_profile
-
-
-@mock.patch('nanopub.nanopub.profile', _get_mock_profile())
 class TestNanopub:
     def test_nanopub_construction_with_bnode_introduced_concept(self):
         """
@@ -66,7 +58,9 @@ class TestNanopub:
 
         assert (None, namespaces.NPX.introduces, new_concept) in nanopub.rdf
 
-    def test_nanopub_from_assertion_use_profile(self):
+    @mock.patch('nanopub.nanopub.profile')
+    def test_nanopub_from_assertion_use_profile(self, mock_profile):
+        mock_profile.get_orcid_id.return_value = TEST_ORCID_ID
         assertion = rdflib.Graph()
         assertion.add(TEST_ASSERTION)
 

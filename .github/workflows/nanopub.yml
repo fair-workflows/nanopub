@@ -35,7 +35,7 @@ jobs:
            pytest --no_rsa_key -m 'no_rsa_key'
       - name: Create RSA key for nanopubs
         run: |
-          nanopub/np mkkeys -a RSA
+          printf '\n' | nanopub/setup_profile.py --orcid_id 'https://orcid.org/1234-1234-1234-1234' --no-publish --name 'test'
       - name: Test with pytest
         run: |
           pytest --cov
