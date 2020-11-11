@@ -52,12 +52,12 @@ print(publication_info)
 from nanopub import NanopubClient
 
 # Search for all nanopublications containing the text 'fair'
-results = client.search_text('fair')
+results = client.find_nanopubs_with_text('fair')
 print(results)
 
 # Search for nanopublications whose assertions contain triples that are ```rdf:Statement```s.
 # Return only the first three results.
-results = client.search_pattern(
+results = client.find_nanopubs_with_pattern(
                 pred='http://www.w3.org/1999/02/22-rdf-syntax-ns#type',
                 obj='http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement',
                 max_num_results=3)
@@ -65,7 +65,7 @@ print(results)
 
 # Search for nanopublications that introduce a concept that is a ```p-plan:Step```.
 # Return only one result.
-results = client.search_things('http://purl.org/net/p-plan#Step', max_num_results=1)
+results = client.find_things('http://purl.org/net/p-plan#Step', max_num_results=1)
 print(results)
 ```
 
