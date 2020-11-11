@@ -16,7 +16,6 @@ def _get_mock_profile():
     return mock_profile
 
 
-# Created a class so profile can be mocked for all tests at once
 @mock.patch('nanopub.nanopub.profile', _get_mock_profile())
 class TestNanopub:
     def test_nanopub_construction_with_bnode_introduced_concept(self):
