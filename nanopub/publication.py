@@ -46,7 +46,7 @@ class Publication:
 
         Args:
             derived_from: Add that this nanopub prov:wasDerivedFrom the given URI to the provenance graph.
-                          If a list of triples is passed, a provenance triple will be generated for each.
+                          If a list of URIs is passed, a provenance triple will be generated for each.
             attributed_to: the provenance graph will note that this nanopub prov:wasAttributedTo
                 the given URI.
             attribute_to_profile: Attribute the nanopub to the ORCID iD in the profile
