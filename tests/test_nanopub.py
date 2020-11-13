@@ -17,9 +17,7 @@ class TestPublication:
         test_uri = 'http://www.example.com/my-nanopub'
         test_concept_uri = 'http://www.example.com/my-nanopub#DrBob'  # This nanopub introduced DrBob
         assertion_rdf = rdflib.Graph()
-        assertion_rdf.add((rdflib.term.BNode('DrBob'),
-                           namespaces.HYCL.claims,
-                           rdflib.Literal('This is a test')))
+        assertion_rdf.add(TEST_ASSERTION)
 
         publication = Publication.from_assertion(
             assertion_rdf=assertion_rdf,
@@ -39,9 +37,7 @@ class TestPublication:
                                 'http://www.example.com/and-another-nanopub',
                                 'http://www.example.com/and-one-more' ]
         assertion_rdf = rdflib.Graph()
-        assertion_rdf.add((rdflib.term.BNode('DrBob'),
-                           namespaces.HYCL.claims,
-                           rdflib.Literal('This is a test')))
+        assertion_rdf.add(TEST_ASSERTION)
 
         publication = Publication.from_assertion(
             assertion_rdf=assertion_rdf,
@@ -59,8 +55,7 @@ class TestPublication:
         contexts) for a publication.
         """
         assertion_rdf = rdflib.Graph()
-        assertion_rdf.add((namespaces.AUTHOR.DrBob, namespaces.HYCL.claims,
-                           rdflib.Literal('This is a test')))
+        assertion_rdf.add(TEST_ASSERTION)
 
         nanopub = Publication.from_assertion(assertion_rdf)
 
