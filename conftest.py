@@ -1,7 +1,7 @@
 import pytest
 import requests
 
-from nanopub.nanopub import NANOPUB_TEST_GRLC_URL
+from nanopub.client import NANOPUB_TEST_GRLC_URL
 
 
 def pytest_addoption(parser):
