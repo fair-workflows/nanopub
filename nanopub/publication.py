@@ -130,7 +130,7 @@ class Publication:
                             attributed_to))
 
         if derived_from:
-            list_of_URIs = []
+            uris = []
             if isinstance(derived_from, list):
                 list_of_URIs = derived_from
             else:
