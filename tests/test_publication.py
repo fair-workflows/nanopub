@@ -17,9 +17,7 @@ class TestPublication:
         test_uri = 'http://www.example.com/my-nanopub'
         test_concept_uri = 'http://www.example.com/my-nanopub#DrBob'  # This nanopub introduced DrBob
         assertion_rdf = rdflib.Graph()
-        assertion_rdf.add((rdflib.term.BNode('DrBob'),
-                           namespaces.HYCL.claims,
-                           rdflib.Literal('This is a test')))
+        assertion_rdf.add(TEST_ASSERTION)
 
         publication = Publication.from_assertion(
             assertion_rdf=assertion_rdf,
@@ -30,14 +28,34 @@ class TestPublication:
         )
         assert str(publication.introduces_concept) == test_concept_uri
 
+    def test_construction_with_derived_from_as_list(self):
+        """
+        Test Publication construction from assertion where derived_from is a list.
+        """
+        test_uri = 'http://www.example.com/my-nanopub'
+        derived_from_list = [   'http://www.example.com/another-nanopub', # This nanopub is derived from several sources
+                                'http://www.example.com/and-another-nanopub',
+                                'http://www.example.com/and-one-more' ]
+        assertion_rdf = rdflib.Graph()
+        assertion_rdf.add(TEST_ASSERTION)
+
+        publication = Publication.from_assertion(
+            assertion_rdf=assertion_rdf,
+            uri=rdflib.term.URIRef(test_uri),
+            derived_from=derived_from_list,
+            attributed_to=TEST_ORCID_ID
+        )
+
+        for uri in derived_from_list:
+            assert (None, namespaces.PROV.wasDerivedFrom, rdflib.URIRef(uri)) in publication.rdf
+
     def test_from_assertion(self):
         """
         Test that Publication.from_assertion is creating an rdf graph with the right features (
         contexts) for a publication.
         """
         assertion_rdf = rdflib.Graph()
-        assertion_rdf.add((namespaces.AUTHOR.DrBob, namespaces.HYCL.claims,
-                           rdflib.Literal('This is a test')))
+        assertion_rdf.add(TEST_ASSERTION)
 
         nanopub = Publication.from_assertion(assertion_rdf)
 

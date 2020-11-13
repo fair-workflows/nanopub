@@ -45,8 +45,8 @@ class Publication:
         derived from the nanopub's URI with a fragment (#) made from the blank node's name.
 
         Args:
-            derived_from: Add that this nanopub prov:wasDerivedFrom the given URI to the provenance
-                graph
+            derived_from: Add that this nanopub prov:wasDerivedFrom the given URI to the provenance graph.
+                          If a list of URIs is passed, a provenance triple will be generated for each.
             attributed_to: the provenance graph will note that this nanopub prov:wasAttributedTo
                 the given URI.
             attribute_to_profile: Attribute the nanopub to the ORCID iD in the profile
@@ -130,12 +130,19 @@ class Publication:
                             attributed_to))
 
         if derived_from:
-            # Convert derived_from URI to an rdflib term first (if necessary)
-            derived_from = rdflib.URIRef(derived_from)
+            uris = []
+            if isinstance(derived_from, list):
+                list_of_URIs = derived_from
+            else:
+                list_of_URIs = [derived_from]
+           
+            for derived_from_uri in list_of_URIs:
+                # Convert uri to an rdflib term first (if necessary)
+                derived_from_uri = rdflib.URIRef(derived_from_uri)
 
-            provenance.add((this_np.assertion,
-                            namespaces.PROV.wasDerivedFrom,
-                            derived_from))
+                provenance.add((this_np.assertion,
+                                namespaces.PROV.wasDerivedFrom,
+                                derived_from_uri))
 
         if nanopub_author:
             nanopub_author = rdflib.URIRef(nanopub_author)
