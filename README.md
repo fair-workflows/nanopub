@@ -28,7 +28,7 @@ provenance of any nanopublication you will publish using this library.
 ### Publishing an assertion as a nanopub
 ```python
 
-from nanopub import Nanopub, NanopubClient
+from nanopub import Publication, NanopubClient
 from rdflib import Graph, URIRef, RDF, FOAF
 
 # Create the client, that allows searching, fetching and publishing nanopubs
@@ -38,11 +38,11 @@ client = NanopubClient()
 my_assertion = Graph()
 my_assertion.add( (URIRef('www.example.org/timbernerslee'), RDF.type, FOAF.Person) )
 
-# Make a Nanopub object with this assertion
-nanopub = Nanopub.from_assertion(assertion_rdf=my_assertion)
+# Make a Publication object with this assertion
+publication = Publication.from_assertion(assertion_rdf=my_assertion)
 
-# Publish the Nanopub object. The URI at which it is published is returned.
-publication_info = client.publish(nanopub)
+# Publish the Publication object. The URI at which it is published is returned.
+publication_info = client.publish(publication)
 print(publication_info)
 ```
 
@@ -94,11 +94,11 @@ print(np.introduces_concept)
 ```
 
 ### Specifying more information
-You can optionally specify that the ```Nanopub``` introduces a particular concept, or is derived from another nanopublication:
+You can optionally specify that the ```Publication``` introduces a particular concept, or is derived from another nanopublication:
 ```python
-nanopub = Nanopub.from_assertion(assertion_rdf=my_assertion,
-                                 introduces_concept=(URIRef('www.example.org/timbernerslee'),
-                                 derived_from=URIRef('www.example.org/another-nanopublication') )
+publication = Publication.from_assertion(assertion_rdf=my_assertion,
+                                         introduces_concept=(URIRef('www.example.org/timbernerslee'),
+                                         derived_from=URIRef('www.example.org/another-nanopublication') )
 ```
 
 ## Dependencies

@@ -4,7 +4,7 @@ import pytest
 import rdflib
 
 from conftest import skip_if_nanopub_server_unavailable
-from nanopub import NanopubClient, namespaces, Nanopub
+from nanopub import NanopubClient, namespaces, Publication
 
 client = NanopubClient(use_test_server=True)
 
@@ -95,7 +95,7 @@ class TestNanopubClient:
 
         for np_uri in known_nps:
             np = client.fetch(np_uri, format='trig')
-            assert isinstance(np, Nanopub)
+            assert isinstance(np, Publication)
             assert np.source_uri == np_uri
             assert len(np.rdf) > 0
             assert np.assertion is not None
@@ -119,7 +119,7 @@ class TestNanopubClient:
         assertion_rdf = rdflib.Graph()
         assertion_rdf.add(TEST_ASSERTION)
 
-        nanopub = Nanopub.from_assertion(
+        nanopub = Publication.from_assertion(
             assertion_rdf=assertion_rdf,
             uri=rdflib.term.URIRef(test_uri),
             introduces_concept=namespaces.AUTHOR.DrBob,
@@ -139,7 +139,7 @@ class TestNanopubClient:
         assertion_rdf.add(
             (test_concept, namespaces.HYCL.claims, rdflib.Literal('This is a test')))
 
-        nanopub = Nanopub.from_assertion(
+        nanopub = Publication.from_assertion(
             assertion_rdf=assertion_rdf,
             introduces_concept=test_concept,
         )

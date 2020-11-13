@@ -8,7 +8,7 @@ from nanopub import namespaces, profile
 from nanopub.definitions import DEFAULT_NANOPUB_URI
 
 
-class Nanopub:
+class Publication:
     """
     Representation of the rdf that comprises a nanopublication
     """

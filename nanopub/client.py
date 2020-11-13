@@ -9,7 +9,7 @@ import requests
 
 from nanopub import namespaces
 from nanopub.definitions import DEFAULT_NANOPUB_URI
-from nanopub.models import Nanopub
+from nanopub.publication import Publication
 from nanopub.java_wrapper import JavaWrapper
 
 NANOPUB_GRLC_URLS = ["http://grlc.nanopubs.lod.labs.vu.nl/api/local/local/",
@@ -179,9 +179,9 @@ class NanopubClient:
         if r.ok:
             nanopub_rdf = rdflib.ConjunctiveGraph()
             nanopub_rdf.parse(data=r.text, format=format)
-            return Nanopub(rdf=nanopub_rdf, source_uri=uri)
+            return Publication(rdf=nanopub_rdf, source_uri=uri)
 
-    def publish(self, nanopub: Nanopub):
+    def publish(self, nanopub: Publication):
         """
         Publish nanopub object.
         Uses np commandline tool to sign and publish.
@@ -225,5 +225,5 @@ class NanopubClient:
         if rdftriple is not None:
             assertion_rdf.add(rdftriple)
 
-        nanopub = Nanopub.from_assertion(assertion_rdf=assertion_rdf)
+        nanopub = Publication.from_assertion(assertion_rdf=assertion_rdf)
         self.publish(nanopub)
