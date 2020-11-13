@@ -6,10 +6,9 @@ from pathlib import Path
 from typing import Union, Tuple
 
 import click
-import yaml
 from rdflib import Graph, FOAF, BNode, Literal
 
-from nanopub import NanopubClient, Nanopub, profile
+from nanopub import profile, Publication, NanopubClient
 from nanopub.definitions import USER_CONFIG_DIR
 from nanopub.java_wrapper import JavaWrapper
 from nanopub.namespaces import NPX, ORCID
@@ -104,8 +103,8 @@ def main(orcid_id, publish, name, keypair: Union[Tuple[Path, Path], None]):
     # Declare the user to nanopub
     if publish:
         assertion, concept = _create_this_is_me_rdf(orcid_id, public_key, name)
-        np = Nanopub.from_assertion(assertion, introduces_concept=concept, nanopub_author=orcid_id,
-                                    attributed_to=orcid_id)
+        np = Publication.from_assertion(assertion, introduces_concept=concept, nanopub_author=orcid_id,
+                                        attributed_to=orcid_id)
 
         client = NanopubClient()
         result = client.publish(np)

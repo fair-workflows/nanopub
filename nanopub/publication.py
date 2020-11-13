@@ -5,11 +5,10 @@ import rdflib
 from rdflib.namespace import RDF, DC, DCTERMS, XSD
 
 from nanopub import namespaces, profile
+from nanopub.definitions import DEFAULT_NANOPUB_URI
 
-DEFAULT_URI = 'http://purl.org/nanopub/temp/mynanopub'
 
-
-class Nanopub:
+class Publication:
     """
     Representation of the rdf that comprises a nanopublication
     """
@@ -32,7 +31,7 @@ class Nanopub:
                     f'Expected to find {expected} graph in nanopub rdf, but not found. Graphs found: {list(self._graphs.keys())}.')
 
     @classmethod
-    def from_assertion(cls, assertion_rdf, uri=DEFAULT_URI, introduces_concept=None,
+    def from_assertion(cls, assertion_rdf, uri=DEFAULT_NANOPUB_URI, introduces_concept=None,
                        derived_from=None, attributed_to=None,
                        attribute_to_profile: bool = False, nanopub_author=None):
         """
