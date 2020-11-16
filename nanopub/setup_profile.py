@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Union, Tuple
 
 import click
-from rdflib import Graph, FOAF, BNode, Literal
+from rdflib import Graph, FOAF, BNode, Literal, URIRef
 
 from nanopub import profile, Publication, NanopubClient
 from nanopub.definitions import USER_CONFIG_DIR
@@ -128,7 +128,7 @@ def _create_this_is_me_rdf(orcid_id: str, public_key: str, name: str) -> Tuple[G
     my_assertion = Graph()
 
     key_declaration = BNode('keyDeclaration')
-    orcid_node = ORCID[orcid_id]
+    orcid_node = URIRef(orcid_id)
 
     my_assertion.add((key_declaration, NPX.declaredBy, orcid_node))
     my_assertion.add((key_declaration, NPX.hasAlgorithm, Literal(RSA)))
