@@ -222,7 +222,8 @@ class NanopubClient:
 
         Args:
             statement_text: the text of the statement, example: 'All cats are grey'
-            author: Your ORCID iD URI, example: https://orcid.org/0000-0000-0000-0000
+            author: Your ORCID iD URI, example: https://orcid.org/0000-0000-0000-0000, default is to
+                get this from the profile.
         """
         assertion_rdf = rdflib.Graph()
         this_statement = rdflib.term.BNode('mystatement')
