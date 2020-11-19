@@ -3,7 +3,6 @@ import random
 import tempfile
 import warnings
 from enum import Enum, unique
-from typing import Tuple, Union
 
 import rdflib
 import requests
