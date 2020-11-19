@@ -239,8 +239,11 @@ class NanopubClient:
                 author = rdflib.URIRef(profile.get_orcid_id())
         else:
             author = rdflib.URIRef(author)
-        nanopub = Publication.from_assertion(assertion_rdf=assertion_rdf,
-                                             nanopub_author=author,
-                                             attributed_to=author)
-        nanopub.provenance.add((author, namespaces.HYCL.claims, this_statement))
-        self.publish(nanopub)
+        publication = Publication.from_assertion(assertion_rdf=assertion_rdf,
+                                                 nanopub_author=author,
+                                                 attributed_to=author)
+        # TODO: This is a hacky solution, should be changed once we can add provenance triples to
+        #  from_assertion method.
+        publication.provenance.add((author, namespaces.HYCL.claims,
+                                    rdflib.URIRef(DEFAULT_NANOPUB_URI + '#mystatement')))
+        self.publish(publication)
