@@ -3,11 +3,12 @@ import random
 import tempfile
 import warnings
 from enum import Enum, unique
+from typing import Tuple, Union
 
 import rdflib
 import requests
 
-from nanopub import namespaces
+from nanopub import namespaces, profile
 from nanopub.definitions import DEFAULT_NANOPUB_URI
 from nanopub.publication import Publication
 from nanopub.java_wrapper import JavaWrapper
@@ -214,16 +215,32 @@ class NanopubClient:
 
         return publication_info
 
-    def claim(self, text, rdftriple=None):
-        """
-        Publishes a claim, either as a plain text statement, or as an rdf triple (or both)
+    def claim(self, statement_text: str, author: str = None):
+        """Quickly claim a statement.
+
+        Constructs statement triples around the provided text following the Hypotheses and Claims
+        Ontology (http://purl.org/petapico/o/hycl).
+
+        Args:
+            statement_text: the text of the statement, example: 'All cats are grey'
+            author: Your ORCID iD URI, example: https://orcid.org/0000-0000-0000-0000
         """
         assertion_rdf = rdflib.Graph()
+        this_statement = rdflib.term.BNode('mystatement')
+        assertion_rdf.add((this_statement, rdflib.RDF.type, namespaces.HYCL.Statement))
+        assertion_rdf.add((this_statement, rdflib.RDFS.label, rdflib.Literal(statement_text)))
 
-        assertion_rdf.add((namespaces.AUTHOR.DrBob, namespaces.HYCL.claims, rdflib.Literal(text)))
-
-        if rdftriple is not None:
-            assertion_rdf.add(rdftriple)
-
-        nanopub = Publication.from_assertion(assertion_rdf=assertion_rdf)
+        if author is None:
+            if profile.get_orcid_id() is None:
+                raise ValueError('You must either setup your profile (see Readme.md) or pass '
+                                 'an ORCID iD (example: https://orcid.org/0000-0000-0000-0000)'
+                                 'for the author argument')
+            else:
+                author = rdflib.URIRef(profile.get_orcid_id())
+        else:
+            author = rdflib.URIRef(author)
+        nanopub = Publication.from_assertion(assertion_rdf=assertion_rdf,
+                                             nanopub_author=author,
+                                             attributed_to=author)
+        nanopub.provenance.add((author, namespaces.HYCL.claims, this_statement))
         self.publish(nanopub)
