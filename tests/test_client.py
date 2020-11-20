@@ -146,3 +146,8 @@ class TestNanopubClient:
         pubinfo = client.publish(nanopub)
         assert pubinfo['nanopub_uri'] == test_published_uri
         assert pubinfo['concept_uri'] == expected_concept_uri
+
+    def test_retract(self):
+        client = NanopubClient()
+        client.java_wrapper.publish = mock.MagicMock()
+        client.retract('http://www.example.com/my-nanopub')

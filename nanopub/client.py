@@ -7,7 +7,7 @@ from enum import Enum, unique
 import rdflib
 import requests
 
-from nanopub import namespaces
+from nanopub import namespaces, profile
 from nanopub.definitions import DEFAULT_NANOPUB_URI
 from nanopub.publication import Publication
 from nanopub.java_wrapper import JavaWrapper
@@ -227,3 +227,14 @@ class NanopubClient:
 
         nanopub = Publication.from_assertion(assertion_rdf=assertion_rdf)
         self.publish(nanopub)
+
+    def retract(self, uri):
+        assertion_rdf = rdflib.Graph()
+        orcid_id = profile.get_orcid_id()
+        if orcid_id is None:
+            raise RuntimeError('You need to setup your profile with ORCID iD in order to retract a '
+                               'nanopublication, see the instructions in the README')
+        assertion_rdf.add((rdflib.URIRef(orcid_id), namespaces.NPX.retracts,
+                           rdflib.URIRef(uri)))
+        publication = Publication.from_assertion(assertion_rdf=assertion_rdf)
+        self.publish(publication)
