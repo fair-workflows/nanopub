@@ -2,8 +2,9 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+import rdflib
 
-from nanopub import setup_profile
+from nanopub import setup_profile, NanopubClient, Publication
 from nanopub.setup_profile import validate_orcid_id
 
 MOCK_PUBLIC_KEY = 'this is not a real rsa public key'
@@ -52,6 +53,11 @@ def test_provided_keypair_copied_to_nanopub_dir(tmp_path: Path):
     assert new_public_keyfile.read_text() == MOCK_PUBLIC_KEY
     assert new_private_keyfile.exists()
     assert new_private_keyfile.read_text() == MOCK_PRIVATE_KEY
+
+
+def test_create_this_is_me_rdf():
+    rdf, _ = setup_profile._create_this_is_me_rdf(TEST_ORCID_ID, 'public key', 'name')
+    assert (None, None, rdflib.URIRef(TEST_ORCID_ID)) in rdf
 
 
 def test_validate_orcid_id():
