@@ -147,7 +147,32 @@ class TestNanopubClient:
         assert pubinfo['nanopub_uri'] == test_published_uri
         assert pubinfo['concept_uri'] == expected_concept_uri
 
-    def test_retract(self):
+    def test_retract_with_force(self):
         client = NanopubClient()
         client.java_wrapper.publish = mock.MagicMock()
-        client.retract('http://www.example.com/my-nanopub')
+        client.retract('http://www.example.com/my-nanopub', force=True)
+
+    @mock.patch('nanopub.client.profile.get_public_key')
+    def test_retract_without_force(self, mock_get_public_key):
+        test_uri = 'http://www.example.com/my-nanopub'
+        test_public_key = 'test key'
+        client = NanopubClient()
+        client.java_wrapper.publish = mock.MagicMock()
+
+        # Return a mocked to-be-retracted publication object that is signed with public key
+        mock_publication = mock.MagicMock()
+        mock_publication.pubinfo = rdflib.Graph()
+        mock_publication.pubinfo.add((rdflib.URIRef(test_uri + '#sig'),
+                                      namespaces.NPX.hasPublicKey,
+                                      rdflib.Literal(test_public_key)))
+        client.fetch = mock.MagicMock(return_value=mock_publication)
+
+        # Retract should be successful when public keys match
+        mock_get_public_key.return_value = test_public_key
+        client.retract(test_uri)
+
+        # And fail if they don't match
+        mock_get_public_key.return_value = 'Different public key'
+        with pytest.raises(AssertionError):
+            client.retract(test_uri)
+

@@ -17,6 +17,10 @@ def get_orcid_id():
     return get_profile()[ORCID_ID]
 
 
+def get_public_key():
+    return get_profile()[PUBLIC_KEY]
+
+
 @lru_cache()
 def get_profile() -> Dict[str, any]:
     """
