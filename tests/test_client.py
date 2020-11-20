@@ -88,15 +88,14 @@ class TestNanopubClient:
         Check that Nanopub fetch is returning results for a few known nanopub URIs.
         """
         known_nps = [
-            'http://purl.org/np/RAFNR1VMQC0AUhjcX2yf94aXmG1uIhteGXpq12Of88l78',
-            'http://purl.org/np/RAePO1Fi2Wp1ARk2XfOnTTwtTkAX1FBU3XuCwq7ng0jIo',
-            'http://purl.org/np/RA48Iprh_kQvb602TR0ammkR6LQsYHZ8pyZqZTPQIl17s'
+            'http://purl.org/np/RANGY8fx_EYVeZzJOinH9FoY-WrQBerKKUy2J9RCDWH6U',
+            'http://purl.org/np/RAABh3eQwmkdflVp50zYavHUK0NgZE2g2ewS2j4Ur6FHI',
+            'http://purl.org/np/RA8to60YFWSVCh2n_iyHZ2yiYEt-hX_DdqbWa5yI9r-gI'
         ]
 
         for np_uri in known_nps:
             np = client.fetch(np_uri, format='trig')
             assert isinstance(np, Publication)
-            assert np.source_uri == np_uri
             assert len(np.rdf) > 0
             assert np.assertion is not None
             assert np.pubinfo is not None
