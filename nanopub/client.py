@@ -19,14 +19,7 @@ NANOPUB_GRLC_URLS = ["http://grlc.nanopubs.lod.labs.vu.nl/api/local/local/",
                      "http://grlc.np.scify.org/api/local/local/",
                      "http://grlc.np.dumontierlab.com/api/local/local/"]
 NANOPUB_TEST_GRLC_URL = 'http://test-grlc.nanopubs.lod.labs.vu.nl/api/local/local/'
-
-
-@unique
-class Formats(Enum):
-    """
-    Enums to specify the format of nanopub desired
-    """
-    TRIG = 'trig'
+NANOPUB_FETCH_FORMAT = 'trig'
 
 
 class NanopubClient:
@@ -159,26 +152,19 @@ class NanopubClient:
         return nanopubs
 
     @staticmethod
-    def fetch(uri, format: str = 'trig'):
+    def fetch(uri):
         """
-        Download the nanopublication at the specified URI (in specified format).
+        Download the nanopublication at the specified URI.
 
         Returns:
-            a Nanopub object.
+            a Publication object.
         """
-
-        if format == Formats.TRIG.value:
-            extension = '.trig'
-        else:
-            raise ValueError(f'Format not supported: {format}, choose from '
-                             f'{[format.value for format in Formats]})')
-
-        r = requests.get(uri + extension)
+        r = requests.get(uri + '.' + NANOPUB_FETCH_FORMAT)
         r.raise_for_status()
 
         if r.ok:
             nanopub_rdf = rdflib.ConjunctiveGraph()
-            nanopub_rdf.parse(data=r.text, format=format)
+            nanopub_rdf.parse(data=r.text, format=NANOPUB_FETCH_FORMAT)
             return Publication(rdf=nanopub_rdf, source_uri=uri)
 
     def publish(self, nanopub: Publication):

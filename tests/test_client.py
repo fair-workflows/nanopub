@@ -94,7 +94,7 @@ class TestNanopubClient:
         ]
 
         for np_uri in known_nps:
-            np = client.fetch(np_uri, format='trig')
+            np = client.fetch(np_uri)
             assert isinstance(np, Publication)
             assert np.source_uri == np_uri
             assert len(np.rdf) > 0
