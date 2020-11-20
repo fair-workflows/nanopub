@@ -19,7 +19,7 @@ NANOPUB_GRLC_URLS = ["http://grlc.nanopubs.lod.labs.vu.nl/api/local/local/",
                      "http://grlc.np.scify.org/api/local/local/",
                      "http://grlc.np.dumontierlab.com/api/local/local/"]
 NANOPUB_TEST_GRLC_URL = 'http://test-grlc.nanopubs.lod.labs.vu.nl/api/local/local/'
-
+NANOPUB_TEST_URL = 'http://test-server.nanopubs.lod.labs.vu.nl/'
 
 @unique
 class Formats(Enum):
@@ -158,8 +158,7 @@ class NanopubClient:
 
         return nanopubs
 
-    @staticmethod
-    def fetch(uri, format: str = 'trig'):
+    def fetch(self, uri, format: str = 'trig'):
         """
         Download the nanopublication at the specified URI (in specified format).
 
@@ -172,14 +171,15 @@ class NanopubClient:
         else:
             raise ValueError(f'Format not supported: {format}, choose from '
                              f'{[format.value for format in Formats]})')
-
+        if self.use_test_server:
+            nanopub_id = uri.rsplit('/', 1)[-1]
+            uri = NANOPUB_TEST_URL + nanopub_id
         r = requests.get(uri + extension)
         r.raise_for_status()
 
-        if r.ok:
-            nanopub_rdf = rdflib.ConjunctiveGraph()
-            nanopub_rdf.parse(data=r.text, format=format)
-            return Publication(rdf=nanopub_rdf, source_uri=uri)
+        nanopub_rdf = rdflib.ConjunctiveGraph()
+        nanopub_rdf.parse(data=r.text, format=format)
+        return Publication(rdf=nanopub_rdf, source_uri=uri)
 
     def publish(self, nanopub: Publication):
         """
@@ -269,5 +269,6 @@ class NanopubClient:
                                'nanopublication, see the instructions in the README')
         assertion_rdf.add((rdflib.URIRef(orcid_id), namespaces.NPX.retracts,
                            rdflib.URIRef(uri)))
-        publication = Publication.from_assertion(assertion_rdf=assertion_rdf)
+        publication = Publication.from_assertion(assertion_rdf=assertion_rdf,
+                                                 attribute_to_profile=True)
         return self.publish(publication)
