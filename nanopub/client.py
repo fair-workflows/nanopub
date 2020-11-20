@@ -246,6 +246,20 @@ class NanopubClient:
                                      'with. Use force=True to force retraction anyway.')
 
     def retract(self, uri: str, force=False):
+        """ Retract a nanopublication.
+
+        Publish a retraction nanpublication that declares retraction of the nanopublication that
+        corresponds to the 'uri' argument.
+
+        Args:
+            uri: The uri pointing to the to-be-retracted nanopublication
+            force: Toggle using force to retract, this will even retract the nanopublication if
+                it is signed with a different public key than the one in the user profile.
+
+        Returns:
+            publication info dictionary with keys 'concept_uri' and 'nanopub_uri' of the
+                retraction nanopublication
+        """
         if not force:
             self._check_public_keys_match(uri)
         assertion_rdf = rdflib.Graph()
