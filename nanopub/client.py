@@ -7,7 +7,7 @@ from enum import Enum, unique
 import rdflib
 import requests
 
-from nanopub import namespaces
+from nanopub import namespaces, profile
 from nanopub.definitions import DEFAULT_NANOPUB_URI
 from nanopub.publication import Publication
 from nanopub.java_wrapper import JavaWrapper
@@ -214,16 +214,26 @@ class NanopubClient:
 
         return publication_info
 
-    def claim(self, text, rdftriple=None):
-        """
-        Publishes a claim, either as a plain text statement, or as an rdf triple (or both)
+    def claim(self, statement_text: str):
+        """Quickly claim a statement.
+
+        Constructs statement triples around the provided text following the Hypotheses and Claims
+        Ontology (http://purl.org/petapico/o/hycl).
+
+        Args:
+            statement_text: the text of the statement, example: 'All cats are grey'
         """
         assertion_rdf = rdflib.Graph()
+        this_statement = rdflib.term.BNode('mystatement')
+        assertion_rdf.add((this_statement, rdflib.RDF.type, namespaces.HYCL.Statement))
+        assertion_rdf.add((this_statement, rdflib.RDFS.label, rdflib.Literal(statement_text)))
 
-        assertion_rdf.add((namespaces.AUTHOR.DrBob, namespaces.HYCL.claims, rdflib.Literal(text)))
-
-        if rdftriple is not None:
-            assertion_rdf.add(rdftriple)
-
-        nanopub = Publication.from_assertion(assertion_rdf=assertion_rdf)
-        self.publish(nanopub)
+        publication = Publication.from_assertion(assertion_rdf=assertion_rdf,
+                                                 attribute_to_profile=True)
+        
+        # TODO: This is a hacky solution, should be changed once we can add provenance triples to
+        #  from_assertion method.
+        publication.provenance.add((rdflib.URIRef(profile.get_orcid_id()),
+                                    namespaces.HYCL.claims,
+                                    rdflib.URIRef(DEFAULT_NANOPUB_URI + '#mystatement')))
+        self.publish(publication)
