@@ -1,25 +1,29 @@
 from unittest import mock
 
+import pytest
 import rdflib
 from rdflib.namespace import RDF
 
 from nanopub import namespaces, Publication
 from nanopub.definitions import DUMMY_NANOPUB_URI
 
-TEST_ASSERTION = (namespaces.AUTHOR.DrBob, namespaces.HYCL.claims, rdflib.Literal('This is a test'))
 TEST_ORCID_ID = 'https://orcid.org/0000-0000-0000-0000'
 
 
 class TestPublication:
+    test_assertion = rdflib.Graph()
+    test_assertion.add((namespaces.AUTHOR.DrBob,
+                        namespaces.HYCL.claims,
+                        rdflib.Literal('This is a test')))
+
     def test_construction_with_bnode_introduced_concept(self):
         """
         Test Publication construction from assertion where a BNode is introduced as a concept.
         """
-        assertion_rdf = rdflib.Graph()
-        assertion_rdf.add(TEST_ASSERTION)
+
 
         publication = Publication.from_assertion(
-            assertion_rdf=assertion_rdf,
+            assertion_rdf=self.test_assertion,
             introduces_concept=rdflib.term.BNode('DrBob'),
             derived_from=rdflib.term.URIRef('http://www.example.com/another-nanopub'),
             attributed_to=TEST_ORCID_ID
@@ -34,11 +38,9 @@ class TestPublication:
         derived_from_list = [   'http://www.example.com/another-nanopub', # This nanopub is derived from several sources
                                 'http://www.example.com/and-another-nanopub',
                                 'http://www.example.com/and-one-more' ]
-        assertion_rdf = rdflib.Graph()
-        assertion_rdf.add(TEST_ASSERTION)
 
         publication = Publication.from_assertion(
-            assertion_rdf=assertion_rdf,
+            assertion_rdf=self.test_assertion,
             derived_from=derived_from_list,
             attributed_to=TEST_ORCID_ID
         )
@@ -53,11 +55,7 @@ class TestPublication:
         contexts) for a publication.
         """
         mock_profile.get_orcid_id.return_value = TEST_ORCID_ID
-
-        assertion_rdf = rdflib.Graph()
-        assertion_rdf.add(TEST_ASSERTION)
-
-        nanopub = Publication.from_assertion(assertion_rdf)
+        nanopub = Publication.from_assertion(self.test_assertion)
 
         assert nanopub.rdf is not None
         assert (None, RDF.type, namespaces.NP.Nanopublication) in nanopub.rdf
@@ -66,7 +64,7 @@ class TestPublication:
         assert (None, namespaces.NP.hasPublicationInfo, None) in nanopub.rdf
 
         new_concept = rdflib.term.URIRef('www.purl.org/new/concept/test')
-        nanopub = Publication.from_assertion(assertion_rdf, introduces_concept=new_concept)
+        nanopub = Publication.from_assertion(self.test_assertion, introduces_concept=new_concept)
 
         assert nanopub.rdf is not None
         assert (None, RDF.type, namespaces.NP.Nanopublication) in nanopub.rdf
