@@ -31,7 +31,10 @@ def get_orcid_id():
 def get_public_key():
     filepath = get_profile()[PUBLIC_KEY_FILEPATH]
     with open(filepath, 'r') as f:
-        return f.read()
+        public_key = f.read()
+    if not public_key:
+        raise ProfileError('Your profile was not setup yet or not setup correctly. To setup '
+                           'your profile see instructions in Readme.md')
 
 
 @lru_cache()
