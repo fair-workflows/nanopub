@@ -16,24 +16,20 @@ class TestPublication:
                         namespaces.HYCL.claims,
                         rdflib.Literal('This is a test')))
 
-    def test_from_assertion_introduced_concept_not_blank_node(self):
+    def test_from_assertion_introduced_concept_not_bnode(self):
         with pytest.raises(ValueError):
             Publication.from_assertion(self.test_assertion, introduces_concept='not a blank node')
 
-    def test_construction_with_bnode_introduced_concept(self):
+    def test_from_assertion_with_bnode_introduced_concept(self):
         """
         Test Publication construction from assertion where a BNode is introduced as a concept.
         """
-
-
-        publication = Publication.from_assertion(
-            assertion_rdf=self.test_assertion,
-            introduces_concept=rdflib.term.BNode('DrBob'),
-            derived_from=rdflib.term.URIRef('http://www.example.com/another-nanopub'),
-            attributed_to=TEST_ORCID_ID
+        publication = Publication.from_assertion(assertion_rdf=self.test_assertion,
+                                                 introduces_concept=rdflib.term.BNode('DrBob'),
         )
         test_concept_uri = DUMMY_NANOPUB_URI + '#DrBob'  # This nanopub introduced DrBob
         assert str(publication.introduces_concept) == test_concept_uri
+        assert (None, namespaces.NPX.introduces, rdflib.URIRef(test_concept_uri)) in publication.rdf
 
     def test_construction_with_derived_from_as_list(self):
         """
@@ -43,11 +39,8 @@ class TestPublication:
                                 'http://www.example.com/and-another-nanopub',
                                 'http://www.example.com/and-one-more' ]
 
-        publication = Publication.from_assertion(
-            assertion_rdf=self.test_assertion,
-            derived_from=derived_from_list,
-            attributed_to=TEST_ORCID_ID
-        )
+        publication = Publication.from_assertion(assertion_rdf=self.test_assertion,
+                                                 derived_from=derived_from_list)
 
         for uri in derived_from_list:
             assert (None, namespaces.PROV.wasDerivedFrom, rdflib.URIRef(uri)) in publication.rdf
@@ -59,23 +52,11 @@ class TestPublication:
         contexts) for a publication.
         """
         mock_profile.get_orcid_id.return_value = TEST_ORCID_ID
-        nanopub = Publication.from_assertion(self.test_assertion)
+        publication = Publication.from_assertion(self.test_assertion)
 
-        assert nanopub.rdf is not None
-        assert (None, RDF.type, namespaces.NP.Nanopublication) in nanopub.rdf
-        assert (None, namespaces.NP.hasAssertion, None) in nanopub.rdf
-        assert (None, namespaces.NP.hasProvenance, None) in nanopub.rdf
-        assert (None, namespaces.NP.hasPublicationInfo, None) in nanopub.rdf
-
-        new_concept = rdflib.term.URIRef('www.purl.org/new/concept/test')
-        nanopub = Publication.from_assertion(self.test_assertion, introduces_concept=new_concept)
-
-        assert nanopub.rdf is not None
-        assert (None, RDF.type, namespaces.NP.Nanopublication) in nanopub.rdf
-        assert (None, namespaces.NP.hasAssertion, None) in nanopub.rdf
-        assert (None, namespaces.NP.hasProvenance, None) in nanopub.rdf
-        assert (None, namespaces.NP.hasPublicationInfo, None) in nanopub.rdf
-
-        assert (None, namespaces.NPX.introduces, new_concept) in nanopub.rdf
-
-        assert (None, None, rdflib.URIRef(TEST_ORCID_ID)) in nanopub.rdf
+        assert publication.rdf is not None
+        assert (None, RDF.type, namespaces.NP.Nanopublication) in publication.rdf
+        assert (None, namespaces.NP.hasAssertion, None) in publication.rdf
+        assert (None, namespaces.NP.hasProvenance, None) in publication.rdf
+        assert (None, namespaces.NP.hasPublicationInfo, None) in publication.rdf
+        assert (None, None, rdflib.URIRef(TEST_ORCID_ID)) in publication.rdf
