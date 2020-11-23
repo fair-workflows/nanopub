@@ -88,15 +88,14 @@ class TestNanopubClient:
         Check that Nanopub fetch is returning results for a few known nanopub URIs.
         """
         known_nps = [
-            'http://purl.org/np/RAFNR1VMQC0AUhjcX2yf94aXmG1uIhteGXpq12Of88l78',
-            'http://purl.org/np/RAePO1Fi2Wp1ARk2XfOnTTwtTkAX1FBU3XuCwq7ng0jIo',
-            'http://purl.org/np/RA48Iprh_kQvb602TR0ammkR6LQsYHZ8pyZqZTPQIl17s'
+            'http://purl.org/np/RANGY8fx_EYVeZzJOinH9FoY-WrQBerKKUy2J9RCDWH6U',
+            'http://purl.org/np/RAABh3eQwmkdflVp50zYavHUK0NgZE2g2ewS2j4Ur6FHI',
+            'http://purl.org/np/RA8to60YFWSVCh2n_iyHZ2yiYEt-hX_DdqbWa5yI9r-gI'
         ]
 
         for np_uri in known_nps:
             np = client.fetch(np_uri, format='trig')
             assert isinstance(np, Publication)
-            assert np.source_uri == np_uri
             assert len(np.rdf) > 0
             assert np.assertion is not None
             assert np.pubinfo is not None
@@ -143,3 +142,33 @@ class TestNanopubClient:
         pubinfo = client.publish(nanopub)
         assert pubinfo['nanopub_uri'] == test_published_uri
         assert pubinfo['concept_uri'] == expected_concept_uri
+
+    def test_retract_with_force(self):
+        client = NanopubClient()
+        client.java_wrapper.publish = mock.MagicMock()
+        client.retract('http://www.example.com/my-nanopub', force=True)
+
+    @mock.patch('nanopub.client.profile.get_public_key')
+    def test_retract_without_force(self, mock_get_public_key):
+        test_uri = 'http://www.example.com/my-nanopub'
+        test_public_key = 'test key'
+        client = NanopubClient()
+        client.java_wrapper.publish = mock.MagicMock()
+
+        # Return a mocked to-be-retracted publication object that is signed with public key
+        mock_publication = mock.MagicMock()
+        mock_publication.pubinfo = rdflib.Graph()
+        mock_publication.pubinfo.add((rdflib.URIRef(test_uri + '#sig'),
+                                      namespaces.NPX.hasPublicKey,
+                                      rdflib.Literal(test_public_key)))
+        client.fetch = mock.MagicMock(return_value=mock_publication)
+
+        # Retract should be successful when public keys match
+        mock_get_public_key.return_value = test_public_key
+        client.retract(test_uri)
+
+        # And fail if they don't match
+        mock_get_public_key.return_value = 'Different public key'
+        with pytest.raises(AssertionError):
+            client.retract(test_uri)
+
