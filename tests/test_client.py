@@ -105,10 +105,7 @@ class TestNanopubClient:
     def test_nanopub_claim(self):
         client = NanopubClient()
         client.java_wrapper.publish = mock.MagicMock()
-        optional_triple = (rdflib.term.URIRef('http://www.uri1.com'),
-                           rdflib.term.URIRef('http://www.uri2.com'),
-                           rdflib.Literal('Something'))
-        client.claim('Some controversial statement', rdftriple=optional_triple)
+        client.claim(statement_text='Some controversial statement')
 
     def test_nanopub_publish(self):
         test_uri = 'http://www.example.com/my-nanopub'
