@@ -1,11 +1,12 @@
 from datetime import datetime
+from typing import Union
 from urllib.parse import urldefrag
 
 import rdflib
 from rdflib.namespace import RDF, DC, DCTERMS, XSD
 
 from nanopub import namespaces, profile
-from nanopub.definitions import DEFAULT_NANOPUB_URI
+from nanopub.definitions import DUMMY_NANOPUB_URI
 
 
 class Publication:
@@ -30,22 +31,49 @@ class Publication:
                 raise ValueError(
                     f'Expected to find {expected} graph in nanopub rdf, but not found. Graphs found: {list(self._graphs.keys())}.')
 
+    @staticmethod
+    def _replace_blank_nodes(dummy_namespace, assertion_rdf):
+        """ Replace blank nodes.
+
+        Replace any blank nodes in the supplied RDF with a corresponding uri in the
+        dummy_namespace.'Blank nodes' here refers specifically to rdflib.term.BNode objects. When
+        publishing, the dummy_namespace is replaced with the URI of the actual nanopublication.
+
+        For example, if the nanopub's URI is www.purl.org/ABC123 then the blank node will be
+        replaced with a concrete URIRef of the form www.purl.org/ABC123#blanknodename where
+        'blanknodename' is the name of the rdflib.term.BNode object.
+
+        This is to solve the problem that a user may wish to use the nanopublication to introduce
+        a new concept. This new concept needs its own URI (it cannot simply be given the
+        nanopublication's URI), but it should still lie within the space of the nanopub.
+        Furthermore, the URI the nanopub is published to is not known ahead of time.
+        """
+        for s, p, o in assertion_rdf:
+            assertion_rdf.remove((s, p, o))
+            if isinstance(s, rdflib.term.BNode):
+                s = dummy_namespace[str(s)]
+            if isinstance(o, rdflib.term.BNode):
+                o = dummy_namespace[str(o)]
+            assertion_rdf.add((s, p, o))
+
     @classmethod
-    def from_assertion(cls, assertion_rdf, uri=DEFAULT_NANOPUB_URI, introduces_concept=None,
+    def from_assertion(cls, assertion_rdf: rdflib.Graph,
+                       introduces_concept: rdflib.term.BNode = None,
                        derived_from=None, assertion_attributed_to=None,
                        attribute_assertion_to_profile: bool = False):
         """
-        Construct Nanopub object based on given assertion, with given assertion and (defrag'd) URI.
-        Any blank nodes in the rdf graph are replaced with the nanopub's URI, with the blank node name
-        as a fragment. For example, if the blank node is called 'step', that would result in a URI composed of the
-        nanopub's (base) URI, followed by #step.
-
-        If introduces_concept is given (string, or rdflib.URIRef), the pubinfo graph will note that this nanopub npx:introduces the given URI.
-        If a blank node (rdflib.term.BNode) is given instead of a URI, the blank node will be converted to a URI
-        derived from the nanopub's URI with a fragment (#) made from the blank node's name.
+        Construct Nanopub object based on given assertion. Any blank nodes in the rdf graph are
+        replaced with the nanopub's URI, with the blank node name as a fragment. For example, if
+        the blank node is called 'step', that would result in a URI composed of the nanopub's (base)
+        URI, followed by #step.
 
         Args:
-            derived_from: Add that this nanopub prov:wasDerivedFrom the given URI to the provenance graph.
+            assertion_rdf: The assertion RDF graph.
+            introduces_concept: the pubinfo graph will note that this nanopub npx:introduces the
+                concept. The concept should be a blank node (rdflib.term.BNode), and is converted
+                to a URI derived from the nanopub's URI with a fragment (#) made from the blank
+                node's name.
+            derived_from: Add a triple to the provenance graph stating that this nanopub's assertion prov:wasDerivedFrom the given URI.
                           If a list of URIs is passed, a provenance triple will be generated for each.
             assertion_attributed_to: the provenance graph will note that this nanopub's assertion
                 prov:wasAttributedTo the given URI.
@@ -62,32 +90,16 @@ class Publication:
         if attribute_assertion_to_profile:
             assertion_attributed_to = rdflib.URIRef(profile.get_orcid_id())
 
-        # Make sure passed URI is defrag'd
-        uri = str(uri)
-        uri, _ = urldefrag(uri)
-        this_np = rdflib.Namespace(uri + '#')
+        if introduces_concept and not isinstance(introduces_concept, rdflib.term.BNode):
+            raise ValueError('If you want a nanopublication to introduce a concept, you need to '
+                             'pass it as an rdflib.term.BNode("concept_name"). This will make '
+                             'sure it is referred to from the nanopublication uri namespace upon '
+                             'publishing.')
 
-        # Replace any blank nodes in the supplied RDF, with a URI derived from the nanopub's uri.
-        # 'Blank nodes' here refers specifically to rdflib.term.BNode objects.
-        # For example, if the nanopub's URI is www.purl.org/ABC123 then the blank node will be replaced with a
-        # concrete URIRef of the form www.purl.org/ABC123#blanknodename where 'blanknodename' is the name of the
-        # the rdflib.term.BNode object. If blanknodename is 'step', then the URI will have a fragment '#step' after it.
-        #
-        # The problem that this is designed to solve is that a user may wish to use the nanopublication to introduce
-        # a new concept. This new concept needs its own URI (it cannot simply be given the nanopublication's URI),
-        # but it should still lie within the space of the nanopub. Furthermore, the URI the nanopub is published
-        # is not known ahead of time. The variable 'this_np', for example, is holding a dummy URI that is swapped
-        # with the true, published URI of the nanopub by the 'np' tool at the moment of publication.
-        #
-        # We wish to replace any blank nodes in the rdf with URIs that are based on this same dummy URI, so that
-        # they too are transformed to the correct URI upon publishing.
-        for s, p, o in assertion_rdf:
-            assertion_rdf.remove((s, p, o))
-            if isinstance(s, rdflib.term.BNode):
-                s = this_np[str(s)]
-            if isinstance(o, rdflib.term.BNode):
-                o = this_np[str(o)]
-            assertion_rdf.add((s, p, o))
+        # To be replaced with the published uri upon publishing
+        this_np = rdflib.Namespace(DUMMY_NANOPUB_URI + '#')
+
+        cls._replace_blank_nodes(dummy_namespace=this_np, assertion_rdf=assertion_rdf)
 
         # Set up different contexts
         rdf = rdflib.ConjunctiveGraph()
@@ -157,8 +169,7 @@ class Publication:
                           namespaces.NPX.introduces,
                           introduces_concept))
 
-        obj = cls(rdf=rdf, source_uri=uri)
-        return obj
+        return cls(rdf=rdf)
 
     @property
     def rdf(self):
@@ -197,3 +208,16 @@ class Publication:
         s = f'Original source URI = {self._source_uri}\n'
         s += self._rdf.serialize(format='trig').decode('utf-8')
         return s
+
+
+def replace_in_rdf(rdf: rdflib.Graph, oldvalue, newvalue):
+    """
+    Replace subjects or objects of oldvalue with newvalue
+    """
+    for s, p, o in rdf:
+        if s == oldvalue:
+            rdf.remove((s, p, o))
+            rdf.add((newvalue, p, o))
+        elif o == oldvalue:
+            rdf.remove((s, p, o))
+            rdf.add((s, p, newvalue))

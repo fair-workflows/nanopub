@@ -7,7 +7,8 @@ import rdflib
 import requests
 
 from nanopub import namespaces, profile
-from nanopub.definitions import DEFAULT_NANOPUB_URI
+from nanopub.definitions import DUMMY_NANOPUB_URI
+from nanopub.publication import Publication
 from nanopub.java_wrapper import JavaWrapper
 from nanopub.publication import Publication
 
@@ -197,7 +198,7 @@ class NanopubClient:
             # and appends a fragment, given by the 'name' of the blank node. For example, if a
             # blank node with name 'step' was passed as introduces_concept, the concept will be
             # published with a URI that looks like [published nanopub URI]#step.
-            concept_uri = concept_uri.replace(DEFAULT_NANOPUB_URI, nanopub_uri)
+            concept_uri = concept_uri.replace(DUMMY_NANOPUB_URI, nanopub_uri)
             publication_info['concept_uri'] = concept_uri
             print(f'Published concept to {concept_uri}')
 
@@ -224,7 +225,7 @@ class NanopubClient:
         #  from_assertion method.
         publication.provenance.add((rdflib.URIRef(profile.get_orcid_id()),
                                     namespaces.HYCL.claims,
-                                    rdflib.URIRef(DEFAULT_NANOPUB_URI + '#mystatement')))
+                                    rdflib.URIRef(DUMMY_NANOPUB_URI + '#mystatement')))
         self.publish(publication)
 
     def _check_public_keys_match(self, uri):
