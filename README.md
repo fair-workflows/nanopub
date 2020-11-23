@@ -25,7 +25,7 @@ provenance of any nanopublication you will publish using this library.
 ## Quick Start
 
 
-### Publishing an assertion as a nanopub
+### Publishing nanopublications
 ```python
 
 from nanopub import Publication, NanopubClient
@@ -34,14 +34,17 @@ from rdflib import Graph, URIRef, RDF, FOAF
 # Create the client, that allows searching, fetching and publishing nanopubs
 client = NanopubClient()
 
-# Construct your desired assertion (a graph of RDF triples)
+# Either quickly publish a statement to the server
+client.claim('All cats are gray')
+
+# Or: 1. construct a desired assertion (a graph of RDF triples)
 my_assertion = Graph()
 my_assertion.add( (URIRef('www.example.org/timbernerslee'), RDF.type, FOAF.Person) )
 
-# Make a Publication object with this assertion
+# 2. Make a Publication object with this assertion
 publication = Publication.from_assertion(assertion_rdf=my_assertion)
 
-# Publish the Publication object. The URI at which it is published is returned.
+# 3. Publish the Publication object. The URI at which it is published is returned.
 publication_info = client.publish(publication)
 print(publication_info)
 ```

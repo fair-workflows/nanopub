@@ -24,7 +24,7 @@ class TestPublication:
             uri=rdflib.term.URIRef(test_uri),
             introduces_concept=rdflib.term.BNode('DrBob'),
             derived_from=rdflib.term.URIRef('http://www.example.com/another-nanopub'),
-            attributed_to=TEST_ORCID_ID
+            assertion_attributed_to=TEST_ORCID_ID
         )
         assert str(publication.introduces_concept) == test_concept_uri
 
@@ -43,7 +43,7 @@ class TestPublication:
             assertion_rdf=assertion_rdf,
             uri=rdflib.term.URIRef(test_uri),
             derived_from=derived_from_list,
-            attributed_to=TEST_ORCID_ID
+            assertion_attributed_to=TEST_ORCID_ID
         )
 
         for uri in derived_from_list:
