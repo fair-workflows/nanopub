@@ -60,7 +60,8 @@ def test_validate_orcid_id():
     invalid_ids = ['https://orcid.org/abcd-efgh-abcd-efgh',
                    'https://orcid.org/1234-5678-1234-567',
                    'https://orcid.org/1234-5678-1234-56789',
-                   'https://other-url.org/1234-5678-1234-5678']
+                   'https://other-url.org/1234-5678-1234-5678',
+                   '0000-0000-0000-0000']
     for orcid_id in invalid_ids:
         with pytest.raises(ValueError):
             validate_orcid_id(ctx=None, orcid_id=orcid_id)
