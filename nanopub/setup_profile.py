@@ -26,9 +26,7 @@ def validate_orcid_id(ctx, orcid_id: str):
     Check if valid ORCID iD, should be https://orcid.org/ + 16 digit in form:
         https://orcid.org/0000-0000-0000-0000
     """
-    if not orcid_id:
-        return None
-    elif re.match(ORCID_ID_REGEX, orcid_id):
+    if re.match(ORCID_ID_REGEX, orcid_id):
         return orcid_id
     else:
         raise ValueError('Your ORCID iD is not valid, please provide a valid ORCID iD that '
@@ -46,12 +44,9 @@ def validate_orcid_id(ctx, orcid_id: str):
               help='Your RSA public and private keys with which your nanopubs will be signed',
               default=None)
 @click.option('--orcid_id', type=str,
-              prompt='What is your ORCID iD (i.e. https://orcid.org/0000-0000-0000-0000)? '
-                     'Optionally leave empty',
-              help='Your ORCID iD (i.e. https://orcid.org/0000-0000-0000-0000), '
-                   'optionally leave empty',
-              callback=validate_orcid_id,
-              default='')
+              prompt='What is your ORCID iD (i.e. https://orcid.org/0000-0000-0000-0000)?',
+              help='Your ORCID iD (i.e. https://orcid.org/0000-0000-0000-0000)',
+              callback=validate_orcid_id)
 @click.option('--name', type=str, prompt='What is your full name?', help='Your full name')
 @click.option('--publish/--no-publish', type=bool, is_flag=True, default=True,
               help='If true, nanopub will be published to nanopub servers',
