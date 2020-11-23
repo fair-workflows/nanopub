@@ -243,6 +243,9 @@ class NanopubClient:
                                                              namespaces.NPX.hasPublicKey))
         if len(their_public_keys) > 0:
             their_public_key = str(their_public_keys[0])
+            if len(their_public_keys) > 1:
+                warnings.warn(f'Nanopublication is signed with multiple public keys, we will use '
+                              f'this one: {their_public_key}')
             if their_public_key != profile.get_public_key():
                 raise AssertionError('The public key in your profile does not match the public key'
                                      'that the publication that you want to retract is signed '
