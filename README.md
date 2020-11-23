@@ -116,7 +116,7 @@ replace_in_rdf(rdf=my_assertion, oldvalue=URIRef('www.example.org/timbernerslee'
 ``` 
 
 ### Specifying derived_from
-You can specify that the nanopub is derived from another nanopublication:
+You can specify that the nanopub's assertion is derived from another URI (such as an existing nanopublication):
 ```python
 publication = Publication.from_assertion(assertion_rdf=my_assertion,
                                          derived_from=rdflib.URIRef('www.example.org/another-nanopublication'))
