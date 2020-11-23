@@ -56,20 +56,22 @@ class Publication:
             assertion_rdf.add((s, p, o))
 
     @classmethod
-    def from_assertion(cls, assertion_rdf, introduces_concept: rdflib.term.BNode=None,
+    def from_assertion(cls, assertion_rdf: rdflib.Graph,
+                       introduces_concept: rdflib.term.BNode = None,
                        derived_from=None, attributed_to=None,
                        attribute_to_profile: bool = False, nanopub_author=None):
         """
-        Construct Nanopub object based on given assertion, with given assertion and (defrag'd) URI.
-        Any blank nodes in the rdf graph are replaced with the nanopub's URI, with the blank node name
-        as a fragment. For example, if the blank node is called 'step', that would result in a URI composed of the
-        nanopub's (base) URI, followed by #step.
-
-        If introduces_concept is given (string, or rdflib.URIRef), the pubinfo graph will note that this nanopub npx:introduces the given URI.
-        If a blank node (rdflib.term.BNode) is given instead of a URI, the blank node will be converted to a URI
-        derived from the nanopub's URI with a fragment (#) made from the blank node's name.
+        Construct Nanopub object based on given assertion. Any blank nodes in the rdf graph are
+        replaced with the nanopub's URI, with the blank node name as a fragment. For example, if
+        the blank node is called 'step', that would result in a URI composed of the nanopub's (base)
+        URI, followed by #step.
 
         Args:
+            assertion_rdf: The assertion RDF graph.
+            introduces_concept: the pubinfo graph will note that this nanopub npx:introduces the
+                concept. The concept should be a blank node (rdflib.term.BNode), and is converted
+                to a URI derived from the nanopub's URI with a fragment (#) made from the blank
+                node's name.
             derived_from: Add that this nanopub prov:wasDerivedFrom the given URI to the provenance graph.
                           If a list of URIs is passed, a provenance triple will be generated for each.
             attributed_to: the provenance graph will note that this nanopub prov:wasAttributedTo
@@ -78,7 +80,6 @@ class Publication:
             nanopub_author: the pubinfo graph will note that this nanopub prov:wasAttributedTo the
                 given URI. If no nanopub_author is provided we default to the author from the
                 profile
-
         """
 
         if nanopub_author is None and profile.get_orcid_id() is not None:
