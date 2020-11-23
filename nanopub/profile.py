@@ -13,8 +13,19 @@ PRIVATE_KEY = 'private_key'
 PROFILE_NANOPUB = 'profile_nanopub'
 
 
+class ProfileError(RuntimeError):
+    """
+    Error to be raised if profile is not setup correctly.
+    """
+    pass
+
+
 def get_orcid_id():
-    return get_profile()[ORCID_ID]
+    orcid_id = get_profile()[ORCID_ID]
+    if not orcid_id:
+        raise ProfileError('Your profile was not setup yet or not setup correctly. To setup '
+                           'your profile see instructions in Readme.md')
+    return orcid_id
 
 
 @lru_cache()
