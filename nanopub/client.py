@@ -214,7 +214,7 @@ class NanopubClient:
 
         return publication_info
 
-    def claim(self, statement_text: str, author: str = None):
+    def claim(self, statement_text: str):
         """Quickly claim a statement.
 
         Constructs statement triples around the provided text following the Hypotheses and Claims
@@ -222,28 +222,18 @@ class NanopubClient:
 
         Args:
             statement_text: the text of the statement, example: 'All cats are grey'
-            author: Your ORCID iD URI, example: https://orcid.org/0000-0000-0000-0000, default is to
-                get this from the profile.
         """
         assertion_rdf = rdflib.Graph()
         this_statement = rdflib.term.BNode('mystatement')
         assertion_rdf.add((this_statement, rdflib.RDF.type, namespaces.HYCL.Statement))
         assertion_rdf.add((this_statement, rdflib.RDFS.label, rdflib.Literal(statement_text)))
 
-        if author is None:
-            if profile.get_orcid_id() is None:
-                raise ValueError('You must either setup your profile (see Readme.md) or pass '
-                                 'an ORCID iD (example: https://orcid.org/0000-0000-0000-0000)'
-                                 'for the author argument')
-            else:
-                author = rdflib.URIRef(profile.get_orcid_id())
-        else:
-            author = rdflib.URIRef(author)
         publication = Publication.from_assertion(assertion_rdf=assertion_rdf,
-                                                 nanopub_author=author,
-                                                 attributed_to=author)
+                                                 attribute_to_profile=True)
+        
         # TODO: This is a hacky solution, should be changed once we can add provenance triples to
         #  from_assertion method.
-        publication.provenance.add((author, namespaces.HYCL.claims,
+        publication.provenance.add((rdflib.URIRef(profile.get_orcid_id()),
+                                    namespaces.HYCL.claims,
                                     rdflib.URIRef(DEFAULT_NANOPUB_URI + '#mystatement')))
         self.publish(publication)
