@@ -225,7 +225,7 @@ class NanopubClient:
         #  from_assertion method.
         publication.provenance.add((rdflib.URIRef(profile.get_orcid_id()),
                                     namespaces.HYCL.claims,
-                                    rdflib.URIRef(DEFAULT_NANOPUB_URI + '#mystatement')))
+                                    rdflib.URIRef(DUMMY_NANOPUB_URI + '#mystatement')))
         self.publish(publication)
 
         nanopub = Publication.from_assertion(assertion_rdf=assertion_rdf)
