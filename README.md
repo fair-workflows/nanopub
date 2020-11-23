@@ -121,7 +121,7 @@ You can specify that the nanopub's assertion is derived from another URI (such a
 publication = Publication.from_assertion(assertion_rdf=my_assertion,
                                          derived_from=rdflib.URIRef('www.example.org/another-nanopublication'))
 ```
-,
+Note that ```derived_from``` may also be passed a list of URIs.
                                          
 
 
