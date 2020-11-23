@@ -7,7 +7,7 @@ from enum import Enum, unique
 import rdflib
 import requests
 
-from nanopub import namespaces
+from nanopub import namespaces, profile
 from nanopub.definitions import DEFAULT_NANOPUB_URI
 from nanopub.publication import Publication
 from nanopub.java_wrapper import JavaWrapper
@@ -20,6 +20,14 @@ NANOPUB_GRLC_URLS = ["http://grlc.nanopubs.lod.labs.vu.nl/api/local/local/",
                      "http://grlc.np.dumontierlab.com/api/local/local/"]
 NANOPUB_TEST_GRLC_URL = 'http://test-grlc.nanopubs.lod.labs.vu.nl/api/local/local/'
 NANOPUB_FETCH_FORMAT = 'trig'
+NANOPUB_TEST_URL = 'http://test-server.nanopubs.lod.labs.vu.nl/'
+
+@unique
+class Formats(Enum):
+    """
+    Enums to specify the format of nanopub desired
+    """
+    TRIG = 'trig'
 
 
 class NanopubClient:
@@ -151,8 +159,7 @@ class NanopubClient:
 
         return nanopubs
 
-    @staticmethod
-    def fetch(uri):
+    def fetch(self, uri):
         """
         Download the nanopublication at the specified URI.
 
@@ -160,12 +167,16 @@ class NanopubClient:
             a Publication object.
         """
         r = requests.get(uri + '.' + NANOPUB_FETCH_FORMAT)
+        if not r.ok and self.use_test_server:
+            # Let's try the test server
+            nanopub_id = uri.rsplit('/', 1)[-1]
+            uri = NANOPUB_TEST_URL + nanopub_id
+            r = requests.get(uri + '.' + NANOPUB_FETCH_FORMAT)
         r.raise_for_status()
 
-        if r.ok:
-            nanopub_rdf = rdflib.ConjunctiveGraph()
-            nanopub_rdf.parse(data=r.text, format=NANOPUB_FETCH_FORMAT)
-            return Publication(rdf=nanopub_rdf, source_uri=uri)
+        nanopub_rdf = rdflib.ConjunctiveGraph()
+        nanopub_rdf.parse(data=r.text, format=NANOPUB_FETCH_FORMAT)
+        return Publication(rdf=nanopub_rdf, source_uri=uri)
 
     def publish(self, nanopub: Publication):
         """
@@ -200,16 +211,77 @@ class NanopubClient:
 
         return publication_info
 
-    def claim(self, text, rdftriple=None):
-        """
-        Publishes a claim, either as a plain text statement, or as an rdf triple (or both)
+    def claim(self, statement_text: str):
+        """Quickly claim a statement.
+
+        Constructs statement triples around the provided text following the Hypotheses and Claims
+        Ontology (http://purl.org/petapico/o/hycl).
+
+        Args:
+            statement_text: the text of the statement, example: 'All cats are grey'
         """
         assertion_rdf = rdflib.Graph()
+        this_statement = rdflib.term.BNode('mystatement')
+        assertion_rdf.add((this_statement, rdflib.RDF.type, namespaces.HYCL.Statement))
+        assertion_rdf.add((this_statement, rdflib.RDFS.label, rdflib.Literal(statement_text)))
 
-        assertion_rdf.add((namespaces.AUTHOR.DrBob, namespaces.HYCL.claims, rdflib.Literal(text)))
+        publication = Publication.from_assertion(assertion_rdf=assertion_rdf,
+                                                 attribute_to_profile=True)
 
-        if rdftriple is not None:
-            assertion_rdf.add(rdftriple)
+        # TODO: This is a hacky solution, should be changed once we can add provenance triples to
+        #  from_assertion method.
+        publication.provenance.add((rdflib.URIRef(profile.get_orcid_id()),
+                                    namespaces.HYCL.claims,
+                                    rdflib.URIRef(DEFAULT_NANOPUB_URI + '#mystatement')))
+        self.publish(publication)
 
         nanopub = Publication.from_assertion(assertion_rdf=assertion_rdf)
         self.publish(nanopub)
+
+    def _check_public_keys_match(self, uri):
+        """ Check for matching public keys of a nanopublication with the profile.
+
+        Raises:
+            AssertionError: When the nanopublication is signed with a public key that does not
+                match the public key in the profile
+        """
+        publication = self.fetch(uri)
+        their_public_keys = list(publication.pubinfo.objects(rdflib.URIRef(uri + '#sig'),
+                                                             namespaces.NPX.hasPublicKey))
+        if len(their_public_keys) > 0:
+            their_public_key = str(their_public_keys[0])
+            if len(their_public_keys) > 1:
+                warnings.warn(f'Nanopublication is signed with multiple public keys, we will use '
+                              f'this one: {their_public_key}')
+            if their_public_key != profile.get_public_key():
+                raise AssertionError('The public key in your profile does not match the public key'
+                                     'that the publication that you want to retract is signed '
+                                     'with. Use force=True to force retraction anyway.')
+
+    def retract(self, uri: str, force=False):
+        """ Retract a nanopublication.
+
+        Publish a retraction nanpublication that declares retraction of the nanopublication that
+        corresponds to the 'uri' argument.
+
+        Args:
+            uri: The uri pointing to the to-be-retracted nanopublication
+            force: Toggle using force to retract, this will even retract the nanopublication if
+                it is signed with a different public key than the one in the user profile.
+
+        Returns:
+            publication info dictionary with keys 'concept_uri' and 'nanopub_uri' of the
+                retraction nanopublication
+        """
+        if not force:
+            self._check_public_keys_match(uri)
+        assertion_rdf = rdflib.Graph()
+        orcid_id = profile.get_orcid_id()
+        if orcid_id is None:
+            raise RuntimeError('You need to setup your profile with ORCID iD in order to retract a '
+                               'nanopublication, see the instructions in the README')
+        assertion_rdf.add((rdflib.URIRef(orcid_id), namespaces.NPX.retracts,
+                           rdflib.URIRef(uri)))
+        publication = Publication.from_assertion(assertion_rdf=assertion_rdf,
+                                                 attribute_to_profile=True)
+        return self.publish(publication)
