@@ -2,15 +2,14 @@ import os
 import random
 import tempfile
 import warnings
-from enum import Enum, unique
 
 import rdflib
 import requests
 
 from nanopub import namespaces, profile
 from nanopub.definitions import DEFAULT_NANOPUB_URI
-from nanopub.publication import Publication
 from nanopub.java_wrapper import JavaWrapper
+from nanopub.publication import Publication
 
 NANOPUB_GRLC_URLS = ["http://grlc.nanopubs.lod.labs.vu.nl/api/local/local/",
                      "http://130.60.24.146:7881/api/local/local/",
@@ -19,14 +18,8 @@ NANOPUB_GRLC_URLS = ["http://grlc.nanopubs.lod.labs.vu.nl/api/local/local/",
                      "http://grlc.np.scify.org/api/local/local/",
                      "http://grlc.np.dumontierlab.com/api/local/local/"]
 NANOPUB_TEST_GRLC_URL = 'http://test-grlc.nanopubs.lod.labs.vu.nl/api/local/local/'
+NANOPUB_FETCH_FORMAT = 'trig'
 NANOPUB_TEST_URL = 'http://test-server.nanopubs.lod.labs.vu.nl/'
-
-@unique
-class Formats(Enum):
-    """
-    Enums to specify the format of nanopub desired
-    """
-    TRIG = 'trig'
 
 
 class NanopubClient:
@@ -158,30 +151,23 @@ class NanopubClient:
 
         return nanopubs
 
-    def fetch(self, uri, format: str = 'trig'):
+    def fetch(self, uri):
         """
-        Download the nanopublication at the specified URI (in specified format).
+        Download the nanopublication at the specified URI.
 
         Returns:
-            a Nanopub object.
+            a Publication object.
         """
-
-        if format == Formats.TRIG.value:
-            extension = '.trig'
-        else:
-            raise ValueError(f'Format not supported: {format}, choose from '
-                             f'{[format.value for format in Formats]})')
-
-        r = requests.get(uri + extension)
+        r = requests.get(uri + '.' + NANOPUB_FETCH_FORMAT)
         if not r.ok and self.use_test_server:
             # Let's try the test server
             nanopub_id = uri.rsplit('/', 1)[-1]
             uri = NANOPUB_TEST_URL + nanopub_id
-            r = requests.get(uri + extension)
+            r = requests.get(uri + '.' + NANOPUB_FETCH_FORMAT)
         r.raise_for_status()
 
         nanopub_rdf = rdflib.ConjunctiveGraph()
-        nanopub_rdf.parse(data=r.text, format=format)
+        nanopub_rdf.parse(data=r.text, format=NANOPUB_FETCH_FORMAT)
         return Publication(rdf=nanopub_rdf, source_uri=uri)
 
     def publish(self, nanopub: Publication):
