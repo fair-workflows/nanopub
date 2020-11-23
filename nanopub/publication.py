@@ -49,7 +49,7 @@ class Publication:
                           If a list of URIs is passed, a provenance triple will be generated for each.
             assertion_attributed_to: the provenance graph will note that this nanopub's assertion
                 prov:wasAttributedTo the given URI.
-            attribute_assertion_to_profile: Attribute the nanopub to the ORCID iD in the profile
+            attribute_assertion_to_profile: Attribute the assertion to the ORCID iD in the profile
 
         """
         if assertion_attributed_to and attribute_assertion_to_profile:
