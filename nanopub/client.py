@@ -269,11 +269,8 @@ class NanopubClient:
             self._check_public_keys_match(uri)
         assertion_rdf = rdflib.Graph()
         orcid_id = profile.get_orcid_id()
-        if orcid_id is None:
-            raise RuntimeError('You need to setup your profile with ORCID iD in order to retract a '
-                               'nanopublication, see the instructions in the README')
         assertion_rdf.add((rdflib.URIRef(orcid_id), namespaces.NPX.retracts,
                            rdflib.URIRef(uri)))
         publication = Publication.from_assertion(assertion_rdf=assertion_rdf,
-                                                 attribute_to_profile=True)
+                                                 attribute_assertion_to_profile=True)
         return self.publish(publication)
