@@ -73,7 +73,7 @@ class Publication:
                 concept. The concept should be a blank node (rdflib.term.BNode), and is converted
                 to a URI derived from the nanopub's URI with a fragment (#) made from the blank
                 node's name.
-            derived_from: Add that this nanopub prov:wasDerivedFrom the given URI to the provenance graph.
+            derived_from: Add a triple to the provenance graph stating that this nanopub's assertion prov:wasDerivedFrom the given URI.
                           If a list of URIs is passed, a provenance triple will be generated for each.
             attributed_to: the provenance graph will note that this nanopub prov:wasAttributedTo
                 the given URI.
