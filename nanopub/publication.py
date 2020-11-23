@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Union
 from urllib.parse import urldefrag
 
 import rdflib
@@ -210,3 +211,16 @@ class Publication:
         s = f'Original source URI = {self._source_uri}\n'
         s += self._rdf.serialize(format='trig').decode('utf-8')
         return s
+
+
+def replace_in_rdf(rdf: rdflib.Graph, oldvalue, newvalue):
+    """
+    Replace subjects or objects of oldvalue with newvalue
+    """
+    for s, p, o in rdf:
+        if s == oldvalue:
+            rdf.remove((s, p, o))
+            rdf.add((newvalue, p, o))
+        elif o == oldvalue:
+            rdf.remove((s, p, o))
+            rdf.add((s, p, newvalue))

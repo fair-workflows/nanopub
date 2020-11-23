@@ -4,7 +4,7 @@ import pytest
 import rdflib
 from rdflib.namespace import RDF
 
-from nanopub import namespaces, Publication
+from nanopub import namespaces, Publication, replace_in_rdf
 from nanopub.definitions import DUMMY_NANOPUB_URI
 
 TEST_ORCID_ID = 'https://orcid.org/0000-0000-0000-0000'
@@ -60,3 +60,14 @@ class TestPublication:
         assert (None, namespaces.NP.hasProvenance, None) in publication.rdf
         assert (None, namespaces.NP.hasPublicationInfo, None) in publication.rdf
         assert (None, None, rdflib.URIRef(TEST_ORCID_ID)) in publication.rdf
+
+
+def test_replace_in_rdf():
+    g = rdflib.Graph()
+    g.add((rdflib.Literal('DrBob'), rdflib.RDF.type, rdflib.Literal('Doctor')))
+    g.add((rdflib.Literal('Alice'), rdflib.FOAF.knows, rdflib.Literal('DrBob')))
+    replace_in_rdf(g, rdflib.Literal('DrBob'), rdflib.Literal('Alfonso'))
+    assert (rdflib.Literal('Alfonso'), rdflib.RDF.type, rdflib.Literal('Doctor')) in g
+    assert (rdflib.Literal('Alice'), rdflib.FOAF.knows, rdflib.Literal('Alfonso')) in g
+    assert (rdflib.Literal('DrBob'), rdflib.RDF.type, rdflib.Literal('Doctor')) not in g
+    assert (rdflib.Literal('Alice'), rdflib.FOAF.knows, rdflib.Literal('DrBob')) not in g
