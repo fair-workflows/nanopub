@@ -45,7 +45,7 @@ class Publication:
         This is to solve the problem that a user may wish to use the nanopublication to introduce
         a new concept. This new concept needs its own URI (it cannot simply be given the
         nanopublication's URI), but it should still lie within the space of the nanopub.
-        Furthermore, the URI the nanopub is published is not known ahead of time.
+        Furthermore, the URI the nanopub is published to is not known ahead of time.
         """
         for s, p, o in assertion_rdf:
             assertion_rdf.remove((s, p, o))
