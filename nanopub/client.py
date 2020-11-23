@@ -2,15 +2,14 @@ import os
 import random
 import tempfile
 import warnings
-from enum import Enum, unique
 
 import rdflib
 import requests
 
 from nanopub import namespaces, profile
 from nanopub.definitions import DEFAULT_NANOPUB_URI
-from nanopub.publication import Publication
 from nanopub.java_wrapper import JavaWrapper
+from nanopub.publication import Publication
 
 NANOPUB_GRLC_URLS = ["http://grlc.nanopubs.lod.labs.vu.nl/api/local/local/",
                      "http://130.60.24.146:7881/api/local/local/",
@@ -21,13 +20,6 @@ NANOPUB_GRLC_URLS = ["http://grlc.nanopubs.lod.labs.vu.nl/api/local/local/",
 NANOPUB_TEST_GRLC_URL = 'http://test-grlc.nanopubs.lod.labs.vu.nl/api/local/local/'
 NANOPUB_FETCH_FORMAT = 'trig'
 NANOPUB_TEST_URL = 'http://test-server.nanopubs.lod.labs.vu.nl/'
-
-@unique
-class Formats(Enum):
-    """
-    Enums to specify the format of nanopub desired
-    """
-    TRIG = 'trig'
 
 
 class NanopubClient:
