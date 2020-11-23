@@ -6,12 +6,11 @@ from pathlib import Path
 from typing import Union, Tuple
 
 import click
-from rdflib import Graph, FOAF, BNode, Literal, URIRef
+import rdflib
 
-from nanopub import profile, Publication, NanopubClient
+from nanopub import profile, Publication, NanopubClient, namespaces
 from nanopub.definitions import USER_CONFIG_DIR
 from nanopub.java_wrapper import JavaWrapper
-from nanopub.namespaces import NPX, ORCID
 
 PRIVATE_KEY_FILE = 'id_rsa'
 PUBLIC_KEY_FILE = 'id_rsa.pub'
@@ -117,21 +116,24 @@ def _delete_keys():
     os.remove(DEFAULT_PRIVATE_KEY_PATH)
 
 
-def _create_this_is_me_rdf(orcid_id: str, public_key: str, name: str) -> Tuple[Graph, BNode]:
+def _create_this_is_me_rdf(orcid_id: str, public_key: str, name: str
+                           ) -> Tuple[rdflib.Graph, rdflib.BNode]:
     """
     Create a set of RDF triples declaring the existence of the user with associated ORCID iD.
     """
-    my_assertion = Graph()
+    assertion = rdflib.Graph()
+    assertion.bind('foaf', rdflib.FOAF)
+    assertion.bind("npx", namespaces.NPX)
 
-    key_declaration = BNode('keyDeclaration')
-    orcid_node = URIRef(orcid_id)
+    key_declaration = rdflib.BNode('keyDeclaration')
+    orcid_node = rdflib.URIRef(orcid_id)
 
-    my_assertion.add((key_declaration, NPX.declaredBy, orcid_node))
-    my_assertion.add((key_declaration, NPX.hasAlgorithm, Literal(RSA)))
-    my_assertion.add((key_declaration, NPX.hasPublicKey, Literal(public_key)))
-    my_assertion.add((orcid_node, FOAF.name, Literal(name)))
+    assertion.add((key_declaration, namespaces.NPX.declaredBy, orcid_node))
+    assertion.add((key_declaration, namespaces.NPX.hasAlgorithm, rdflib.Literal(RSA)))
+    assertion.add((key_declaration, namespaces.NPX.hasPublicKey, rdflib.Literal(public_key)))
+    assertion.add((orcid_node, rdflib.FOAF.name, rdflib.Literal(name)))
 
-    return my_assertion, key_declaration
+    return assertion, key_declaration
 
 
 def _rsa_keys_exist():

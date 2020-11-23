@@ -91,6 +91,9 @@ class Publication:
 
         # Set up different contexts
         rdf = rdflib.ConjunctiveGraph()
+        # Use namespaces from assertion_rdf
+        for prefix, namespace in assertion_rdf.namespaces():
+            rdf.bind(prefix, namespace)
         head = rdflib.Graph(rdf.store, this_np.Head)
         assertion = rdflib.Graph(rdf.store, this_np.assertion)
         provenance = rdflib.Graph(rdf.store, this_np.provenance)
