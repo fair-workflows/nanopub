@@ -59,8 +59,8 @@ class Publication:
     @classmethod
     def from_assertion(cls, assertion_rdf: rdflib.Graph,
                        introduces_concept: rdflib.term.BNode = None,
-                       derived_from=None, attributed_to=None,
-                       attribute_to_profile: bool = False, nanopub_author=None):
+                       derived_from=None, assertion_attributed_to=None,
+                       attribute_assertion_to_profile: bool = False):
         """
         Construct Nanopub object based on given assertion. Any blank nodes in the rdf graph are
         replaced with the nanopub's URI, with the blank node name as a fragment. For example, if
@@ -75,25 +75,20 @@ class Publication:
                 node's name.
             derived_from: Add a triple to the provenance graph stating that this nanopub's assertion prov:wasDerivedFrom the given URI.
                           If a list of URIs is passed, a provenance triple will be generated for each.
-            attributed_to: the provenance graph will note that this nanopub prov:wasAttributedTo
-                the given URI.
-            attribute_to_profile: Attribute the nanopub to the ORCID iD in the profile
-            nanopub_author: the pubinfo graph will note that this nanopub prov:wasAttributedTo the
-                given URI. If no nanopub_author is provided we default to the author from the
-                profile
+            assertion_attributed_to: the provenance graph will note that this nanopub's assertion
+                prov:wasAttributedTo the given URI.
+            attribute_assertion_to_profile: Attribute the assertion to the ORCID iD in the profile
+
         """
-
-        if nanopub_author is None and profile.get_orcid_id() is not None:
-            nanopub_author = rdflib.URIRef(profile.get_orcid_id())
-
-        if attributed_to and attribute_to_profile:
-            raise ValueError('If you pass a URI for the attributed_to argument, you cannot pass '
-                             'attribute_to_profile=True, because the nanopub will already be '
-                             'attributed to the value passed in attributed_to argument. Set '
-                             'attribute_to_profile=False or do not pass the attributed_to '
-                             'argument.')
-        if attribute_to_profile and profile.get_orcid_id() is not None:
-            attributed_to = rdflib.URIRef(profile.get_orcid_id())
+        if assertion_attributed_to and attribute_assertion_to_profile:
+            raise ValueError(
+                'If you pass a URI for the assertion_attributed_to argument, you cannot pass '
+                'attribute_assertion_to_profile=True, because the assertion will already be '
+                'attributed to the value passed in assertion_attributed_to argument. Set '
+                'attribute_assertion_to_profile=False or do not pass the assertion_attributed_to '
+                'argument.')
+        if attribute_assertion_to_profile:
+            assertion_attributed_to = rdflib.URIRef(profile.get_orcid_id())
 
         if introduces_concept and not isinstance(introduces_concept, rdflib.term.BNode):
             raise ValueError('If you want a nanopublication to introduce a concept, you need to '
@@ -108,6 +103,9 @@ class Publication:
 
         # Set up different contexts
         rdf = rdflib.ConjunctiveGraph()
+        # Use namespaces from assertion_rdf
+        for prefix, namespace in assertion_rdf.namespaces():
+            rdf.bind(prefix, namespace)
         head = rdflib.Graph(rdf.store, this_np.Head)
         assertion = rdflib.Graph(rdf.store, this_np.assertion)
         provenance = rdflib.Graph(rdf.store, this_np.provenance)
@@ -134,11 +132,11 @@ class Publication:
 
         pub_info.add((this_np[''], namespaces.PROV.generatedAtTime, creationtime))
 
-        if attributed_to:
-            attributed_to = rdflib.URIRef(attributed_to)
+        if assertion_attributed_to:
+            assertion_attributed_to = rdflib.URIRef(assertion_attributed_to)
             provenance.add((this_np.assertion,
                             namespaces.PROV.wasAttributedTo,
-                            attributed_to))
+                            assertion_attributed_to))
 
         if derived_from:
             uris = []
@@ -155,11 +153,10 @@ class Publication:
                                 namespaces.PROV.wasDerivedFrom,
                                 derived_from_uri))
 
-        if nanopub_author:
-            nanopub_author = rdflib.URIRef(nanopub_author)
-            pub_info.add((this_np[''],
-                          namespaces.PROV.wasAttributedTo,
-                          nanopub_author))
+        # Always attribute the nanopublication (not the assertion) to the ORCID iD in user profile
+        pub_info.add((this_np[''],
+                      namespaces.PROV.wasAttributedTo,
+                      rdflib.URIRef(profile.get_orcid_id())))
 
         if introduces_concept:
             # Convert introduces_concept URI to an rdflib term first (if necessary)
