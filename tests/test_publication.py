@@ -4,6 +4,7 @@ import rdflib
 from rdflib.namespace import RDF
 
 from nanopub import namespaces, Publication
+from nanopub.definitions import DUMMY_NANOPUB_URI
 
 TEST_ASSERTION = (namespaces.AUTHOR.DrBob, namespaces.HYCL.claims, rdflib.Literal('This is a test'))
 TEST_ORCID_ID = 'https://orcid.org/0000-0000-0000-0000'
@@ -14,25 +15,22 @@ class TestPublication:
         """
         Test Publication construction from assertion where a BNode is introduced as a concept.
         """
-        test_uri = 'http://www.example.com/my-nanopub'
-        test_concept_uri = 'http://www.example.com/my-nanopub#DrBob'  # This nanopub introduced DrBob
         assertion_rdf = rdflib.Graph()
         assertion_rdf.add(TEST_ASSERTION)
 
         publication = Publication.from_assertion(
             assertion_rdf=assertion_rdf,
-            uri=rdflib.term.URIRef(test_uri),
             introduces_concept=rdflib.term.BNode('DrBob'),
             derived_from=rdflib.term.URIRef('http://www.example.com/another-nanopub'),
             attributed_to=TEST_ORCID_ID
         )
+        test_concept_uri = DUMMY_NANOPUB_URI + '#DrBob'  # This nanopub introduced DrBob
         assert str(publication.introduces_concept) == test_concept_uri
 
     def test_construction_with_derived_from_as_list(self):
         """
         Test Publication construction from assertion where derived_from is a list.
         """
-        test_uri = 'http://www.example.com/my-nanopub'
         derived_from_list = [   'http://www.example.com/another-nanopub', # This nanopub is derived from several sources
                                 'http://www.example.com/and-another-nanopub',
                                 'http://www.example.com/and-one-more' ]
@@ -41,7 +39,6 @@ class TestPublication:
 
         publication = Publication.from_assertion(
             assertion_rdf=assertion_rdf,
-            uri=rdflib.term.URIRef(test_uri),
             derived_from=derived_from_list,
             attributed_to=TEST_ORCID_ID
         )
