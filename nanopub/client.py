@@ -171,10 +171,13 @@ class NanopubClient:
         else:
             raise ValueError(f'Format not supported: {format}, choose from '
                              f'{[format.value for format in Formats]})')
-        if self.use_test_server:
+
+        r = requests.get(uri + extension)
+        if not r.ok and self.use_test_server:
+            # Let's try the test server
             nanopub_id = uri.rsplit('/', 1)[-1]
             uri = NANOPUB_TEST_URL + nanopub_id
-        r = requests.get(uri + extension)
+            r = requests.get(uri + extension)
         r.raise_for_status()
 
         nanopub_rdf = rdflib.ConjunctiveGraph()
