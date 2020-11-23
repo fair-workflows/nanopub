@@ -218,7 +218,7 @@ class NanopubClient:
         assertion_rdf.add((this_statement, rdflib.RDFS.label, rdflib.Literal(statement_text)))
 
         publication = Publication.from_assertion(assertion_rdf=assertion_rdf,
-                                                 attribute_to_profile=True)
+                                                 attribute_assertion_to_profile=True)
 
         # TODO: This is a hacky solution, should be changed once we can add provenance triples to
         #  from_assertion method.
@@ -226,9 +226,6 @@ class NanopubClient:
                                     namespaces.HYCL.claims,
                                     rdflib.URIRef(DEFAULT_NANOPUB_URI + '#mystatement')))
         self.publish(publication)
-
-        nanopub = Publication.from_assertion(assertion_rdf=assertion_rdf)
-        self.publish(nanopub)
 
     def _check_public_keys_match(self, uri):
         """ Check for matching public keys of a nanopublication with the profile.
