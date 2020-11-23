@@ -104,7 +104,7 @@ def main(orcid_id, publish, name, keypair: Union[Tuple[Path, Path], None]):
     if publish:
         assertion, concept = _create_this_is_me_rdf(orcid_id, public_key, name)
         np = Publication.from_assertion(assertion, introduces_concept=concept, nanopub_author=orcid_id,
-                                        attributed_to=orcid_id)
+                                        assertion_attributed_to=orcid_id)
 
         client = NanopubClient()
         result = client.publish(np)

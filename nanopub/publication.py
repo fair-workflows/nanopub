@@ -32,8 +32,8 @@ class Publication:
 
     @classmethod
     def from_assertion(cls, assertion_rdf, uri=DEFAULT_NANOPUB_URI, introduces_concept=None,
-                       derived_from=None, attributed_to=None,
-                       attribute_to_profile: bool = False):
+                       derived_from=None, assertion_attributed_to=None,
+                       attribute_assertion_to_profile: bool = False):
         """
         Construct Nanopub object based on given assertion, with given assertion and (defrag'd) URI.
         Any blank nodes in the rdf graph are replaced with the nanopub's URI, with the blank node name
@@ -47,19 +47,20 @@ class Publication:
         Args:
             derived_from: Add that this nanopub prov:wasDerivedFrom the given URI to the provenance graph.
                           If a list of URIs is passed, a provenance triple will be generated for each.
-            attributed_to: the provenance graph will note that this nanopub prov:wasAttributedTo
-                the given URI.
-            attribute_to_profile: Attribute the nanopub to the ORCID iD in the profile
+            assertion_attributed_to: the provenance graph will note that this nanopub's assertion
+                prov:wasAttributedTo the given URI.
+            attribute_assertion_to_profile: Attribute the nanopub to the ORCID iD in the profile
 
         """
-        if attributed_to and attribute_to_profile:
-            raise ValueError('If you pass a URI for the attributed_to argument, you cannot pass '
-                             'attribute_to_profile=True, because the nanopub will already be '
-                             'attributed to the value passed in attributed_to argument. Set '
-                             'attribute_to_profile=False or do not pass the attributed_to '
-                             'argument.')
-        if attribute_to_profile and profile.get_orcid_id() is not None:
-            attributed_to = rdflib.URIRef(profile.get_orcid_id())
+        if assertion_attributed_to and attribute_assertion_to_profile:
+            raise ValueError(
+                'If you pass a URI for the assertion_attributed_to argument, you cannot pass '
+                'attribute_assertion_to_profile=True, because the assertion will already be '
+                'attributed to the value passed in assertion_attributed_to argument. Set '
+                'attribute_assertion_to_profile=False or do not pass the assertion_attributed_to '
+                'argument.')
+        if attribute_assertion_to_profile:
+            assertion_attributed_to = rdflib.URIRef(profile.get_orcid_id())
 
         # Make sure passed URI is defrag'd
         uri = str(uri)
@@ -116,11 +117,11 @@ class Publication:
 
         pub_info.add((this_np[''], namespaces.PROV.generatedAtTime, creationtime))
 
-        if attributed_to:
-            attributed_to = rdflib.URIRef(attributed_to)
+        if assertion_attributed_to:
+            assertion_attributed_to = rdflib.URIRef(assertion_attributed_to)
             provenance.add((this_np.assertion,
                             namespaces.PROV.wasAttributedTo,
-                            attributed_to))
+                            assertion_attributed_to))
 
         if derived_from:
             uris = []
