@@ -16,6 +16,10 @@ class TestPublication:
                         namespaces.HYCL.claims,
                         rdflib.Literal('This is a test')))
 
+    def test_from_assertion_introduced_concept_not_blank_node(self):
+        with pytest.raises(ValueError):
+            Publication.from_assertion(self.test_assertion, introduces_concept='not a blank node')
+
     def test_construction_with_bnode_introduced_concept(self):
         """
         Test Publication construction from assertion where a BNode is introduced as a concept.

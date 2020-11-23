@@ -56,7 +56,7 @@ class Publication:
             assertion_rdf.add((s, p, o))
 
     @classmethod
-    def from_assertion(cls, assertion_rdf, introduces_concept=None,
+    def from_assertion(cls, assertion_rdf, introduces_concept: rdflib.term.BNode=None,
                        derived_from=None, attributed_to=None,
                        attribute_to_profile: bool = False, nanopub_author=None):
         """
@@ -92,6 +92,12 @@ class Publication:
                              'argument.')
         if attribute_to_profile and profile.get_orcid_id() is not None:
             attributed_to = rdflib.URIRef(profile.get_orcid_id())
+
+        if not isinstance(introduces_concept, rdflib.term.BNode):
+            raise ValueError('If you want a nanopublication to introduce a concept, you need to '
+                             'pass it as an rdflib.term.BNode("concept_name"). This will make '
+                             'sure it is referred to from the nanopublication uri namespace upon '
+                             'publishing.')
 
         # To be replaced with the published uri upon publishing
         this_np = rdflib.Namespace(DUMMY_NANOPUB_URI + '#')
