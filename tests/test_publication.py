@@ -46,11 +46,14 @@ class TestPublication:
         for uri in derived_from_list:
             assert (None, namespaces.PROV.wasDerivedFrom, rdflib.URIRef(uri)) in publication.rdf
 
-    def test_from_assertion(self):
+    @mock.patch('nanopub.publication.profile')
+    def test_from_assertion(self, mock_profile):
         """
         Test that Publication.from_assertion is creating an rdf graph with the right features (
         contexts) for a publication.
         """
+        mock_profile.get_orcid_id.return_value = TEST_ORCID_ID
+
         assertion_rdf = rdflib.Graph()
         assertion_rdf.add(TEST_ASSERTION)
 
@@ -73,12 +76,4 @@ class TestPublication:
 
         assert (None, namespaces.NPX.introduces, new_concept) in nanopub.rdf
 
-    @mock.patch('nanopub.publication.profile')
-    def test_from_assertion_use_profile(self, mock_profile):
-        mock_profile.get_orcid_id.return_value = TEST_ORCID_ID
-        assertion = rdflib.Graph()
-        assertion.add(TEST_ASSERTION)
-
-        result = Publication.from_assertion(assertion_rdf=assertion)
-
-        assert (None, None, rdflib.URIRef(TEST_ORCID_ID)) in result.rdf
+        assert (None, None, rdflib.URIRef(TEST_ORCID_ID)) in nanopub.rdf
