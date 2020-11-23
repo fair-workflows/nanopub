@@ -112,24 +112,6 @@ class TestNanopubClient:
         client.claim('Some controversial statement', rdftriple=optional_triple)
 
     def test_nanopub_publish(self):
-        test_uri = 'http://www.example.com/my-nanopub'
-        test_concept_uri = 'http://purl.org/person#DrBob'  # This nanopub introduced DrBob
-        client = NanopubClient()
-        client.java_wrapper.publish = mock.MagicMock(return_value=test_uri)
-        assertion_rdf = rdflib.Graph()
-        assertion_rdf.add(TEST_ASSERTION)
-
-        nanopub = Publication.from_assertion(
-            assertion_rdf=assertion_rdf,
-            uri=rdflib.term.URIRef(test_uri),
-            introduces_concept=namespaces.AUTHOR.DrBob,
-            derived_from=rdflib.term.URIRef('http://www.example.com/another-nanopub')
-        )
-        pubinfo = client.publish(nanopub)
-        assert pubinfo['nanopub_uri'] == test_uri
-        assert pubinfo['concept_uri'] == test_concept_uri
-
-    def test_nanopub_publish_blanknode(self):
         test_concept = rdflib.term.BNode('test')
         test_published_uri = 'http://www.example.com/my-nanopub'
         expected_concept_uri = 'http://www.example.com/my-nanopub#test'
