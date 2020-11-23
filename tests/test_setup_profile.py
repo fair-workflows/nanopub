@@ -55,9 +55,8 @@ def test_provided_keypair_copied_to_nanopub_dir(tmp_path: Path):
 
 
 def test_validate_orcid_id():
-    valid_ids = ['https://orcid.org/1234-5678-1234-5678', '']
-    for orcid_id in valid_ids:
-        validate_orcid_id(ctx=None, orcid_id=orcid_id)
+    valid_id = 'https://orcid.org/1234-5678-1234-5678'
+    assert validate_orcid_id(ctx=None, orcid_id=valid_id) == valid_id
     invalid_ids = ['https://orcid.org/abcd-efgh-abcd-efgh',
                    'https://orcid.org/1234-5678-1234-567',
                    'https://orcid.org/1234-5678-1234-56789',
