@@ -8,8 +8,8 @@ from nanopub.definitions import PROFILE_PATH
 
 ORCID_ID = 'orcid_id'
 NAME = 'name'
-PUBLIC_KEY = 'public_key'
-PRIVATE_KEY = 'private_key'
+PUBLIC_KEY_FILEPATH = 'public_key'
+PRIVATE_KEY_FILEPATH = 'private_key'
 PROFILE_NANOPUB = 'profile_nanopub'
 
 
@@ -28,6 +28,12 @@ def get_orcid_id():
     return orcid_id
 
 
+def get_public_key():
+    filepath = get_profile()[PUBLIC_KEY_FILEPATH]
+    with open(filepath, 'r') as f:
+        return f.read()
+
+
 @lru_cache()
 def get_profile() -> Dict[str, any]:
     """
@@ -43,8 +49,8 @@ def get_profile() -> Dict[str, any]:
 
 def store_profile(name: str, orcid_id: str, public_key: Path, private_key: Path,
                   profile_nanopub_uri: str = None):
-    profile = {NAME: name, ORCID_ID: orcid_id, PUBLIC_KEY: str(public_key),
-               PRIVATE_KEY: str(private_key)}
+    profile = {NAME: name, ORCID_ID: orcid_id, PUBLIC_KEY_FILEPATH: str(public_key),
+               PRIVATE_KEY_FILEPATH: str(private_key)}
 
     if profile_nanopub_uri:
         profile[PROFILE_NANOPUB] = profile_nanopub_uri
