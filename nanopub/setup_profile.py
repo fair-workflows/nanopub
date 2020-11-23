@@ -95,15 +95,16 @@ def main(orcid_id, publish, name, keypair: Union[Tuple[Path, Path], None]):
 
     # Public key can always be found at DEFAULT_PUBLIC_KEY_PATH. Either new keys have been generated there or
     # existing keys have been copy to that location.
-    public_key_path = DEFAULT_PUBLIC_KEY_PATH
-    public_key = public_key_path.read_text()
+    public_key = DEFAULT_PUBLIC_KEY_PATH.read_text()
 
     profile_nanopub_uri = None
+    profile.store_profile(name, orcid_id, DEFAULT_PUBLIC_KEY_PATH, DEFAULT_PRIVATE_KEY_PATH,
+                          profile_nanopub_uri)
 
     # Declare the user to nanopub
     if publish:
         assertion, concept = _create_this_is_me_rdf(orcid_id, public_key, name)
-        np = Publication.from_assertion(assertion, introduces_concept=concept, nanopub_author=orcid_id,
+        np = Publication.from_assertion(assertion, introduces_concept=concept,
                                         assertion_attributed_to=orcid_id)
 
         client = NanopubClient()
@@ -111,9 +112,9 @@ def main(orcid_id, publish, name, keypair: Union[Tuple[Path, Path], None]):
 
         profile_nanopub_uri = result['concept_uri']
 
-    # Keys are always stored or copied to default location
-    profile.store_profile(name, orcid_id, public_key_path, DEFAULT_PRIVATE_KEY_PATH,
-                          profile_nanopub_uri)
+        # Store profile nanopub uri
+        profile.store_profile(name, orcid_id, DEFAULT_PUBLIC_KEY_PATH, DEFAULT_PRIVATE_KEY_PATH,
+                              profile_nanopub_uri)
 
 
 def _delete_keys():
