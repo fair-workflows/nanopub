@@ -226,7 +226,7 @@ class NanopubClient:
         publication.provenance.add((rdflib.URIRef(profile.get_orcid_id()),
                                     namespaces.HYCL.claims,
                                     rdflib.URIRef(DUMMY_NANOPUB_URI + '#mystatement')))
-        self.publish(publication)
+        return self.publish(publication)
 
     def _check_public_keys_match(self, uri):
         """ Check for matching public keys of a nanopublication with the profile.

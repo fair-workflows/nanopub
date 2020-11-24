@@ -35,6 +35,7 @@ def get_public_key():
     if not public_key:
         raise ProfileError('Your profile was not setup yet or not setup correctly. To setup '
                            'your profile see instructions in Readme.md')
+    return public_key
 
 
 @lru_cache()
