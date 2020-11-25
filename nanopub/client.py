@@ -8,7 +8,6 @@ import requests
 
 from nanopub import namespaces, profile
 from nanopub.definitions import DUMMY_NANOPUB_URI
-from nanopub.publication import Publication
 from nanopub.java_wrapper import JavaWrapper
 from nanopub.publication import Publication
 
@@ -192,7 +191,7 @@ class NanopubClient:
 
         if nanopub.introduces_concept:
             concept_uri = str(nanopub.introduces_concept)
-            # Replace the DEFAULT_NANOPUB_URI with the actually published nanopub uri. # This is
+            # Replace the DUMMY_NANOPUB_URI with the actually published nanopub uri. This is
             # necessary if a blank node was passed as introduces_concept. In that case the
             # Nanopub.from_assertion method replaces the blank node with the base nanopub's URI
             # and appends a fragment, given by the 'name' of the blank node. For example, if a
