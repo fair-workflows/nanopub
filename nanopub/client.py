@@ -8,7 +8,6 @@ import requests
 
 from nanopub import namespaces, profile
 from nanopub.definitions import DUMMY_NANOPUB_URI
-from nanopub.publication import Publication
 from nanopub.java_wrapper import JavaWrapper
 from nanopub.publication import Publication
 
