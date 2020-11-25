@@ -1,4 +1,4 @@
 rdflib<6.0.0,>=5.0.0
 requests
 click
-pyyaml
+yatiml==0.6.1
