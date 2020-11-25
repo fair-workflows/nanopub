@@ -102,6 +102,25 @@ class Publication:
                              'sure it is referred to from the nanopublication uri namespace upon '
                              'publishing.')
 
+        if provenance_rdf:
+            if derived_from and (None, namespaces.PROV.wasDerivedFrom, None) in provenance_rdf:
+                raise ValueError('The provenance_rdf that you passed already contains the '
+                                 'prov:wasDerivedFrom predicate, so you can not also use the '
+                                 'derived_from argument')
+            if assertion_attributed_to and (None, namespaces.PROV.wasAttributedTo, None) in provenance_rdf:
+                raise ValueError('The provenance_rdf that you passed already contains the '
+                                 'prov:wasAttributedTo predicate, so you can not also use the '
+                                 'assertion_attributed_to argument')
+            if attribute_assertion_to_profile and (None, namespaces.PROV.wasAttributedTo, None) in provenance_rdf:
+                raise ValueError('The provenance_rdf that you passed already contains the '
+                                 'prov:wasAttributedTo predicate, so you can not also use the '
+                                 'attribute_assertion_to_profile argument')
+        if pubinfo_rdf:
+            if introduces_concept and (None, namespaces.NPX.introduces, None) in pubinfo_rdf:
+                raise ValueError('The pubinfo_rdf that you passed already contains the '
+                                 'npx:introduces predicate, so you can not also use the '
+                                 'introduces_concept argument')
+
         # To be replaced with the published uri upon publishing
         this_np = rdflib.Namespace(DUMMY_NANOPUB_URI + '#')
 

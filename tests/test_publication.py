@@ -69,6 +69,40 @@ class TestPublication:
                                                  pubinfo_rdf=self.test_rdf)
         assert self.test_triple in publication.pubinfo
 
+    def test_from_assertion_double_derived_from_predicate(self):
+        triple = (rdflib.term.BNode(''), namespaces.PROV.wasDerivedFrom, rdflib.URIRef('example'))
+        provenance_rdf = rdflib.Graph()
+        provenance_rdf.add(triple)
+        with pytest.raises(ValueError):
+            Publication.from_assertion(assertion_rdf=self.test_rdf,
+                                       provenance_rdf=provenance_rdf,
+                                       derived_from=rdflib.URIRef('example'))
+        Publication.from_assertion(assertion_rdf=self.test_rdf)
+
+    def test_from_assertion_double_attributed_to_predicate(self):
+        triple = (rdflib.term.BNode(''), namespaces.PROV.wasAttributedTo, rdflib.URIRef('example'))
+        provenance_rdf = rdflib.Graph()
+        provenance_rdf.add(triple)
+        with pytest.raises(ValueError):
+            Publication.from_assertion(assertion_rdf=self.test_rdf,
+                                       provenance_rdf=provenance_rdf,
+                                       assertion_attributed_to=rdflib.URIRef('example'))
+        with pytest.raises(ValueError):
+            Publication.from_assertion(assertion_rdf=self.test_rdf,
+                                       provenance_rdf=provenance_rdf,
+                                       attribute_assertion_to_profile=True)
+        Publication.from_assertion(assertion_rdf=self.test_rdf)
+
+    def test_from_assertion_double_introduces_predicate(self):
+        triple = (rdflib.term.BNode(''), namespaces.NPX.introduces, rdflib.URIRef('example'))
+        pubinfo_rdf = rdflib.Graph()
+        pubinfo_rdf.add(triple)
+        with pytest.raises(ValueError):
+            Publication.from_assertion(assertion_rdf=self.test_rdf,
+                                       pubinfo_rdf=pubinfo_rdf,
+                                       introduces_concept=rdflib.URIRef('example'))
+        Publication.from_assertion(assertion_rdf=self.test_rdf)
+
 
 def test_replace_in_rdf():
     g = rdflib.Graph()
