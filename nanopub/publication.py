@@ -32,7 +32,7 @@ class Publication:
                     f'Expected to find {expected} graph in nanopub rdf, but not found. Graphs found: {list(self._graphs.keys())}.')
 
     @staticmethod
-    def _replace_blank_nodes(dummy_namespace, assertion_rdf):
+    def _replace_blank_nodes(dummy_namespace, rdf):
         """ Replace blank nodes.
 
         Replace any blank nodes in the supplied RDF with a corresponding uri in the
@@ -48,19 +48,22 @@ class Publication:
         nanopublication's URI), but it should still lie within the space of the nanopub.
         Furthermore, the URI the nanopub is published to is not known ahead of time.
         """
-        for s, p, o in assertion_rdf:
-            assertion_rdf.remove((s, p, o))
+        for s, p, o in rdf:
+            rdf.remove((s, p, o))
             if isinstance(s, rdflib.term.BNode):
                 s = dummy_namespace[str(s)]
             if isinstance(o, rdflib.term.BNode):
                 o = dummy_namespace[str(o)]
-            assertion_rdf.add((s, p, o))
+            rdf.add((s, p, o))
 
     @classmethod
     def from_assertion(cls, assertion_rdf: rdflib.Graph,
                        introduces_concept: rdflib.term.BNode = None,
                        derived_from=None, assertion_attributed_to=None,
-                       attribute_assertion_to_profile: bool = False):
+                       attribute_assertion_to_profile: bool = False,
+                       provenance_rdf: rdflib.Graph = None,
+                       pubinfo_rdf: rdflib.Graph = None
+                       ):
         """
         Construct Nanopub object based on given assertion. Any blank nodes in the rdf graph are
         replaced with the nanopub's URI, with the blank node name as a fragment. For example, if
@@ -78,7 +81,10 @@ class Publication:
             assertion_attributed_to: the provenance graph will note that this nanopub's assertion
                 prov:wasAttributedTo the given URI.
             attribute_assertion_to_profile: Attribute the assertion to the ORCID iD in the profile
-
+            provenance_rdf: RDF triples to be added to provenance graph of the nanopublication.
+                This is optional, for most cases the defaults will be sufficient.
+            pubinfo_rdf: RDF triples to be added to the publication info graph of the
+                nanopublication. This is optional, for most cases the defaults will be sufficient.
         """
         if assertion_attributed_to and attribute_assertion_to_profile:
             raise ValueError(
@@ -99,38 +105,41 @@ class Publication:
         # To be replaced with the published uri upon publishing
         this_np = rdflib.Namespace(DUMMY_NANOPUB_URI + '#')
 
-        cls._replace_blank_nodes(dummy_namespace=this_np, assertion_rdf=assertion_rdf)
-
         # Set up different contexts
-        rdf = rdflib.ConjunctiveGraph()
-        # Use namespaces from assertion_rdf
-        for prefix, namespace in assertion_rdf.namespaces():
-            rdf.bind(prefix, namespace)
-        head = rdflib.Graph(rdf.store, this_np.Head)
-        assertion = rdflib.Graph(rdf.store, this_np.assertion)
-        provenance = rdflib.Graph(rdf.store, this_np.provenance)
-        pub_info = rdflib.Graph(rdf.store, this_np.pubInfo)
+        main_graph = rdflib.ConjunctiveGraph()
+        head = rdflib.Graph(main_graph.store, this_np.Head)
+        assertion = rdflib.Graph(main_graph.store, this_np.assertion)
+        provenance = rdflib.Graph(main_graph.store, this_np.provenance)
+        pubinfo = rdflib.Graph(main_graph.store, this_np.pubInfo)
 
-        rdf.bind("", this_np)
-        rdf.bind("np", namespaces.NP)
-        rdf.bind("npx", namespaces.NPX)
-        rdf.bind("prov", namespaces.PROV)
-        rdf.bind("hycl", namespaces.HYCL)
-        rdf.bind("dc", DC)
-        rdf.bind("dcterms", DCTERMS)
+        main_graph.bind("", this_np)
+        main_graph.bind("np", namespaces.NP)
+        main_graph.bind("npx", namespaces.NPX)
+        main_graph.bind("prov", namespaces.PROV)
+        main_graph.bind("hycl", namespaces.HYCL)
+        main_graph.bind("dc", DC)
+        main_graph.bind("dcterms", DCTERMS)
 
         head.add((this_np[''], RDF.type, namespaces.NP.Nanopublication))
         head.add((this_np[''], namespaces.NP.hasAssertion, this_np.assertion))
         head.add((this_np[''], namespaces.NP.hasProvenance, this_np.provenance))
-        head.add((this_np[''], namespaces.NP.hasPublicationInfo,
-                  this_np.pubInfo))
+        head.add((this_np[''], namespaces.NP.hasPublicationInfo, this_np.pubInfo))
 
+        for user_rdf in [assertion_rdf, provenance_rdf, pubinfo_rdf]:
+            if user_rdf is not None:
+                for prefix, namespace in user_rdf.namespaces():
+                    main_graph.bind(prefix, namespace)
+                cls._replace_blank_nodes(dummy_namespace=this_np, rdf=user_rdf)
         assertion += assertion_rdf
+        if provenance_rdf is not None:
+            provenance += provenance_rdf
+        if pubinfo_rdf is not None:
+            pubinfo += pubinfo_rdf
 
         creationtime = rdflib.Literal(datetime.now(), datatype=XSD.dateTime)
         provenance.add((this_np.assertion, namespaces.PROV.generatedAtTime, creationtime))
 
-        pub_info.add((this_np[''], namespaces.PROV.generatedAtTime, creationtime))
+        pubinfo.add((this_np[''], namespaces.PROV.generatedAtTime, creationtime))
 
         if assertion_attributed_to:
             assertion_attributed_to = rdflib.URIRef(assertion_attributed_to)
@@ -154,7 +163,7 @@ class Publication:
                                 derived_from_uri))
 
         # Always attribute the nanopublication (not the assertion) to the ORCID iD in user profile
-        pub_info.add((this_np[''],
+        pubinfo.add((this_np[''],
                       namespaces.PROV.wasAttributedTo,
                       rdflib.URIRef(profile.get_orcid_id())))
 
@@ -165,11 +174,11 @@ class Publication:
             else:
                 introduces_concept = rdflib.URIRef(introduces_concept)
 
-            pub_info.add((this_np[''],
+            pubinfo.add((this_np[''],
                           namespaces.NPX.introduces,
                           introduces_concept))
 
-        return cls(rdf=rdf)
+        return cls(rdf=main_graph)
 
     @property
     def rdf(self):

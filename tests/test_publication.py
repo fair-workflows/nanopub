@@ -11,9 +11,8 @@ TEST_ORCID_ID = 'https://orcid.org/0000-0000-0000-0000'
 
 class TestPublication:
     test_rdf = rdflib.Graph()
-    test_rdf.add((namespaces.AUTHOR.DrBob,
-                  rdflib.RDF.type,
-                  rdflib.FOAF.Person))
+    test_triple = (namespaces.AUTHOR.DrBob, rdflib.RDF.type, rdflib.FOAF.Person)
+    test_rdf.add(test_triple)
 
     def test_from_assertion_introduced_concept_not_bnode(self):
         with pytest.raises(ValueError):
@@ -59,6 +58,16 @@ class TestPublication:
         assert (None, namespaces.NP.hasProvenance, None) in publication.rdf
         assert (None, namespaces.NP.hasPublicationInfo, None) in publication.rdf
         assert (None, None, rdflib.URIRef(TEST_ORCID_ID)) in publication.rdf
+
+    def test_from_assertion_provide_provenance_rdf(self):
+        publication = Publication.from_assertion(assertion_rdf=self.test_rdf,
+                                                 provenance_rdf=self.test_rdf)
+        assert self.test_triple in publication.provenance
+
+    def test_from_assertion_provide_pub_info_rdf(self):
+        publication = Publication.from_assertion(assertion_rdf=self.test_rdf,
+                                                 pubinfo_rdf=self.test_rdf)
+        assert self.test_triple in publication.pubinfo
 
 
 def test_replace_in_rdf():
