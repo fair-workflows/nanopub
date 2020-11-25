@@ -64,7 +64,7 @@ class TestPublication:
                                                  provenance_rdf=self.test_rdf)
         assert self.test_triple in publication.provenance
 
-    def test_from_assertion_provide_pub_info_rdf(self):
+    def test_from_assertion_provide_pubinfo_rdf(self):
         publication = Publication.from_assertion(assertion_rdf=self.test_rdf,
                                                  pubinfo_rdf=self.test_rdf)
         assert self.test_triple in publication.pubinfo
