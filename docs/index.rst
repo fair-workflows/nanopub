@@ -5,6 +5,7 @@
 
 Welcome to nanopub's documentation!
 ===================================
+Documentation for nanopub is still work in progress
 
 .. toctree::
    :maxdepth: 2
