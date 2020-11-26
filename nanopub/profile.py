@@ -60,7 +60,12 @@ def get_orcid_id() -> str:
 
 def get_public_key() -> str:
     """Returns the user's public key."""
-    return get_profile().public_key
+    try:
+        with open(get_profile().public_key, 'r') as f:
+            return f.read()
+    except FileNotFoundError:
+        raise ProfileError('Your profile was not setup yet or not setup correctly. To setup '
+                           'your profile see instructions in Readme.md')
 
 
 @lru_cache()
