@@ -122,9 +122,22 @@ publication = Publication.from_assertion(assertion_rdf=my_assertion,
                                          derived_from=rdflib.URIRef('www.example.org/another-nanopublication'))
 ```
 Note that ```derived_from``` may also be passed a list of URIs.
+                               
+### Specifying custom publication info or provenance triples
+You can add your own triples to the provenance graph of the nanopublication:
+```python
+from nanopub import namespaces
+provenance_rdf = (BNode('timbernserslee'), namespaces.PROV.actedOnBehalfOf, BNode('markzuckerberg'))
+publication = Publication.from_assertion(assertion_rdf=my_assertion,
+                                         provenance_rdf=provenance_rdf)
+```
+and to the publication info graph of the nanopublication:
+```python
+from nanopub import namespaces
+pubinfo_rdf = (BNode('activity'), RDF.type, namespaces.PROV.Activity)
+publication = Publication.from_assertion(assertion_rdf=my_assertion,
+                                         pubinfo_rdf=pubinfo_rdf)
+```
                                          
-
-
-
 ## Dependencies
 The ```nanopub``` library currently uses the [```nanopub-java```](https://github.com/Nanopublication/nanopub-java) tool for signing and publishing new nanopublications. This is automatically installed by the library.
