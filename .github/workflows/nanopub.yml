@@ -48,5 +48,6 @@ jobs:
           coveralls
       - name: Build Sphinx docs
         run: |
+          export PYTHONPATH=$PWD
           cd docs
           make html
