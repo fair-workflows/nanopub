@@ -46,3 +46,7 @@ jobs:
         run: |
           coverage xml
           coveralls
+      - name: Build Sphinx docs
+        run: |
+          cd docs
+          make html
