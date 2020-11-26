@@ -48,4 +48,6 @@ jobs:
           coveralls
       - name: Build Sphinx docs
         run: |
-          sphinx-build docs docs/_build
+          echo $PYTHONPATH
+          cd docs
+          make html
