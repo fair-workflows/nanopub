@@ -41,19 +41,20 @@ Publishing nanopublications
 
 .. code:: python
 
-
+    import rdflib
     from nanopub import Publication, NanopubClient
-    from rdflib import Graph, URIRef, RDF, FOAF
 
-    # Create the client, that allows searching, fetching and publishing nanopubs
-    client = NanopubClient()
+    # Create the client (we use use_test_server=True to point to the test server)
+    client = NanopubClient(use_test_server=True)
 
     # Either quickly publish a statement to the server
     client.claim('All cats are gray')
 
-    # Or: 1. construct a desired assertion (a graph of RDF triples)
-    my_assertion = Graph()
-    my_assertion.add( (URIRef('www.example.org/timbernerslee'), RDF.type, FOAF.Person) )
+    # Or: 1. construct a desired assertion (a graph of RDF triples) using rdflib
+    my_assertion = rdflib.Graph()
+    my_assertion.add( (rdflib.URIRef('www.example.org/timbernerslee'),
+                       rdflib.RDF.type,
+                       rdflib.FOAF.Person) )
 
     # 2. Make a Publication object with this assertion
     publication = Publication.from_assertion(assertion_rdf=my_assertion)
@@ -69,6 +70,9 @@ Searching for nanopublications
 
     from nanopub import NanopubClient
 
+    # Create the client
+    client = NanopubClient()
+
     # Search for all nanopublications containing the text 'fair'
     results = client.find_nanopubs_with_text('fair')
     print(results)
@@ -79,6 +83,11 @@ Fetching nanopublications and inspecting them
 
 .. code:: python
 
+    from nanopub import NanopubClient
+
+    # Create the client
+    client = NanopubClient()
+
     # Fetch the nanopublication at the specified URI
     publication = client.fetch('http://purl.org/np/RApJG4fwj0szOMBMiYGmYvd5MCtRle6VbwkMJUb1SxxDM')
 
@@ -86,7 +95,7 @@ Fetching nanopublications and inspecting them
     print(publication)
 
     # Iterate through all triples in the assertion graph
-    for s, p, o in np.assertion:
+    for s, p, o in publication.assertion:
         print(s, p, o)
 
 Indices and tables
