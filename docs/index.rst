@@ -52,9 +52,9 @@ Publishing nanopublications
 
     # Or: 1. construct a desired assertion (a graph of RDF triples) using rdflib
     my_assertion = rdflib.Graph()
-    my_assertion.add( (rdflib.URIRef('www.example.org/timbernerslee'),
-                       rdflib.RDF.type,
-                       rdflib.FOAF.Person) )
+    my_assertion.add((rdflib.URIRef('www.example.org/timbernerslee'),
+                      rdflib.RDF.type,
+                      rdflib.FOAF.Person))
 
     # 2. Make a Publication object with this assertion
     publication = Publication.from_assertion(assertion_rdf=my_assertion)
