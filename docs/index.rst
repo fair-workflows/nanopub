@@ -7,6 +7,8 @@ Welcome to nanopub's documentation!
 ===================================
 The ``nanopub`` library provides a high-level, user-friendly python
 interface for searching, publishing and retracting nanopublications.
+Nanopublications are FAIR data containers for scientific results
+and more, read more about them on http://nanopub.org/.
 
 Setup
 -----
