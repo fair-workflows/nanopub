@@ -48,5 +48,4 @@ jobs:
           coveralls
       - name: Build Sphinx docs
         run: |
-          cd docs
-          make html
+          sphinx-build docs docs/_build
