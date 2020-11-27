@@ -3,12 +3,21 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+
+   what-are-nanopubs
+
+
 Welcome to nanopub's documentation!
 ===================================
 The ``nanopub`` library provides a high-level, user-friendly python
 interface for searching, publishing and retracting nanopublications.
-Nanopublications are FAIR data containers for scientific results
-and more, read more about them on http://nanopub.org/.
+
+Nanopublications are a formalized and machine-readable way of communicating
+the smallest possible units of publishable information.
+See :doc:`../what-are-nanopubs` for more information.
 
 Setup
 -----
@@ -97,10 +106,3 @@ Fetching nanopublications and inspecting them
     # Iterate through all triples in the assertion graph
     for s, p, o in publication.assertion:
         print(s, p, o)
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
