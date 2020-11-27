@@ -4,10 +4,11 @@
    contain the root `toctree` directive.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :hidden:
 
    what-are-nanopubs
+   setup
 
 
 Welcome to nanopub's documentation!
