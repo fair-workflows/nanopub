@@ -28,7 +28,8 @@ default they are stored under `HOMEDIR/.nanopub/id_rsa` and `HOMEDIR/.nanopub/id
 #### ORCID iD
 This includes your [ORCID iD](https://orcid.org/) (i.e. https://orcid.org/0000-0000-0000-0000).
 If you don't have an ORCID iD yet, you need to [register](https://orcid.org/register). We use
-the ORCID iD to uniquely identify you as a publisher of nanopublications.
+the ORCID iD to automatically add as author to the provenance of any nanopublication you will publish
+using this library.
 
 #### Introductory nanopublication
 We encourage you to make use of `setup_profile`'s option 
