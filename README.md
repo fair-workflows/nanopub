@@ -9,6 +9,10 @@ The ```nanopub``` library provides a high-level, user-friendly python interface 
 Nanopublications are FAIR data containers for scientific results
 and more, read more about them on http://nanopub.org/.
 
+# Documentation
+
+Checkout the [user documentation](https://nanopub.readthedocs.io/)
+
 # Setup
 Install using pip:
 ```
