@@ -15,8 +15,8 @@
    :caption: Publishing
    :hidden:
 
-   publishing-nanopublications
-   using-publication-namespace
+   publishing/publishing-nanopublications
+   publihsing/using-publication-namespace
    controlling-publications
    retraction
 
