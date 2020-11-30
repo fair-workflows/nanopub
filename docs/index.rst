@@ -10,6 +10,17 @@
    what-are-nanopubs
    setup
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Publishing
+   :hidden:
+
+   publishing-nanopublications
+   using-publication-namespace
+   controlling-publications
+   retraction
+
+
 
 Welcome to nanopub's documentation!
 ===================================
