@@ -1,4 +1,4 @@
-# Controlling publication info and provenance
+# Setting publication info and provenance
 Here we show how you can control the publication info and provenance parts 
 of the nanopublication.
 
