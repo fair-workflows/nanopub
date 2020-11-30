@@ -27,6 +27,13 @@
 
    searching
 
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+   :caption: Fetching
+
+   fetching
+
 Welcome to nanopub's documentation!
 ===================================
 The ``nanopub`` library provides a high-level, user-friendly python

@@ -60,7 +60,6 @@ from nanopub import NanopubClient
 results = client.find_nanopubs_with_text('fair')
 print(results)
 
-c
 results = client.find_nanopubs_with_pattern(
                 pred='http://www.w3.org/1999/02/22-rdf-syntax-ns#type',
                 obj='http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement',
