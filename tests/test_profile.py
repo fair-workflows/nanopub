@@ -21,7 +21,7 @@ def test_load_profile(tmpdir):
         assert p.name == 'https://orcid.org/0000-0000-0000-0000'
         assert p.public_key == Path('/home/.nanopub/id_rsa.pub')
         assert p.private_key == Path('/home/.nanopub/id_rsa')
-        assert p.nanopub_uri is None
+        assert p.introduction_nanopub_uri is None
 
 
 def test_store_profile(tmpdir):
@@ -41,7 +41,7 @@ def test_store_profile(tmpdir):
                     'private_key: /home/.nanopub/id_rsa\n')
 
 
-def test_nanopub_uri_roundtrip(tmpdir):
+def test_introduction_nanopub_uri_roundtrip(tmpdir):
     test_file = Path(tmpdir / 'profile.yml')
 
     p = profile.Profile('pietje', 'https://orcid.org/0000-0000-0000-0000',
@@ -65,4 +65,4 @@ def test_nanopub_uri_roundtrip(tmpdir):
         assert p.name == p2.name
         assert p.public_key == p2.public_key
         assert p.private_key == p2.private_key
-        assert p.nanopub_uri == p2.nanopub_uri
+        assert p.introduction_nanopub_uri == p2.introduction_nanopub_uri

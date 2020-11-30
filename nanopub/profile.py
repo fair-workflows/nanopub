@@ -22,29 +22,29 @@ class Profile:
         name: The user's name
         public_key: Path to the user's public key
         private_key: Path to the user's private key
-        nanopub_uri: URI of the user's profile nanopub
+        introduction_nanopub_uri: URI of the user's profile nanopub
     """
     def __init__(
             self,
             orcid_id: str, name: str,
             public_key: Path, private_key: Path,
-            nanopub_uri: Optional[str] = None
+            introduction_nanopub_uri: Optional[str] = None
             ) -> None:
         """Create a Profile."""
         self.orcid_id = orcid_id
         self.name = name
         self.public_key = public_key
         self.private_key = private_key
-        self.nanopub_uri = nanopub_uri
+        self.introduction_nanopub_uri = introduction_nanopub_uri
 
     @classmethod
     def _yatiml_savorize(cls, node: yatiml.Node) -> None:
-        node.rename_attribute('profile_nanopub', 'nanopub_uri')
+        node.rename_attribute('profile_nanopub', 'introduction_nanopub_uri')
 
     @classmethod
     def _yatiml_sweeten(cls, node: yatiml.Node) -> None:
         node.remove_attributes_with_default_values(cls)
-        node.rename_attribute('nanopub_uri', 'profile_nanopub')
+        node.rename_attribute('introduction_nanopub_uri', 'profile_nanopub')
 
 
 _load_profile = yatiml.load_function(Profile)
