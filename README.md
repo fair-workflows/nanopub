@@ -59,41 +59,20 @@ from nanopub import NanopubClient
 # Search for all nanopublications containing the text 'fair'
 results = client.find_nanopubs_with_text('fair')
 print(results)
-
-results = client.find_nanopubs_with_pattern(
-                pred='http://www.w3.org/1999/02/22-rdf-syntax-ns#type',
-                obj='http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement',
-                max_num_results=3)
-print(results)
-
-# Search for nanopublications that introduce a concept that is a ```p-plan:Step```.
-# Return only one result.
-results = client.find_things('http://purl.org/net/p-plan#Step', max_num_results=1)
-print(results)
 ```
 
 ### Fetching nanopublications and inspecting them
 ```python
 # Fetch the nanopublication at the specified URI
-np = client.fetch('http://purl.org/np/RApJG4fwj0szOMBMiYGmYvd5MCtRle6VbwkMJUb1SxxDM')
+publication = client.fetch('http://purl.org/np/RApJG4fwj0szOMBMiYGmYvd5MCtRle6VbwkMJUb1SxxDM')
 
 # Print the RDF contents of the nanopublication
-print(np)
+print(publication)
 
 # Iterate through all triples in the assertion graph
-for s, p, o in np.assertion:
+for s, p, o in publication.assertion:
     print(s, p, o)
 
-# Iterate through the publication info
-for s, p, o in np.pubinfo:
-    print(s, p, o)
-
-# Iterate through the provenance graph
-for s, p, o in np.provenance:
-    print(s,p,o)
-
-# See the concept that is introduced by this nanopublication (if any)
-print(np.introduces_concept)
 ```
                                          
 ## Dependencies
