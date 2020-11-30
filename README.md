@@ -60,8 +60,7 @@ from nanopub import NanopubClient
 results = client.find_nanopubs_with_text('fair')
 print(results)
 
-# Search for nanopublications whose assertions contain triples that are ```rdf:Statement```s.
-# Return only the first three results.
+c
 results = client.find_nanopubs_with_pattern(
                 pred='http://www.w3.org/1999/02/22-rdf-syntax-ns#type',
                 obj='http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement',

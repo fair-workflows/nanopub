@@ -20,7 +20,12 @@
    publishing/setting-subgraphs
    publishing/retraction
 
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+   :caption: Searching
 
+   searching
 
 Welcome to nanopub's documentation!
 ===================================
