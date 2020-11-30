@@ -16,7 +16,7 @@
    :hidden:
 
    publishing/publishing-nanopublications
-   publihsing/using-publication-namespace
+   publishing/using-publication-namespace
    controlling-publications
    retraction
 
