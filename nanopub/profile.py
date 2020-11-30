@@ -37,15 +37,6 @@ class Profile:
         self.private_key = private_key
         self.introduction_nanopub_uri = introduction_nanopub_uri
 
-    @classmethod
-    def _yatiml_savorize(cls, node: yatiml.Node) -> None:
-        node.rename_attribute('profile_nanopub', 'introduction_nanopub_uri')
-
-    @classmethod
-    def _yatiml_sweeten(cls, node: yatiml.Node) -> None:
-        node.remove_attributes_with_default_values(cls)
-        node.rename_attribute('introduction_nanopub_uri', 'profile_nanopub')
-
 
 _load_profile = yatiml.load_function(Profile)
 
