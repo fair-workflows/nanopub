@@ -49,5 +49,6 @@ setup(
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent"
     ],
+    test_suite='tests',
     python_requires='>=3.6'
 )
