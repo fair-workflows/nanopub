@@ -97,49 +97,6 @@ for s, p, o in np.provenance:
 # See the concept that is introduced by this nanopublication (if any)
 print(np.introduces_concept)
 ```
-
-### Specifying concepts relative to the nanopublication namespace
-You can optionally specify that the ```Publication``` introduces a particular concept using blank nodes. 
-The pubinfo graph will note that this nanopub npx:introduces the concept. The concept should be a blank node 
-(rdflib.term.BNode), and is converted to a URI derived from the nanopub's URI with a fragment (#) made from the blank
-node's name.
-```python
-from rdflib.term import BNode
-publication = Publication.from_assertion(assertion_rdf=my_assertion,
-                                         introduces_concept=BNode('timbernerslee'))
-```
-Upon publication, any blank nodes in the rdf graph are replaced with the nanopub's URI, with the blank node name as a
-fragment. For example, if the blank node is called 'step', that would result in a URI composed of the nanopub's (base)
-URI, followed by #step. In case you are basing your publication on rdf that has a lot of concepts specific to this 
-nanopublication that are not blank nodes you could use `replace_in_rdf` to easily replace them with blank nodes:
-```python
-from nanopub import replace_in_rdf
-replace_in_rdf(rdf=my_assertion, oldvalue=URIRef('www.example.org/timbernerslee'), newvalue=BNode('timbernerslee'))
-``` 
-
-### Specifying derived_from
-You can specify that the nanopub's assertion is derived from another URI (such as an existing nanopublication):
-```python
-publication = Publication.from_assertion(assertion_rdf=my_assertion,
-                                         derived_from=rdflib.URIRef('www.example.org/another-nanopublication'))
-```
-Note that ```derived_from``` may also be passed a list of URIs.
-                               
-### Specifying custom publication info or provenance triples
-You can add your own triples to the provenance graph of the nanopublication:
-```python
-from nanopub import namespaces
-provenance_rdf = (BNode('timbernserslee'), namespaces.PROV.actedOnBehalfOf, BNode('markzuckerberg'))
-publication = Publication.from_assertion(assertion_rdf=my_assertion,
-                                         provenance_rdf=provenance_rdf)
-```
-and to the publication info graph of the nanopublication:
-```python
-from nanopub import namespaces
-pubinfo_rdf = (BNode('activity'), RDF.type, namespaces.PROV.Activity)
-publication = Publication.from_assertion(assertion_rdf=my_assertion,
-                                         pubinfo_rdf=pubinfo_rdf)
-```
                                          
 ## Dependencies
 The ```nanopub``` library currently uses the [```nanopub-java```](https://github.com/Nanopublication/nanopub-java) tool for signing and publishing new nanopublications. This is automatically installed by the library.
