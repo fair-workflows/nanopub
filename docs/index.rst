@@ -18,7 +18,7 @@
    publishing/publishing-nanopublications
    publishing/using-publication-namespace
    publishing/setting-subgraphs
-   retraction
+   publishing/retraction
 
 
 
