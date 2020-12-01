@@ -89,15 +89,15 @@ class NanopubClient:
                             params=params,
                             max_num_results=max_num_results)
 
-    def find_things(self, type, searchterm=' ',
+    def find_things(self, type: str, searchterm=' ',
                     max_num_results=1000):
-        """ Search concepts.
+        """Search things (experimental).
 
-        TODO: Update documentation
-        Text search for any nanopublications of the given type, with given search term.
+        Search for any nanopublications that introduce a concept of the given type, that contain
+        text with the given search term.
 
         Args:
-            type (str): The type of the nanopublication
+            type (str): A URI denoting the type of the introduced concept
             searchterm (str): The term that you want to search on
             max_num_results (int): Maximum number of result, default = 1000
 
