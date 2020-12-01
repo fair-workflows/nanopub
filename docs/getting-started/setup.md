@@ -40,5 +40,5 @@ Here is an [example introductory nanopublicaiton](http://purl.org/np/RAy1CYBfBYF
 The link to this nanopublication is also stored in your profile.
 
 ## Dependencies
-The ```nanopub``` library currently uses the [```nanopub-java```](https://github.com/Nanopublication/nanopub-java)
+The ```nanopub``` library currently uses the [nanopub-java](https://github.com/Nanopublication/nanopub-java)
 tool for signing and publishing new nanopublications. This is automatically installed by the library.
