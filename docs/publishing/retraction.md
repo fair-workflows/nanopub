@@ -7,18 +7,18 @@ retract the original publication. You can use `NanopubClient.retract()`:
 >>> from nanopub import NanopubClient
 >>> # Create the client (we use use_test_server=True to point to the test server)
 >>> client = NanopubClient(use_test_server=True)
->>> client.retract('http://purl.org/np/RAcTwW_JdTqZJTXA4jUTFUj6ut8OI9AqaPb1IBPsLsy-o')
-Published to http://purl.org/np/RAOLg94DSpgPVifZZvhwkJ6NBl558pVXaclrgEYhLpfoI
+>>> client.retract('http://purl.org/np/RAfk_zBYDerxd6ipfv8fAcQHEzgZcVylMTEkiLlMzsgwQ')
+Published to http://purl.org/np/RAv75Xhhz5jv--Nnu9RDqIGy2xHr74REGC4vtOSxrwX4c
 ```
-View the full retraction nanopublication [here](http://test-server.nanopubs.lod.labs.vu.nl/RAOLg94DSpgPVifZZvhwkJ6NBl558pVXaclrgEYhLpfoI).
+View the full retraction nanopublication [here](http://purl.org/np/RAv75Xhhz5jv--Nnu9RDqIGy2xHr74REGC4vtOSxrwX4c).
 
 The assertion states that the researcher (denoted by the ORCID iD from your profile)
 retracts the provided nanopublication:
 ```
 @prefix npx: <http://purl.org/nanopub/x/> .
-@prefix sub: <http://purl.org/np/RAOLg94DSpgPVifZZvhwkJ6NBl558pVXaclrgEYhLpfoI#> .
+@prefix sub: <http://purl.org/np/RAv75Xhhz5jv--Nnu9RDqIGy2xHr74REGC4vtOSxrwX4c#> .
 
 sub:assertion {
-    <https://orcid.org/0000-0000-0000-0000> npx:retracts <http://purl.org/np/RATMPukkNTN19gPFX8WZiU8KTZ3xzxxnC2JNAZFs7e3nQ> .
+    <https://orcid.org/0000-0000-0000-0000> npx:retracts <http://purl.org/np/RAfk_zBYDerxd6ipfv8fAcQHEzgZcVylMTEkiLlMzsgwQ> .
 }
 ```

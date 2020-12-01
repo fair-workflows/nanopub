@@ -41,14 +41,14 @@ An example:
 >>> # Let's publish this to the test server
 >>> client = NanopubClient(use_test_server=True)
 >>> client.publish(publication)
-Published to http://purl.org/np/RA_j6TPcnoQJ_XkISjugTgaRsFGLhpbZCC3mE7fXs0REI
+Published to http://purl.org/np/RAdaZsPRcY5usXFKwSBfz9g-HOu-Bo1XmmhQc4g7uESgU
 ```
-View the full nanopublication [here](http://test-server.nanopubs.lod.labs.vu.nl/RA_j6TPcnoQJ_XkISjugTgaRsFGLhpbZCC3mE7fXs0REI).
+View the full nanopublication [here](http://purl.org/np/RAdaZsPRcY5usXFKwSBfz9g-HOu-Bo1XmmhQc4g7uESgU).
 
 As you can see in the assertion, the 'timbernerslee' blank node is replaced with 
 a uri in the nanopublication's namespace:
 ```
-@prefix sub: <http://purl.org/np/RA_j6TPcnoQJ_XkISjugTgaRsFGLhpbZCC3mE7fXs0REI#> .
+@prefix sub: <http://purl.org/np/RAdaZsPRcY5usXFKwSBfz9g-HOu-Bo1XmmhQc4g7uESgU#> .
 
 sub:assertion {
     sub:timbernerslee a <http://xmlns.com/foaf/0.1/Person> .
@@ -83,17 +83,17 @@ An example:
 >>> # Let's publish this to the test server
 >>> client = NanopubClient(use_test_server=True)
 >>> client.publish(publication)
-Published to http://purl.org/np/RAdpeRop9Ow5ArTRivUWkw7ArCI--J5K1vN3J9fw9gnuk
-Published concept to http://purl.org/np/RAdpeRop9Ow5ArTRivUWkw7ArCI--J5K1vN3J9fw9gnuk#timbernerslee
+Published to http://purl.org/np/RAq9gFEgxlOyG9SSDZ5DmBbyGet2z6pkrdWXIVYa6U6qI
+Published concept to http://purl.org/np/RAq9gFEgxlOyG9SSDZ5DmBbyGet2z6pkrdWXIVYa6U6qI#timbernerslee
 ```
 Note that `NanopubClient.publish()` now also prints the published content URI.
-View the full nanopublication [here](http://test-server.nanopubs.lod.labs.vu.nl/RAdpeRop9Ow5ArTRivUWkw7ArCI--J5K1vN3J9fw9gnuk).
+View the full nanopublication [here](http://purl.org/np/RAq9gFEgxlOyG9SSDZ5DmBbyGet2z6pkrdWXIVYa6U6qI).
 
 The publication info of the nanopublication denotes that this nanopublication introduces the 'timbernerslee' concept:
 ```
 @prefix npx: <http://purl.org/nanopub/x/> .
-@prefix sub: <http://purl.org/np/RAdpeRop9Ow5ArTRivUWkw7ArCI--J5K1vN3J9fw9gnuk#> .
-@prefix this: <http://purl.org/np/RAdpeRop9Ow5ArTRivUWkw7ArCI--J5K1vN3J9fw9gnuk> .
+@prefix sub: <http://purl.org/np/RAq9gFEgxlOyG9SSDZ5DmBbyGet2z6pkrdWXIVYa6U6qI#> .
+@prefix this: <http://purl.org/np/RAq9gFEgxlOyG9SSDZ5DmBbyGet2z6pkrdWXIVYa6U6qI> .
 
 sub:pubInfo {
    this: npx:introduces sub:timbernerslee .
