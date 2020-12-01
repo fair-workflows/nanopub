@@ -1,7 +1,3 @@
-.. nanopub documentation master file, created by
-   sphinx-quickstart on Thu Nov 26 14:29:07 2020.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
 
 .. toctree::
    :maxdepth: 1
@@ -35,6 +31,13 @@
    :caption: Fetching
 
    fetching
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+   :caption: API Reference
+
+   reference/client
 
 Welcome to nanopub's documentation!
 ===================================
