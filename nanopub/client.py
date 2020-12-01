@@ -298,8 +298,8 @@ class NanopubClient:
         Args:
             uri (str): The uri pointing to the to-be-retracted nanopublication
             force (bool): Toggle using force to retract, this will even retract the
-            nanopublication if
-                it is signed with a different public key than the one in the user profile.
+                nanopublication if it is signed with a different public key than the one
+                in the user profile.
 
         Returns:
             dict of str: Publication info with: 'nanopub_uri': the URI of the published
