@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+"""
+This module holds code for representing the RDF of nanopublications, as well as helper functions to
+make handling RDF easier.
+"""
 from datetime import datetime
 from urllib.parse import urldefrag
 

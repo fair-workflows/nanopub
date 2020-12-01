@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+"""This module includes a client for the nanopub server.
+"""
+
 import os
 import random
 import tempfile
