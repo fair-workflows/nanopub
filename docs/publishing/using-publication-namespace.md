@@ -86,7 +86,8 @@ An example:
 Published to http://purl.org/np/RAq9gFEgxlOyG9SSDZ5DmBbyGet2z6pkrdWXIVYa6U6qI
 Published concept to http://purl.org/np/RAq9gFEgxlOyG9SSDZ5DmBbyGet2z6pkrdWXIVYa6U6qI#timbernerslee
 ```
-Note that `NanopubClient.publish()` now also prints the published content URI.
+Note that `NanopubClient.publish()` now also prints the published concept URI.
+
 View the full nanopublication [here](http://purl.org/np/RAq9gFEgxlOyG9SSDZ5DmBbyGet2z6pkrdWXIVYa6U6qI).
 
 The publication info of the nanopublication denotes that this nanopublication introduces the 'timbernerslee' concept:
