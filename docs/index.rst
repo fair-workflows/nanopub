@@ -39,6 +39,7 @@
 
    reference/client
    reference/publication
+   reference/namespaces
 
 Welcome to nanopub's documentation!
 ===================================
