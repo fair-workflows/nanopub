@@ -5,7 +5,7 @@ the RDF that is often the same in each nanopublication. Instead you should focus
 content of your nanopublication: the assertion.
 
 ## Prerequisits for publishing
-Before you can publish you should [setup your profile](../setup)
+Before you can publish you should [setup your profile](../getting-started/setup)
 
 ## Quickly publishing nanopublications using `claim`
 You can quickly publish a nanopublicaiton with a single simple statement using the `claim` method:

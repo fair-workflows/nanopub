@@ -6,9 +6,10 @@
 .. toctree::
    :maxdepth: 1
    :hidden:
+   :caption: Getting started
 
-   what-are-nanopubs
-   setup
+   getting-started/what-are-nanopubs
+   getting-started/setup
 
 .. toctree::
    :maxdepth: 1
@@ -41,7 +42,7 @@ interface for searching, publishing and retracting nanopublications.
 
 Nanopublications are a formalized and machine-readable way of communicating
 the smallest possible units of publishable information.
-See :doc:`../what-are-nanopubs` for more information.
+See :doc:`../getting-started/what-are-nanopubs` for more information.
 
 Setup
 -----
