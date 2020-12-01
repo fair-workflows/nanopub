@@ -4,11 +4,37 @@
    contain the root `toctree` directive.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
+   :hidden:
+   :caption: Getting started
+
+   getting-started/what-are-nanopubs
+   getting-started/setup
+   getting-started/test-server
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Publishing
    :hidden:
 
-   what-are-nanopubs
+   publishing/publishing-nanopublications
+   publishing/using-publication-namespace
+   publishing/setting-subgraphs
+   publishing/retraction
 
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+   :caption: Searching
+
+   searching
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+   :caption: Fetching
+
+   fetching
 
 Welcome to nanopub's documentation!
 ===================================
@@ -17,7 +43,7 @@ interface for searching, publishing and retracting nanopublications.
 
 Nanopublications are a formalized and machine-readable way of communicating
 the smallest possible units of publishable information.
-See :doc:`../what-are-nanopubs` for more information.
+See :doc:`../getting-started/what-are-nanopubs` for more information.
 
 Setup
 -----
