@@ -38,6 +38,7 @@
    :caption: API Reference
 
    reference/client
+   reference/publication
 
 Welcome to nanopub's documentation!
 ===================================
