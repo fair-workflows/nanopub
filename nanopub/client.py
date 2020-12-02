@@ -27,6 +27,7 @@ class NanopubClient:
     Provides utility functions for searching, creating and publishing RDF graphs
     as assertions in a nanopublication.
     """
+
     def __init__(self, use_test_server=False):
         """Construct NanopubClient.
 
@@ -57,8 +58,8 @@ class NanopubClient:
     def find_nanopubs_with_pattern(self, subj=None, pred=None, obj=None,
                                    max_num_results=1000):
         """
-        Searches the nanopub servers (at the specified grlc API) for any nanopubs matching the given RDF pattern,
-        up to max_num_results.
+        Searches the nanopub servers (at the specified grlc API) for any nanopubs matching the
+        given RDF pattern, up to max_num_results.
         """
         params = {}
         if subj:
@@ -75,8 +76,8 @@ class NanopubClient:
     def find_things(self, type=None, searchterm=' ',
                     max_num_results=1000):
         """
-        Searches the nanopub servers (at the specified grlc API) for any nanopubs of the given type, with given search term,
-        up to max_num_results.
+        Searches the nanopub servers (at the specified grlc API) for any nanopubs of the given type,
+        with given search term, up to max_num_results.
         """
         if not type or not searchterm:
             raise ValueError(f'type and searchterm must BOTH be specified in calls to'

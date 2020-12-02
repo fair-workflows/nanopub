@@ -1,4 +1,3 @@
-import os
 import subprocess
 from pathlib import Path
 from typing import Union
@@ -18,6 +17,7 @@ class JavaWrapper:
     Wrapper around 'np' java tool that is used to sign and publish nanopublications to
     a nanopub server.
     """
+
     def __init__(self, use_test_server=False):
         """Construct JavaWrapper.
 

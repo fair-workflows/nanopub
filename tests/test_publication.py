@@ -33,9 +33,10 @@ class TestPublication:
         """
         Test Publication construction from assertion where derived_from is a list.
         """
-        derived_from_list = [   'http://www.example.com/another-nanopub', # This nanopub is derived from several sources
-                                'http://www.example.com/and-another-nanopub',
-                                'http://www.example.com/and-one-more' ]
+        # This nanopub is derived from several sources
+        derived_from_list = ['http://www.example.com/another-nanopub',
+                             'http://www.example.com/and-another-nanopub',
+                             'http://www.example.com/and-one-more']
 
         publication = Publication.from_assertion(assertion_rdf=self.test_rdf,
                                                  derived_from=derived_from_list)

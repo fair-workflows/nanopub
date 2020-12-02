@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Union
 from urllib.parse import urldefrag
 
 import rdflib
@@ -29,7 +28,8 @@ class Publication:
         for expected in expected_graphs:
             if expected not in self._graphs.keys():
                 raise ValueError(
-                    f'Expected to find {expected} graph in nanopub rdf, but not found. Graphs found: {list(self._graphs.keys())}.')
+                    f'Expected to find {expected} graph in nanopub rdf, '
+                    f'but not found. Graphs found: {list(self._graphs.keys())}.')
 
     @staticmethod
     def _replace_blank_nodes(dummy_namespace, rdf):
@@ -76,8 +76,9 @@ class Publication:
                 concept. The concept should be a blank node (rdflib.term.BNode), and is converted
                 to a URI derived from the nanopub's URI with a fragment (#) made from the blank
                 node's name.
-            derived_from: Add a triple to the provenance graph stating that this nanopub's assertion prov:wasDerivedFrom the given URI.
-                          If a list of URIs is passed, a provenance triple will be generated for each.
+            derived_from: Add a triple to the provenance graph stating that this
+                nanopub's assertion prov:wasDerivedFrom the given URI. If a list of URIs is
+                passed, a provenance triple will be generated for each.
             assertion_attributed_to: the provenance graph will note that this nanopub's assertion
                 prov:wasAttributedTo the given URI.
             attribute_assertion_to_profile: Attribute the assertion to the ORCID iD in the profile
@@ -107,11 +108,13 @@ class Publication:
                 raise ValueError('The provenance_rdf that you passed already contains the '
                                  'prov:wasDerivedFrom predicate, so you can not also use the '
                                  'derived_from argument')
-            if assertion_attributed_to and (None, namespaces.PROV.wasAttributedTo, None) in provenance_rdf:
+            if (assertion_attributed_to
+                    and (None, namespaces.PROV.wasAttributedTo, None) in provenance_rdf):
                 raise ValueError('The provenance_rdf that you passed already contains the '
                                  'prov:wasAttributedTo predicate, so you can not also use the '
                                  'assertion_attributed_to argument')
-            if attribute_assertion_to_profile and (None, namespaces.PROV.wasAttributedTo, None) in provenance_rdf:
+            if (attribute_assertion_to_profile
+                    and (None, namespaces.PROV.wasAttributedTo, None) in provenance_rdf):
                 raise ValueError('The provenance_rdf that you passed already contains the '
                                  'prov:wasAttributedTo predicate, so you can not also use the '
                                  'attribute_assertion_to_profile argument')
@@ -167,13 +170,12 @@ class Publication:
                             assertion_attributed_to))
 
         if derived_from:
-            uris = []
             if isinstance(derived_from, list):
-                list_of_URIs = derived_from
+                list_of_uris = derived_from
             else:
-                list_of_URIs = [derived_from]
+                list_of_uris = [derived_from]
 
-            for derived_from_uri in list_of_URIs:
+            for derived_from_uri in list_of_uris:
                 # Convert uri to an rdflib term first (if necessary)
                 derived_from_uri = rdflib.URIRef(derived_from_uri)
 
@@ -183,8 +185,8 @@ class Publication:
 
         # Always attribute the nanopublication (not the assertion) to the ORCID iD in user profile
         pubinfo.add((this_np[''],
-                      namespaces.PROV.wasAttributedTo,
-                      rdflib.URIRef(profile.get_orcid_id())))
+                     namespaces.PROV.wasAttributedTo,
+                     rdflib.URIRef(profile.get_orcid_id())))
 
         if introduces_concept:
             # Convert introduces_concept URI to an rdflib term first (if necessary)
@@ -194,8 +196,8 @@ class Publication:
                 introduces_concept = rdflib.URIRef(introduces_concept)
 
             pubinfo.add((this_np[''],
-                          namespaces.NPX.introduces,
-                          introduces_concept))
+                         namespaces.NPX.introduces,
+                         introduces_concept))
 
         return cls(rdf=main_graph)
 

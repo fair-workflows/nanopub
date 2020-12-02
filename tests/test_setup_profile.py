@@ -4,7 +4,7 @@ from unittest.mock import patch
 import pytest
 import rdflib
 
-from nanopub import setup_profile, NanopubClient, Publication
+from nanopub import setup_profile
 from nanopub.setup_profile import validate_orcid_id
 
 MOCK_PUBLIC_KEY = 'this is not a real rsa public key'
@@ -38,11 +38,14 @@ def test_provided_keypair_copied_to_nanopub_dir(tmp_path: Path):
     new_private_keyfile = nanopub_path / PRIVATE_KEYFILE
 
     with patch('nanopub.setup_profile.USER_CONFIG_DIR', nanopub_path), \
-         patch('nanopub.setup_profile.DEFAULT_PUBLIC_KEY_PATH', new_public_keyfile), \
-         patch('nanopub.setup_profile.DEFAULT_PRIVATE_KEY_PATH', new_private_keyfile):
-        setup_profile.main(args=['--keypair', str(custom_public_key_path), str(custom_private_key_path), '--name',
-                                 NAME, '--orcid_id', TEST_ORCID_ID, '--no-publish'],
-                           standalone_mode=False)
+            patch('nanopub.setup_profile.DEFAULT_PUBLIC_KEY_PATH', new_public_keyfile), \
+            patch('nanopub.setup_profile.DEFAULT_PRIVATE_KEY_PATH', new_private_keyfile):
+        setup_profile.main(
+            args=['--keypair', str(custom_public_key_path), str(custom_private_key_path),
+                  '--name',  NAME,
+                  '--orcid_id', TEST_ORCID_ID,
+                  '--no-publish'],
+            standalone_mode=False)
 
     nanopub_path = mock_homedir / NANOPUB_DIR
 
