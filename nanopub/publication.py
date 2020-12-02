@@ -7,6 +7,9 @@ from rdflib.namespace import RDF, DC, DCTERMS, XSD
 from nanopub import namespaces, profile
 from nanopub.definitions import DUMMY_NANOPUB_URI
 
+# To be replaced with the published uri upon publishing
+DUMMY_NAMESPACE = rdflib.Namespace(DUMMY_NANOPUB_URI + '#')
+
 
 class Publication:
     """
@@ -32,7 +35,7 @@ class Publication:
                     f'but not found. Graphs found: {list(self._graphs.keys())}.')
 
     @staticmethod
-    def _replace_blank_nodes(dummy_namespace, rdf):
+    def _replace_blank_nodes(rdf):
         """ Replace blank nodes.
 
         Replace any blank nodes in the supplied RDF with a corresponding uri in the
@@ -51,10 +54,51 @@ class Publication:
         for s, p, o in rdf:
             rdf.remove((s, p, o))
             if isinstance(s, rdflib.term.BNode):
-                s = dummy_namespace[str(s)]
+                s = DUMMY_NAMESPACE[str(s)]
             if isinstance(o, rdflib.term.BNode):
-                o = dummy_namespace[str(o)]
+                o = DUMMY_NAMESPACE[str(o)]
             rdf.add((s, p, o))
+
+    @staticmethod
+    def _validate_from_assertion_arguments(
+            introduces_concept: rdflib.term.BNode, derived_from, assertion_attributed_to,
+            attribute_assertion_to_profile: bool, provenance_rdf: rdflib.Graph,
+            pubinfo_rdf: rdflib.Graph):
+
+        if assertion_attributed_to and attribute_assertion_to_profile:
+            raise ValueError(
+                'If you pass a URI for the assertion_attributed_to argument, you cannot pass '
+                'attribute_assertion_to_profile=True, because the assertion will already be '
+                'attributed to the value passed in assertion_attributed_to argument. Set '
+                'attribute_assertion_to_profile=False or do not pass the assertion_attributed_to '
+                'argument.')
+
+        if introduces_concept and not isinstance(introduces_concept, rdflib.term.BNode):
+            raise ValueError('If you want a nanopublication to introduce a concept, you need to '
+                             'pass it as an rdflib.term.BNode("concept_name"). This will make '
+                             'sure it is referred to from the nanopublication uri namespace upon '
+                             'publishing.')
+
+        if provenance_rdf:
+            if derived_from and (None, namespaces.PROV.wasDerivedFrom, None) in provenance_rdf:
+                raise ValueError('The provenance_rdf that you passed already contains the '
+                                 'prov:wasDerivedFrom predicate, so you can not also use the '
+                                 'derived_from argument')
+            if (assertion_attributed_to
+                    and (None, namespaces.PROV.wasAttributedTo, None) in provenance_rdf):
+                raise ValueError('The provenance_rdf that you passed already contains the '
+                                 'prov:wasAttributedTo predicate, so you can not also use the '
+                                 'assertion_attributed_to argument')
+            if (attribute_assertion_to_profile
+                    and (None, namespaces.PROV.wasAttributedTo, None) in provenance_rdf):
+                raise ValueError('The provenance_rdf that you passed already contains the '
+                                 'prov:wasAttributedTo predicate, so you can not also use the '
+                                 'attribute_assertion_to_profile argument')
+        if pubinfo_rdf:
+            if introduces_concept and (None, namespaces.NPX.introduces, None) in pubinfo_rdf:
+                raise ValueError('The pubinfo_rdf that you passed already contains the '
+                                 'npx:introduces predicate, so you can not also use the '
+                                 'introduces_concept argument')
 
     @classmethod
     def from_assertion(cls, assertion_rdf: rdflib.Graph,
@@ -87,54 +131,21 @@ class Publication:
             pubinfo_rdf: RDF triples to be added to the publication info graph of the
                 nanopublication. This is optional, for most cases the defaults will be sufficient.
         """
-        if assertion_attributed_to and attribute_assertion_to_profile:
-            raise ValueError(
-                'If you pass a URI for the assertion_attributed_to argument, you cannot pass '
-                'attribute_assertion_to_profile=True, because the assertion will already be '
-                'attributed to the value passed in assertion_attributed_to argument. Set '
-                'attribute_assertion_to_profile=False or do not pass the assertion_attributed_to '
-                'argument.')
+        cls._validate_from_assertion_arguments(introduces_concept, derived_from,
+                                               assertion_attributed_to,
+                                               attribute_assertion_to_profile, provenance_rdf,
+                                               pubinfo_rdf)
         if attribute_assertion_to_profile:
             assertion_attributed_to = rdflib.URIRef(profile.get_orcid_id())
 
-        if introduces_concept and not isinstance(introduces_concept, rdflib.term.BNode):
-            raise ValueError('If you want a nanopublication to introduce a concept, you need to '
-                             'pass it as an rdflib.term.BNode("concept_name"). This will make '
-                             'sure it is referred to from the nanopublication uri namespace upon '
-                             'publishing.')
-
-        if provenance_rdf:
-            if derived_from and (None, namespaces.PROV.wasDerivedFrom, None) in provenance_rdf:
-                raise ValueError('The provenance_rdf that you passed already contains the '
-                                 'prov:wasDerivedFrom predicate, so you can not also use the '
-                                 'derived_from argument')
-            if (assertion_attributed_to
-                    and (None, namespaces.PROV.wasAttributedTo, None) in provenance_rdf):
-                raise ValueError('The provenance_rdf that you passed already contains the '
-                                 'prov:wasAttributedTo predicate, so you can not also use the '
-                                 'assertion_attributed_to argument')
-            if (attribute_assertion_to_profile
-                    and (None, namespaces.PROV.wasAttributedTo, None) in provenance_rdf):
-                raise ValueError('The provenance_rdf that you passed already contains the '
-                                 'prov:wasAttributedTo predicate, so you can not also use the '
-                                 'attribute_assertion_to_profile argument')
-        if pubinfo_rdf:
-            if introduces_concept and (None, namespaces.NPX.introduces, None) in pubinfo_rdf:
-                raise ValueError('The pubinfo_rdf that you passed already contains the '
-                                 'npx:introduces predicate, so you can not also use the '
-                                 'introduces_concept argument')
-
-        # To be replaced with the published uri upon publishing
-        this_np = rdflib.Namespace(DUMMY_NANOPUB_URI + '#')
-
         # Set up different contexts
         main_graph = rdflib.ConjunctiveGraph()
-        head = rdflib.Graph(main_graph.store, this_np.Head)
-        assertion = rdflib.Graph(main_graph.store, this_np.assertion)
-        provenance = rdflib.Graph(main_graph.store, this_np.provenance)
-        pubinfo = rdflib.Graph(main_graph.store, this_np.pubInfo)
+        head = rdflib.Graph(main_graph.store, DUMMY_NAMESPACE.Head)
+        assertion = rdflib.Graph(main_graph.store, DUMMY_NAMESPACE.assertion)
+        provenance = rdflib.Graph(main_graph.store, DUMMY_NAMESPACE.provenance)
+        pubinfo = rdflib.Graph(main_graph.store, DUMMY_NAMESPACE.pubInfo)
 
-        main_graph.bind("", this_np)
+        main_graph.bind("", DUMMY_NAMESPACE)
         main_graph.bind("np", namespaces.NP)
         main_graph.bind("npx", namespaces.NPX)
         main_graph.bind("prov", namespaces.PROV)
@@ -142,16 +153,16 @@ class Publication:
         main_graph.bind("dc", DC)
         main_graph.bind("dcterms", DCTERMS)
 
-        head.add((this_np[''], RDF.type, namespaces.NP.Nanopublication))
-        head.add((this_np[''], namespaces.NP.hasAssertion, this_np.assertion))
-        head.add((this_np[''], namespaces.NP.hasProvenance, this_np.provenance))
-        head.add((this_np[''], namespaces.NP.hasPublicationInfo, this_np.pubInfo))
+        head.add((DUMMY_NAMESPACE[''], RDF.type, namespaces.NP.Nanopublication))
+        head.add((DUMMY_NAMESPACE[''], namespaces.NP.hasAssertion, DUMMY_NAMESPACE.assertion))
+        head.add((DUMMY_NAMESPACE[''], namespaces.NP.hasProvenance, DUMMY_NAMESPACE.provenance))
+        head.add((DUMMY_NAMESPACE[''], namespaces.NP.hasPublicationInfo, DUMMY_NAMESPACE.pubInfo))
 
         for user_rdf in [assertion_rdf, provenance_rdf, pubinfo_rdf]:
             if user_rdf is not None:
                 for prefix, namespace in user_rdf.namespaces():
                     main_graph.bind(prefix, namespace)
-                cls._replace_blank_nodes(dummy_namespace=this_np, rdf=user_rdf)
+                cls._replace_blank_nodes(rdf=user_rdf)
         assertion += assertion_rdf
         if provenance_rdf is not None:
             provenance += provenance_rdf
@@ -159,47 +170,49 @@ class Publication:
             pubinfo += pubinfo_rdf
 
         creationtime = rdflib.Literal(datetime.now(), datatype=XSD.dateTime)
-        provenance.add((this_np.assertion, namespaces.PROV.generatedAtTime, creationtime))
-
-        pubinfo.add((this_np[''], namespaces.PROV.generatedAtTime, creationtime))
+        provenance.add((DUMMY_NAMESPACE.assertion, namespaces.PROV.generatedAtTime, creationtime))
+        pubinfo.add((DUMMY_NAMESPACE[''], namespaces.PROV.generatedAtTime, creationtime))
 
         if assertion_attributed_to:
-            assertion_attributed_to = rdflib.URIRef(assertion_attributed_to)
-            provenance.add((this_np.assertion,
-                            namespaces.PROV.wasAttributedTo,
-                            assertion_attributed_to))
+            cls._handle_assertion_attributed_to(assertion_attributed_to, provenance)
 
         if derived_from:
-            if isinstance(derived_from, list):
-                list_of_uris = derived_from
-            else:
-                list_of_uris = [derived_from]
+            cls._handle_derived_from(derived_from, pubinfo)
 
-            for derived_from_uri in list_of_uris:
-                # Convert uri to an rdflib term first (if necessary)
-                derived_from_uri = rdflib.URIRef(derived_from_uri)
-
-                provenance.add((this_np.assertion,
-                                namespaces.PROV.wasDerivedFrom,
-                                derived_from_uri))
+        if introduces_concept:
+            cls._handle_introduces_concept(introduces_concept, pubinfo)
 
         # Always attribute the nanopublication (not the assertion) to the ORCID iD in user profile
-        pubinfo.add((this_np[''],
+        pubinfo.add((DUMMY_NAMESPACE[''],
                      namespaces.PROV.wasAttributedTo,
                      rdflib.URIRef(profile.get_orcid_id())))
 
-        if introduces_concept:
-            # Convert introduces_concept URI to an rdflib term first (if necessary)
-            if isinstance(introduces_concept, rdflib.term.BNode):
-                introduces_concept = this_np[str(introduces_concept)]
-            else:
-                introduces_concept = rdflib.URIRef(introduces_concept)
-
-            pubinfo.add((this_np[''],
-                         namespaces.NPX.introduces,
-                         introduces_concept))
-
         return cls(rdf=main_graph)
+
+    @staticmethod
+    def _handle_assertion_attributed_to(assertion_attributed_to, provenance):
+        assertion_attributed_to = rdflib.URIRef(assertion_attributed_to)
+        provenance.add((DUMMY_NAMESPACE.assertion,
+                        namespaces.PROV.wasAttributedTo,
+                        assertion_attributed_to))
+
+    @staticmethod
+    def _handle_derived_from(derived_from, provenance):
+        if isinstance(derived_from, list):
+            list_of_uris = derived_from
+        else:
+            list_of_uris = [derived_from]
+
+        for derived_from_uri in list_of_uris:
+            derived_from_uri = rdflib.URIRef(derived_from_uri)
+            provenance.add((DUMMY_NAMESPACE.assertion,
+                            namespaces.PROV.wasDerivedFrom,
+                            derived_from_uri))
+
+    @staticmethod
+    def _handle_introduces_concept(introduces_concept, pubinfo):
+        introduces_concept = DUMMY_NAMESPACE[str(introduces_concept)]
+        pubinfo.add((DUMMY_NAMESPACE[''], namespaces.NPX.introduces, introduces_concept))
 
     @property
     def rdf(self):
