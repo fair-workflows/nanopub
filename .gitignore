@@ -135,3 +135,6 @@ dmypy.json
 
 # Java
 *.jar
+
+# Vim
+*.swp

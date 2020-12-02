@@ -8,9 +8,10 @@ from typing import Union, Tuple
 import click
 import rdflib
 
-from nanopub import profile, Publication, NanopubClient, namespaces
+from nanopub import Publication, NanopubClient, namespaces
 from nanopub.definitions import USER_CONFIG_DIR
 from nanopub.java_wrapper import JavaWrapper
+from nanopub.profile import Profile, store_profile
 
 PRIVATE_KEY_FILE = 'id_rsa'
 PUBLIC_KEY_FILE = 'id_rsa.pub'
@@ -91,9 +92,8 @@ def main(orcid_id, publish, name, keypair: Union[Tuple[Path, Path], None]):
     # existing keys have been copy to that location.
     public_key = DEFAULT_PUBLIC_KEY_PATH.read_text()
 
-    profile_nanopub_uri = None
-    profile.store_profile(name, orcid_id, DEFAULT_PUBLIC_KEY_PATH, DEFAULT_PRIVATE_KEY_PATH,
-                          profile_nanopub_uri)
+    profile = Profile(orcid_id, name, DEFAULT_PUBLIC_KEY_PATH, DEFAULT_PRIVATE_KEY_PATH)
+    store_profile(profile)
 
     # Declare the user to nanopub
     if publish:
@@ -104,11 +104,10 @@ def main(orcid_id, publish, name, keypair: Union[Tuple[Path, Path], None]):
         client = NanopubClient()
         result = client.publish(np)
 
-        profile_nanopub_uri = result['concept_uri']
+        profile.nanopub_uri = result['concept_uri']
 
         # Store profile nanopub uri
-        profile.store_profile(name, orcid_id, DEFAULT_PUBLIC_KEY_PATH, DEFAULT_PRIVATE_KEY_PATH,
-                              profile_nanopub_uri)
+        store_profile(profile)
 
 
 def _delete_keys():
