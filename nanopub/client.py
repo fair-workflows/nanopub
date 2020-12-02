@@ -217,14 +217,12 @@ class NanopubClient:
         assertion_rdf.add((this_statement, rdflib.RDF.type, namespaces.HYCL.Statement))
         assertion_rdf.add((this_statement, rdflib.RDFS.label, rdflib.Literal(statement_text)))
 
+        provenance_rdf = rdflib.Graph()
+        orcid_id_uri = rdflib.URIRef(profile.get_orcid_id())
+        provenance_rdf.add((orcid_id_uri, namespaces.HYCL.claims, this_statement))
         publication = Publication.from_assertion(assertion_rdf=assertion_rdf,
-                                                 attribute_assertion_to_profile=True)
-
-        # TODO: This is a hacky solution, should be changed once we can add provenance triples to
-        #  from_assertion method.
-        publication.provenance.add((rdflib.URIRef(profile.get_orcid_id()),
-                                    namespaces.HYCL.claims,
-                                    rdflib.URIRef(DUMMY_NANOPUB_URI + '#mystatement')))
+                                                 attribute_assertion_to_profile=True,
+                                                 provenance_rdf=provenance_rdf)
         return self.publish(publication)
 
     def _check_public_keys_match(self, uri):
