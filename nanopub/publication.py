@@ -64,6 +64,9 @@ class Publication:
             introduces_concept: rdflib.term.BNode, derived_from, assertion_attributed_to,
             attribute_assertion_to_profile: bool, provenance_rdf: rdflib.Graph,
             pubinfo_rdf: rdflib.Graph):
+        """
+        Validate arguments for `from_assertion` method.
+        """
 
         if assertion_attributed_to and attribute_assertion_to_profile:
             raise ValueError(
