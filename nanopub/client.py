@@ -89,7 +89,7 @@ class NanopubClient:
                             params=params,
                             max_num_results=max_num_results)
 
-    def find_things(self, type: str, searchterm=' ',
+    def find_things(self, type: str, searchterm: str = ' ',
                     max_num_results=1000):
         """Search things (experimental).
 
@@ -102,9 +102,8 @@ class NanopubClient:
             max_num_results (int): Maximum number of result, default = 1000
 
         """
-        if not searchterm:
-            raise ValueError(f'type and searchterm must BOTH be specified in calls to'
-                             f'Nanopub.search_things. type: {type}, searchterm: {searchterm}')
+        if searchterm == '':
+            raise ValueError(f'Searchterm can not be an empty string: {searchterm}')
 
         params = dict()
         params['type'] = type
