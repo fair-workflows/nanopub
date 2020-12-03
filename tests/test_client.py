@@ -153,4 +153,3 @@ class TestNanopubClient:
         mock_get_public_key.return_value = 'Different public key'
         with pytest.raises(AssertionError):
             client.retract(test_uri)
-
