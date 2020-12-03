@@ -25,4 +25,4 @@ A manual workaround is:
 2. Notice that the URL changed to [http://server.nanopubs.lod.labs.vu.nl/RA71u9tYPd7ZQifE_6hXjqVim6pkweuvjoi-8ehvLvzg8](http://server.nanopubs.lod.labs.vu.nl/RA71u9tYPd7ZQifE_6hXjqVim6pkweuvjoi-8ehvLvzg8).
 3. Replace 'server' with 'test-server': [http://test-server.nanopubs.lod.labs.vu.nl/RA71u9tYPd7ZQifE_6hXjqVim6pkweuvjoi-8ehvLvzg8](http://test-server.nanopubs.lod.labs.vu.nl/RA71u9tYPd7ZQifE_6hXjqVim6pkweuvjoi-8ehvLvzg8).
 
-NB: `NanopubClient.fetch()` does this for you if `use_test_server=True`.
+> **NB**: `NanopubClient.fetch()` does this for you if `use_test_server=True`.

@@ -1,5 +1,9 @@
+# -*- coding: utf-8 -*-
+"""
+This module holds code for representing the RDF of nanopublications, as well as helper functions to
+make handling RDF easier.
+"""
 from datetime import datetime
-from typing import Union
 from urllib.parse import urldefrag
 
 import rdflib
@@ -12,6 +16,16 @@ from nanopub.definitions import DUMMY_NANOPUB_URI
 class Publication:
     """
     Representation of the rdf that comprises a nanopublication
+
+    Attributes:
+        rdf (rdflib.ConjunctiveGraph): The full RDF graph of this nanopublication
+        assertion (rdflib.Graph): The part of the graph describing the assertion.
+        pubinfo (rdflib.Graph): The part of the graph describing the publication information.
+        provenance (rdflib.Graph): The part of the graph describing the provenance.
+        source_uri (str): The URI of the nanopublication that this Publication represents (if
+            applicable)
+        introduces_concept: The concept that is introduced by this Publication.
+
     """
 
     def __init__(self, rdf=None, source_uri=None):
@@ -64,27 +78,34 @@ class Publication:
                        provenance_rdf: rdflib.Graph = None,
                        pubinfo_rdf: rdflib.Graph = None
                        ):
-        """
-        Construct Nanopub object based on given assertion. Any blank nodes in the rdf graph are
+        """Construct Nanopub object based on given assertion.
+
+        Any blank nodes in the rdf graph are
         replaced with the nanopub's URI, with the blank node name as a fragment. For example, if
         the blank node is called 'step', that would result in a URI composed of the nanopub's (base)
         URI, followed by #step.
 
         Args:
-            assertion_rdf: The assertion RDF graph.
-            introduces_concept: the pubinfo graph will note that this nanopub npx:introduces the
-                concept. The concept should be a blank node (rdflib.term.BNode), and is converted
+            assertion_rdf (rdflib.Graph): The assertion RDF graph.
+            introduces_concept (rdflib.term.BNode): the pubinfo graph will note that this
+                nanopub npx:introduces the concept.
+                The concept should be a blank node (rdflib.term.BNode), and is converted
                 to a URI derived from the nanopub's URI with a fragment (#) made from the blank
                 node's name.
-            derived_from: Add a triple to the provenance graph stating that this nanopub's assertion prov:wasDerivedFrom the given URI.
-                          If a list of URIs is passed, a provenance triple will be generated for each.
-            assertion_attributed_to: the provenance graph will note that this nanopub's assertion
-                prov:wasAttributedTo the given URI.
-            attribute_assertion_to_profile: Attribute the assertion to the ORCID iD in the profile
-            provenance_rdf: RDF triples to be added to provenance graph of the nanopublication.
+            derived_from (rdflib.URIRef, str, or list): Add a triple to the provenance graph
+                stating that this nanopub's assertion prov:wasDerivedFrom the given URI.
+                If a list of URIs is passed, a provenance triple will be generated for each.
+            assertion_attributed_to (rdflib.URIRef or str): the provenance graph will note that
+                this nanopub's assertion prov:wasAttributedTo the given URI.
+            attribute_assertion_to_profile (bool): Attribute the assertion to the ORCID iD in the
+                profile
+            provenance_rdf (rdflib.Graph): RDF triples to be added to provenance graph of the
+                nanopublication.
                 This is optional, for most cases the defaults will be sufficient.
-            pubinfo_rdf: RDF triples to be added to the publication info graph of the
-                nanopublication. This is optional, for most cases the defaults will be sufficient.
+            pubinfo_rdf (rdflib.Graph): RDF triples to be added to the publication info graph of the
+                nanopublication.
+                This is optional, for most cases the defaults will be sufficient.
+
         """
         if assertion_attributed_to and attribute_assertion_to_profile:
             raise ValueError(
@@ -239,8 +260,14 @@ class Publication:
 
 
 def replace_in_rdf(rdf: rdflib.Graph, oldvalue, newvalue):
-    """
-    Replace subjects or objects of oldvalue with newvalue
+    """Replace values in RDF.
+
+    Replace all subjects or objects matching `oldvalue` with `newvalue`. Replaces in place.
+
+    Args:
+        rdf (rdflib.Graph): The RDF graph in which we want to replace nodes
+        oldvalue: The value to be replaced
+        newvalue: The value to replace with
     """
     for s, p, o in rdf:
         if s == oldvalue:
