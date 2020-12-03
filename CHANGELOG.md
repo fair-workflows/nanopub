@@ -22,6 +22,9 @@ NB: All changes before [1.0.0] are collapsed in here (even though there were mul
   * Retracting:
     * Publish a retraction of an existing nanopublication created by this user (i.e. signed with same RSA key)
   
+  * Test server functionality
+    * Client can optionally be set to publish to (and fetch from) the nanopub test servers only.
+
 - `nanopub.publication` module
   * `Publication` class to represent a nanopublication. 
   Includes `from_assertion` class method to construct a Publication object
