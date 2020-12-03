@@ -24,12 +24,13 @@ class Profile:
         private_key: Path to the user's private key
         introduction_nanopub_uri: URI of the user's profile nanopub
     """
+
     def __init__(
             self,
             orcid_id: str, name: str,
             public_key: Path, private_key: Path,
             introduction_nanopub_uri: Optional[str] = None
-            ) -> None:
+    ) -> None:
         """Create a Profile."""
         self.orcid_id = orcid_id
         self.name = name
@@ -56,8 +57,8 @@ def get_public_key() -> str:
             return f.read()
     except FileNotFoundError:
         raise ProfileError(f'Public key file {get_profile().public_key} not found.\n'
-                           'Maybe your profile was not set up yet or not set up correctly. To set up '
-                           'your profile see the instructions in Readme.md')
+                           'Maybe your profile was not set up yet or not set up correctly. '
+                           'To set up your profile see the instructions in Readme.md')
 
 
 @lru_cache()
