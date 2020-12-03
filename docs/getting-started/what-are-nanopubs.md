@@ -9,6 +9,7 @@ interoperable format. As such, nanopublications are an effective [FAIR](https://
 means of communicating scientific claims and results. Read more about them at [http://nanopub.org/](http://nanopub.org/).
 
 ## Different elements of a nanopublication
+_From [nanopub.org](http://nanopub.org/wordpress/?page_id=65) documentation (2020/12/02)_
 
 ![Schematic representation of a nanopub](../img/nanopub.png "Schematic representation of a nanopub")
 
