@@ -19,6 +19,9 @@ NB: All changes before [1.0.0] are collapsed in here (even though there were mul
   * Publishing:
     * Publish a statement using `claim` method
     * Publish a `Publication` object with `publish` method
+  * Retracting:
+    * Publish a retraction of an existing nanopublication created by this user (i.e. signed with same RSA key)
+  
 - `nanopub.publication` module
   * `Publication` class to represent a nanopublication. 
   Includes `from_assertion` class method to construct a Publication object
