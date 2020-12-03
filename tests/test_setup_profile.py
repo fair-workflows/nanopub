@@ -39,7 +39,8 @@ def test_provided_keypair_copied_to_nanopub_dir(tmp_path: Path):
 
     with patch('nanopub.setup_profile.USER_CONFIG_DIR', nanopub_path), \
             patch('nanopub.setup_profile.DEFAULT_PUBLIC_KEY_PATH', new_public_keyfile), \
-            patch('nanopub.setup_profile.DEFAULT_PRIVATE_KEY_PATH', new_private_keyfile):
+            patch('nanopub.setup_profile.DEFAULT_PRIVATE_KEY_PATH', new_private_keyfile), \
+            patch('nanopub.profile.PROFILE_PATH', nanopub_path / 'profile.yml'):
         setup_profile.main(
             args=['--keypair', str(custom_public_key_path), str(custom_private_key_path),
                   '--name',  NAME,

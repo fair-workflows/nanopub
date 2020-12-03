@@ -24,7 +24,8 @@ results = client.find_nanopubs_with_pattern(
 ```
 
 ## Search on introduced concept
-Search for nanopublications introducing a particular concept
+Search for any nanopublications that introduce a concept of the given type, that contain 
+text with the given search term.
 ```python
 from nanopub import NanopubClient
 client = NanopubClient()
