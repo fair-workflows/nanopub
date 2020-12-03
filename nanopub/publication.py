@@ -194,6 +194,7 @@ class Publication:
 
     @staticmethod
     def _handle_assertion_attributed_to(assertion_attributed_to, provenance):
+        """Handler for `from_assertion` method."""
         assertion_attributed_to = rdflib.URIRef(assertion_attributed_to)
         provenance.add((DUMMY_NAMESPACE.assertion,
                         namespaces.PROV.wasAttributedTo,
@@ -201,6 +202,7 @@ class Publication:
 
     @staticmethod
     def _handle_derived_from(derived_from, provenance):
+        """Handler for `from_assertion` method."""
         if isinstance(derived_from, list):
             list_of_uris = derived_from
         else:
@@ -214,6 +216,7 @@ class Publication:
 
     @staticmethod
     def _handle_introduces_concept(introduces_concept, pubinfo):
+        """Handler for `from_assertion` method."""
         introduces_concept = DUMMY_NAMESPACE[str(introduces_concept)]
         pubinfo.add((DUMMY_NAMESPACE[''], namespaces.NPX.introduces, introduces_concept))
 
