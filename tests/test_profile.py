@@ -8,10 +8,10 @@ def test_load_profile(tmpdir):
     test_file = Path(tmpdir / 'profile.yml')
     with test_file.open('w') as f:
         f.write(
-                'orcid_id: pietje\n'
-                'name: https://orcid.org/0000-0000-0000-0000\n'
-                'public_key: /home/.nanopub/id_rsa.pub\n'
-                'private_key: /home/.nanopub/id_rsa\n')
+            'orcid_id: pietje\n'
+            'name: https://orcid.org/0000-0000-0000-0000\n'
+            'public_key: /home/.nanopub/id_rsa.pub\n'
+            'private_key: /home/.nanopub/id_rsa\n')
 
     with mock.patch('nanopub.profile.PROFILE_PATH', test_file):
         profile.get_profile.cache_clear()
@@ -35,11 +35,11 @@ def test_store_profile(tmpdir):
 
         with test_file.open('r') as f:
             assert f.read() == (
-                    'orcid_id: pietje\n'
-                    'name: https://orcid.org/0000-0000-0000-0000\n'
-                    'public_key: /home/.nanopub/id_rsa.pub\n'
-                    'private_key: /home/.nanopub/id_rsa\n'
-                    'introduction_nanopub_uri:\n')
+                'orcid_id: pietje\n'
+                'name: https://orcid.org/0000-0000-0000-0000\n'
+                'public_key: /home/.nanopub/id_rsa.pub\n'
+                'private_key: /home/.nanopub/id_rsa\n'
+                'introduction_nanopub_uri:\n')
 
 
 def test_introduction_nanopub_uri_roundtrip(tmpdir):
@@ -54,11 +54,11 @@ def test_introduction_nanopub_uri_roundtrip(tmpdir):
 
         with test_file.open('r') as f:
             assert f.read() == (
-                    'orcid_id: pietje\n'
-                    'name: https://orcid.org/0000-0000-0000-0000\n'
-                    'public_key: /home/.nanopub/id_rsa.pub\n'
-                    'private_key: /home/.nanopub/id_rsa\n'
-                    'introduction_nanopub_uri: https://example.com/nanopub\n')
+                'orcid_id: pietje\n'
+                'name: https://orcid.org/0000-0000-0000-0000\n'
+                'public_key: /home/.nanopub/id_rsa.pub\n'
+                'private_key: /home/.nanopub/id_rsa\n'
+                'introduction_nanopub_uri: https://example.com/nanopub\n')
 
         profile.get_profile.cache_clear()
         p2 = profile.get_profile()

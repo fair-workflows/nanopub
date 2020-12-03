@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+"""This module includes a client for the nanopub server.
+"""
+
 import os
 import random
 import tempfile
@@ -26,13 +30,12 @@ class NanopubClient:
     """
     Provides utility functions for searching, creating and publishing RDF graphs
     as assertions in a nanopublication.
+
+    Args:
+        use_test_server (bool): Toggle using the test nanopub server.
+
     """
     def __init__(self, use_test_server=False):
-        """Construct NanopubClient.
-
-        Args:
-            use_test_server: Toggle using the test nanopub server.
-        """
         self.use_test_server = use_test_server
         self.java_wrapper = JavaWrapper(use_test_server=use_test_server)
         if use_test_server:
@@ -40,10 +43,16 @@ class NanopubClient:
         else:
             self.grlc_urls = NANOPUB_GRLC_URLS
 
-    def find_nanopubs_with_text(self, text, max_num_results=1000):
-        """
-        Searches the nanopub servers (at the specified grlc API) for any nanopubs matching the
-        given search text, up to max_num_results.
+    def find_nanopubs_with_text(self, text: str, max_num_results: int = 1000):
+        """Text search.
+
+        Search the nanopub servers for any nanopubs matching the
+        given search text.
+
+        Args:
+            text (str): The text to search on
+            max_num_results (int): Maximum number of result, default = 1000
+
         """
         if len(text) == 0:
             return []
@@ -54,11 +63,19 @@ class NanopubClient:
                             params=params,
                             max_num_results=max_num_results)
 
-    def find_nanopubs_with_pattern(self, subj=None, pred=None, obj=None,
-                                   max_num_results=1000):
-        """
-        Searches the nanopub servers (at the specified grlc API) for any nanopubs matching the given RDF pattern,
-        up to max_num_results.
+    def find_nanopubs_with_pattern(self, subj: str = None, pred: str = None, obj: str = None,
+                                   max_num_results: int = 1000):
+        """Pattern search.
+
+        Search the nanopub servers for any nanopubs matching the given RDF pattern. You can leave
+        parts of the triple to match anything by not specifying subj, pred, or obj arguments.
+
+        Args:
+            subj (str): URI of the subject that you want to match triples on.
+            pred (str): URI of the predicate that you want to match triples on.
+            obj (str): URI of the object that you want to match triples on.
+            max_num_results (int): Maximum number of result, default = 1000
+
         """
         params = {}
         if subj:
@@ -72,15 +89,21 @@ class NanopubClient:
                             params=params,
                             max_num_results=max_num_results)
 
-    def find_things(self, type=None, searchterm=' ',
+    def find_things(self, type: str, searchterm: str = ' ',
                     max_num_results=1000):
+        """Search things (experimental).
+
+        Search for any nanopublications that introduce a concept of the given type, that contain
+        text with the given search term.
+
+        Args:
+            type (str): A URI denoting the type of the introduced concept
+            searchterm (str): The term that you want to search on
+            max_num_results (int): Maximum number of result, default = 1000
+
         """
-        Searches the nanopub servers (at the specified grlc API) for any nanopubs of the given type, with given search term,
-        up to max_num_results.
-        """
-        if not type or not searchterm:
-            raise ValueError(f'type and searchterm must BOTH be specified in calls to'
-                             f'Nanopub.search_things. type: {type}, searchterm: {searchterm}')
+        if searchterm == '':
+            raise ValueError(f'Searchterm can not be an empty string: {searchterm}')
 
         params = dict()
         params['type'] = type
@@ -151,12 +174,16 @@ class NanopubClient:
 
         return nanopubs
 
-    def fetch(self, uri):
-        """
+    def fetch(self, uri: str):
+        """Fetch nanopublication
+
         Download the nanopublication at the specified URI.
 
+        Args:
+            uri (str): The URI of the nanopublication to fetch.
+
         Returns:
-            a Publication object.
+            Publication: a Publication object representing the nanopublication.
         """
         r = requests.get(uri + '.' + NANOPUB_FETCH_FORMAT)
         if not r.ok and self.use_test_server:
@@ -170,10 +197,19 @@ class NanopubClient:
         nanopub_rdf.parse(data=r.text, format=NANOPUB_FETCH_FORMAT)
         return Publication(rdf=nanopub_rdf, source_uri=uri)
 
-    def publish(self, nanopub: Publication):
-        """
-        Publish nanopub object.
-        Uses np commandline tool to sign and publish.
+    def publish(self, publication: Publication):
+        """Publish a Publication object.
+
+        Publish Publication object to the nanopub server. It uses nanopub_java commandline tool to
+        sign the nanopublication RDF with the RSA key in the profile and then publish.
+
+        Args:
+            publication (Publication): Publication object to publish.
+
+        Returns:
+            dict of str: Publication info with: 'nanopub_uri': the URI of the published
+            nanopublication, 'concept_uri': the URI of the introduced concept (if applicable)
+
         """
         # Create a temporary dir for files created during serializing and signing
         tempdir = tempfile.mkdtemp()
@@ -181,7 +217,7 @@ class NanopubClient:
         # Convert nanopub rdf to trig
         fname = 'temp.trig'
         unsigned_fname = os.path.join(tempdir, fname)
-        nanopub.rdf.serialize(destination=unsigned_fname, format='trig')
+        publication.rdf.serialize(destination=unsigned_fname, format='trig')
 
         # Sign the nanopub and publish it
         signed_file = self.java_wrapper.sign(unsigned_fname)
@@ -189,8 +225,8 @@ class NanopubClient:
         publication_info = {'nanopub_uri': nanopub_uri}
         print(f'Published to {nanopub_uri}')
 
-        if nanopub.introduces_concept:
-            concept_uri = str(nanopub.introduces_concept)
+        if publication.introduces_concept:
+            concept_uri = str(publication.introduces_concept)
             # Replace the DUMMY_NANOPUB_URI with the actually published nanopub uri. This is
             # necessary if a blank node was passed as introduces_concept. In that case the
             # Nanopub.from_assertion method replaces the blank node with the base nanopub's URI
@@ -210,21 +246,24 @@ class NanopubClient:
         Ontology (http://purl.org/petapico/o/hycl).
 
         Args:
-            statement_text: the text of the statement, example: 'All cats are grey'
+            statement_text (str): the text of the statement, example: 'All cats are grey'
+
+        Returns:
+            dict of str: Publication info with: 'nanopub_uri': the URI of the published
+            nanopublication, 'concept_uri': the URI of the introduced concept (if applicable)
+
         """
         assertion_rdf = rdflib.Graph()
         this_statement = rdflib.term.BNode('mystatement')
         assertion_rdf.add((this_statement, rdflib.RDF.type, namespaces.HYCL.Statement))
         assertion_rdf.add((this_statement, rdflib.RDFS.label, rdflib.Literal(statement_text)))
 
+        provenance_rdf = rdflib.Graph()
+        orcid_id_uri = rdflib.URIRef(profile.get_orcid_id())
+        provenance_rdf.add((orcid_id_uri, namespaces.HYCL.claims, this_statement))
         publication = Publication.from_assertion(assertion_rdf=assertion_rdf,
-                                                 attribute_assertion_to_profile=True)
-
-        # TODO: This is a hacky solution, should be changed once we can add provenance triples to
-        #  from_assertion method.
-        publication.provenance.add((rdflib.URIRef(profile.get_orcid_id()),
-                                    namespaces.HYCL.claims,
-                                    rdflib.URIRef(DUMMY_NANOPUB_URI + '#mystatement')))
+                                                 attribute_assertion_to_profile=True,
+                                                 provenance_rdf=provenance_rdf)
         return self.publish(publication)
 
     def _check_public_keys_match(self, uri):
@@ -248,19 +287,20 @@ class NanopubClient:
                                      'with. Use force=True to force retraction anyway.')
 
     def retract(self, uri: str, force=False):
-        """ Retract a nanopublication.
+        """Retract a nanopublication.
 
         Publish a retraction nanpublication that declares retraction of the nanopublication that
         corresponds to the 'uri' argument.
 
         Args:
-            uri: The uri pointing to the to-be-retracted nanopublication
-            force: Toggle using force to retract, this will even retract the nanopublication if
-                it is signed with a different public key than the one in the user profile.
+            uri (str): The uri pointing to the to-be-retracted nanopublication
+            force (bool): Toggle using force to retract, this will even retract the
+                nanopublication if it is signed with a different public key than the one
+                in the user profile.
 
         Returns:
-            publication info dictionary with keys 'concept_uri' and 'nanopub_uri' of the
-                retraction nanopublication
+            dict of str: Publication info with: 'nanopub_uri': the URI of the published
+            nanopublication, 'concept_uri': the URI of the introduced concept (if applicable)
         """
         if not force:
             self._check_public_keys_match(uri)

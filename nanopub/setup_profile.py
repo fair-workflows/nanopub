@@ -33,13 +33,14 @@ def validate_orcid_id(ctx, orcid_id: str):
                          'looks like: https://orcid.org/0000-0000-0000-0000')
 
 
-@click.command(help='Interactive CLI to create a nanopub user profile. A local version of the profile will be stored '
-                    'in the '
-                    'user config dir (by default HOMEDIR/.nanopub/). The profile will also be published to the '
-                    'nanopub servers.')
+@click.command(help='Interactive CLI to create a nanopub user profile. '
+                    'A local version of the profile will be stored in the user config dir '
+                    '(by default HOMEDIR/.nanopub/). '
+                    'The profile will also be published to the nanopub servers.')
 @click.option('--keypair', nargs=2, type=Path,
-              prompt=f'If the public and private key you would like to use are not in {USER_CONFIG_DIR}, '
-                     f'provide them here. If they are in this directory or you wish to generate new keys, '
+              prompt=f'If the public and private key you would like to use are not'
+                     f'in {USER_CONFIG_DIR}, provide them here. '
+                     f'If they are in this directory or you wish to generate new keys, '
                      f'leave empty.',
               help='Your RSA public and private keys with which your nanopubs will be signed',
               default=None)
@@ -88,7 +89,8 @@ def main(orcid_id, publish, name, keypair: Union[Tuple[Path, Path], None]):
 
         click.echo(f'Your RSA keys have been copied to {USER_CONFIG_DIR}')
 
-    # Public key can always be found at DEFAULT_PUBLIC_KEY_PATH. Either new keys have been generated there or
+    # Public key can always be found at DEFAULT_PUBLIC_KEY_PATH.
+    # Either new keys have been generated there or
     # existing keys have been copy to that location.
     public_key = DEFAULT_PUBLIC_KEY_PATH.read_text()
 
@@ -140,7 +142,8 @@ def _rsa_keys_exist():
 
 
 def _check_erase_existing_keys():
-    return click.confirm('It seems you already have RSA keys for nanopub. Would you like to replace them?',
+    return click.confirm('It seems you already have RSA keys for nanopub. '
+                         'Would you like to replace them?',
                          default=False)
 
 
