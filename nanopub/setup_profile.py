@@ -38,7 +38,7 @@ def validate_orcid_id(ctx, orcid_id: str):
                     '(by default HOMEDIR/.nanopub/). '
                     'The profile will also be published to the nanopub servers.')
 @click.option('--keypair', nargs=2, type=Path,
-              prompt=f'If the public and private key you would like to use are not'
+              prompt=f'If the public and private key you would like to use are not '
                      f'in {USER_CONFIG_DIR}, provide them here. '
                      f'If they are in this directory or you wish to generate new keys, '
                      f'leave empty.',
