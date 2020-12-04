@@ -102,10 +102,17 @@ class TestNanopubClient:
               'date': {'value': '01-01-2001'}},
              {'np': 'test_nanopub_uri',
               'description': '',
+              'date': '01-01-2001'}),
+            # Input without 'v' or 'description' and irrelevant fields
+            ({'np': {'value': 'test_nanopub_uri'},
+              'date': {'value': '01-01-2001'},
+              'irrelevant': {'value': 'irrelevant_value'}},
+             {'np': 'test_nanopub_uri',
+              'description': '',
               'date': '01-01-2001'})
          ])
-    def test_parse_search_result_entry(self, test_input, expected):
-        assert client._parse_search_result_entry(test_input) == expected
+    def test_parse_search_result(self, test_input, expected):
+        assert client._parse_search_result(test_input) == expected
 
     @pytest.mark.flaky(max_runs=10)
     @skip_if_nanopub_server_unavailable

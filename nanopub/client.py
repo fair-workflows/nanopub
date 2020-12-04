@@ -155,14 +155,18 @@ class NanopubClient:
         nanopubs = []
 
         for result in results_list:
-            nanopubs.append(self._parse_search_result_entry(result))
+            nanopubs.append(self._parse_search_result(result))
             if len(nanopubs) >= max_num_results:
                 break
 
         return nanopubs
 
     @staticmethod
-    def _parse_search_result_entry(result: dict):
+    def _parse_search_result(result: dict):
+        """
+        Parse a nanopub search result (i.e. referring to one matching nanopublication).
+        Rename 'v' to 'description', select only date, np and description fields and unnest them.
+        """
         parsed = dict()
         parsed['np'] = result['np']['value']
 
