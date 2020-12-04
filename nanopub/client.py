@@ -155,24 +155,25 @@ class NanopubClient:
         nanopubs = []
 
         for result in results_list:
-            nanopub = {}
-            nanopub['np'] = result['np']['value']
-
-            if 'v' in result:
-                nanopub['description'] = result['v']['value']
-            elif 'description' in result:
-                nanopub['description'] = result['description']['value']
-            else:
-                nanopub['v'] = ''
-
-            nanopub['date'] = result['date']['value']
-
-            nanopubs.append(nanopub)
-
+            nanopubs.append(self._parse_search_result_entry(result))
             if len(nanopubs) >= max_num_results:
                 break
 
         return nanopubs
+
+    @staticmethod
+    def _parse_search_result_entry(result: dict):
+        parsed = dict()
+        parsed['np'] = result['np']['value']
+
+        if 'v' in result:
+            parsed['description'] = result['v']['value']
+        elif 'description' in result:
+            parsed['description'] = result['description']['value']
+        else:
+            parsed['description'] = ''
+        parsed['date'] = result['date']['value']
+        return parsed
 
     def fetch(self, uri: str):
         """Fetch nanopublication
