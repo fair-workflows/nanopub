@@ -53,6 +53,12 @@ class NanopubClient:
             text (str): The text to search on
             max_num_results (int): Maximum number of result, default = 1000
 
+        Returns:
+            List of dicts depicting matching nanopublications.
+            Each dict holds: 'np': the nanopublication uri,
+            'date': date of creation of the nanopublication,
+            'description': A description of the nanopublication (if found in RDF).
+
         """
         if len(text) == 0:
             return []
@@ -75,6 +81,12 @@ class NanopubClient:
             pred (str): URI of the predicate that you want to match triples on.
             obj (str): URI of the object that you want to match triples on.
             max_num_results (int): Maximum number of result, default = 1000
+
+        Returns:
+            List of dicts depicting matching nanopublications.
+            Each dict holds: 'np': the nanopublication uri,
+            'date': date of creation of the nanopublication,
+            'description': A description of the nanopublication (if found in RDF).
 
         """
         params = {}
@@ -100,6 +112,13 @@ class NanopubClient:
             type (str): A URI denoting the type of the introduced concept
             searchterm (str): The term that you want to search on
             max_num_results (int): Maximum number of result, default = 1000
+
+        
+        Returns:
+            List of dicts depicting matching nanopublications.
+            Each dict holds: 'np': the nanopublication uri,
+            'date': date of creation of the nanopublication,
+            'description': A description of the nanopublication (if found in RDF).
 
         """
         if searchterm == '':
