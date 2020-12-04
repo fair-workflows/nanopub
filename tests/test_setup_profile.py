@@ -15,7 +15,6 @@ NANOPUB_DIR = '.nanopub'
 
 TEST_ORCID_ID = 'https://orcid.org/0000-0000-0000-0000'
 NAME = 'pietje'
-PUBLISH = False
 
 
 def test_provided_keypair_copied_to_nanopub_dir(tmp_path: Path):
