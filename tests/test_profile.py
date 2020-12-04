@@ -77,7 +77,7 @@ def test_get_public_key(tmpdir):
         with open(public_key_path, 'w') as outfile:
             outfile.write(fake_public_key)
 
-        assert profile.get_public_key() == fake_public_key 
+        assert profile.get_public_key() == fake_public_key
 
 
 def test_introduction_nanopub_uri_roundtrip(tmpdir):
