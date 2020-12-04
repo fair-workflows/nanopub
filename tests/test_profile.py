@@ -58,7 +58,7 @@ def test_store_profile(tmpdir):
 
 def test_get_public_key(tmpdir):
 
-    fake_public_key = 'ssh-rsa AAABBBCCC111222333 somemachine@somewhere.nl\n'
+    fake_public_key = 'AAABBBCCC111222333\n'
 
     public_key_path = Path(tmpdir / 'id_rsa.pub')
     private_key_path = Path(tmpdir / 'id_rsa')
