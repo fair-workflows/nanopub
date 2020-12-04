@@ -26,6 +26,18 @@ def test_load_profile(tmpdir):
         assert p.introduction_nanopub_uri is None
 
 
+def test_fail_loading_bad_profile(tmpdir):
+    test_file = Path(tmpdir / 'profile.yml')
+    with test_file.open('w') as f:
+        f.write('orcid_id: pietje\n') # Incomplete profile
+
+    with mock.patch('nanopub.profile.PROFILE_PATH', test_file):
+        profile.get_profile.cache_clear()
+
+        with pytest.raises(profile.ProfileError):
+            profile.get_profile()
+
+
 def test_store_profile(tmpdir):
     test_file = Path(tmpdir / 'profile.yml')
 
