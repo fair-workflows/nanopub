@@ -53,6 +53,12 @@ class NanopubClient:
             text (str): The text to search on
             max_num_results (int): Maximum number of result, default = 1000
 
+        Returns:
+            List of dicts depicting matching nanopublications.
+            Each dict holds: 'np': the nanopublication uri,
+            'date': date of creation of the nanopublication,
+            'description': A description of the nanopublication (if found in RDF).
+
         """
         if len(text) == 0:
             return []
@@ -75,6 +81,12 @@ class NanopubClient:
             pred (str): URI of the predicate that you want to match triples on.
             obj (str): URI of the object that you want to match triples on.
             max_num_results (int): Maximum number of result, default = 1000
+
+        Returns:
+            List of dicts depicting matching nanopublications.
+            Each dict holds: 'np': the nanopublication uri,
+            'date': date of creation of the nanopublication,
+            'description': A description of the nanopublication (if found in RDF).
 
         """
         params = {}
@@ -100,6 +112,12 @@ class NanopubClient:
             type (str): A URI denoting the type of the introduced concept
             searchterm (str): The term that you want to search on
             max_num_results (int): Maximum number of result, default = 1000
+
+        Returns:
+            List of dicts depicting matching nanopublications.
+            Each dict holds: 'np': the nanopublication uri,
+            'date': date of creation of the nanopublication,
+            'description': A description of the nanopublication (if found in RDF).
 
         """
         if searchterm == '':
@@ -155,24 +173,29 @@ class NanopubClient:
         nanopubs = []
 
         for result in results_list:
-            nanopub = {}
-            nanopub['np'] = result['np']['value']
-
-            if 'v' in result:
-                nanopub['description'] = result['v']['value']
-            elif 'description' in result:
-                nanopub['description'] = result['description']['value']
-            else:
-                nanopub['v'] = ''
-
-            nanopub['date'] = result['date']['value']
-
-            nanopubs.append(nanopub)
-
+            nanopubs.append(self._parse_search_result(result))
             if len(nanopubs) >= max_num_results:
                 break
 
         return nanopubs
+
+    @staticmethod
+    def _parse_search_result(result: dict):
+        """
+        Parse a nanopub search result (i.e. referring to one matching nanopublication).
+        Rename 'v' to 'description', select only date, np and description fields and unnest them.
+        """
+        parsed = dict()
+        parsed['np'] = result['np']['value']
+
+        if 'v' in result:
+            parsed['description'] = result['v']['value']
+        elif 'description' in result:
+            parsed['description'] = result['description']['value']
+        else:
+            parsed['description'] = ''
+        parsed['date'] = result['date']['value']
+        return parsed
 
     def fetch(self, uri: str):
         """Fetch nanopublication
