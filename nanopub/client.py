@@ -113,7 +113,6 @@ class NanopubClient:
             searchterm (str): The term that you want to search on
             max_num_results (int): Maximum number of result, default = 1000
 
-        
         Returns:
             List of dicts depicting matching nanopublications.
             Each dict holds: 'np': the nanopublication uri,
