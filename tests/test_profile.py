@@ -1,3 +1,4 @@
+import pytest
 from pathlib import Path
 from unittest import mock
 
@@ -5,6 +6,7 @@ from nanopub import profile
 
 
 def test_load_profile(tmpdir):
+
     test_file = Path(tmpdir / 'profile.yml')
     with test_file.open('w') as f:
         f.write(
@@ -24,6 +26,18 @@ def test_load_profile(tmpdir):
         assert p.introduction_nanopub_uri is None
 
 
+def test_fail_loading_incomplete_profile(tmpdir):
+    test_file = Path(tmpdir / 'profile.yml')
+    with test_file.open('w') as f:
+        f.write('orcid_id: pietje\n')
+
+    with mock.patch('nanopub.profile.PROFILE_PATH', test_file):
+        profile.get_profile.cache_clear()
+
+        with pytest.raises(profile.ProfileError):
+            profile.get_profile()
+
+
 def test_store_profile(tmpdir):
     test_file = Path(tmpdir / 'profile.yml')
 
@@ -40,6 +54,30 @@ def test_store_profile(tmpdir):
                 'public_key: /home/.nanopub/id_rsa.pub\n'
                 'private_key: /home/.nanopub/id_rsa\n'
                 'introduction_nanopub_uri:\n')
+
+
+def test_get_public_key(tmpdir):
+
+    fake_public_key = 'AAABBBCCC111222333\n'
+
+    public_key_path = Path(tmpdir / 'id_rsa.pub')
+    private_key_path = Path(tmpdir / 'id_rsa')
+    p = profile.Profile('pietje', 'https://orcid.org/0000-0000-0000-0000',
+                        public_key_path, private_key_path)
+
+    test_profile = Path(tmpdir / 'profile.yml')
+    with mock.patch('nanopub.profile.PROFILE_PATH', test_profile):
+        profile.store_profile(p)
+
+        # Check for fail if keys are not there
+        with pytest.raises(profile.ProfileError):
+            profile.get_public_key()
+
+        # Check correct keys are returned if they do exist
+        with open(public_key_path, 'w') as outfile:
+            outfile.write(fake_public_key)
+
+        assert profile.get_public_key() == fake_public_key
 
 
 def test_introduction_nanopub_uri_roundtrip(tmpdir):

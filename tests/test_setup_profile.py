@@ -15,7 +15,6 @@ NANOPUB_DIR = '.nanopub'
 
 TEST_ORCID_ID = 'https://orcid.org/0000-0000-0000-0000'
 NAME = 'pietje'
-PUBLISH = False
 
 
 def test_provided_keypair_copied_to_nanopub_dir(tmp_path: Path):
@@ -40,12 +39,13 @@ def test_provided_keypair_copied_to_nanopub_dir(tmp_path: Path):
     with patch('nanopub.setup_profile.USER_CONFIG_DIR', nanopub_path), \
             patch('nanopub.setup_profile.DEFAULT_PUBLIC_KEY_PATH', new_public_keyfile), \
             patch('nanopub.setup_profile.DEFAULT_PRIVATE_KEY_PATH', new_private_keyfile), \
-            patch('nanopub.profile.PROFILE_PATH', nanopub_path / 'profile.yml'):
+            patch('nanopub.profile.PROFILE_PATH', nanopub_path / 'profile.yml'), \
+            patch('nanopub.setup_profile.NanopubClient.publish') as mocked_client_publish:
         setup_profile.main(
             args=['--keypair', str(custom_public_key_path), str(custom_private_key_path),
                   '--name',  NAME,
                   '--orcid_id', TEST_ORCID_ID,
-                  '--no-publish'],
+                  '--publish'],
             standalone_mode=False)
 
     nanopub_path = mock_homedir / NANOPUB_DIR
@@ -57,6 +57,31 @@ def test_provided_keypair_copied_to_nanopub_dir(tmp_path: Path):
     assert new_public_keyfile.read_text() == MOCK_PUBLIC_KEY
     assert new_private_keyfile.exists()
     assert new_private_keyfile.read_text() == MOCK_PRIVATE_KEY
+
+    # Check that intro nanopub was 'published'
+    assert mocked_client_publish.called
+
+
+def test_no_keypair_provided(tmp_path: Path):
+    mock_homedir = tmp_path / 'home'
+    mock_homedir.mkdir()
+    nanopub_path = mock_homedir / NANOPUB_DIR
+
+    new_public_keyfile = nanopub_path / PUBLIC_KEYFILE
+    new_private_keyfile = nanopub_path / PRIVATE_KEYFILE
+    new_default_keys_path_prefix = nanopub_path / 'id'
+
+    with patch('nanopub.setup_profile.USER_CONFIG_DIR', nanopub_path), \
+            patch('nanopub.setup_profile.DEFAULT_PUBLIC_KEY_PATH', new_public_keyfile), \
+            patch('nanopub.setup_profile.DEFAULT_PRIVATE_KEY_PATH', new_private_keyfile), \
+            patch('nanopub.setup_profile.DEFAULT_KEYS_PATH_PREFIX', new_default_keys_path_prefix), \
+            patch('nanopub.profile.PROFILE_PATH', nanopub_path / 'profile.yml'):
+
+        # Call function directly, otherwise click's prompts get in the way
+        setup_profile.main.callback(TEST_ORCID_ID, False, NAME, keypair=None)
+
+        assert new_public_keyfile.exists()
+        assert new_private_keyfile.exists()
 
 
 def test_create_this_is_me_rdf():
