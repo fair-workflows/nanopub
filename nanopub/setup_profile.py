@@ -76,10 +76,10 @@ def main(orcid_id, publish, name, keypair: Union[Tuple[Path, Path], None]):
         if _rsa_keys_exist():
             if _check_erase_existing_keys():
                 _delete_keys()
-                JavaWrapper.make_keys(path_name=DEFAULT_NP_MKKEYS_PATH)
+                JavaWrapper.make_keys(path_name=DEFAULT_KEYS_PATH_PREFIX)
                 click.echo(f'Your RSA keys are stored in {USER_CONFIG_DIR}')
         else:
-            JavaWrapper.make_keys(path_name=DEFAULT_NP_MKKEYS_PATH)
+            JavaWrapper.make_keys(path_name=DEFAULT_KEYS_PATH_PREFIX)
             click.echo(f'Your RSA keys are stored in {USER_CONFIG_DIR}')
     else:
         public_key_path, private_key = keypair

@@ -69,12 +69,12 @@ def test_no_keypair_provided(tmp_path: Path):
 
     new_public_keyfile = nanopub_path / PUBLIC_KEYFILE
     new_private_keyfile = nanopub_path / PRIVATE_KEYFILE
-    new_default_np_mkkeys_path = nanopub_path / 'id'
+    new_default_keys_path_prefix = nanopub_path / 'id'
 
     with patch('nanopub.setup_profile.USER_CONFIG_DIR', nanopub_path), \
             patch('nanopub.setup_profile.DEFAULT_PUBLIC_KEY_PATH', new_public_keyfile), \
             patch('nanopub.setup_profile.DEFAULT_PRIVATE_KEY_PATH', new_private_keyfile), \
-            patch('nanopub.setup_profile.DEFAULT_NP_MKKEYS_PATH', new_default_np_mkkeys_path), \
+            patch('nanopub.setup_profile.DEFAULT_KEYS_PATH_PREFIX', new_default_keys_path_prefix), \
             patch('nanopub.profile.PROFILE_PATH', nanopub_path / 'profile.yml'):
 
         # Call function directly, otherwise click's prompts get in the way
