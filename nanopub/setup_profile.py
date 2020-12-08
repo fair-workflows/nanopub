@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 import os
+import sys
 import re
 import shutil
 from pathlib import Path
@@ -15,6 +16,7 @@ from nanopub.profile import Profile, store_profile
 
 PRIVATE_KEY_FILE = 'id_rsa'
 PUBLIC_KEY_FILE = 'id_rsa.pub'
+DEFAULT_NP_MKKEYS_PATH = USER_CONFIG_DIR / 'id'
 DEFAULT_PRIVATE_KEY_PATH = USER_CONFIG_DIR / PRIVATE_KEY_FILE
 DEFAULT_PUBLIC_KEY_PATH = USER_CONFIG_DIR / PUBLIC_KEY_FILE
 RSA = 'RSA'
@@ -75,10 +77,10 @@ def main(orcid_id, publish, name, keypair: Union[Tuple[Path, Path], None]):
         if _rsa_keys_exist():
             if _check_erase_existing_keys():
                 _delete_keys()
-                JavaWrapper.make_keys()
+                JavaWrapper.make_keys(path_name=DEFAULT_NP_MKKEYS_PATH)
                 click.echo(f'Your RSA keys are stored in {USER_CONFIG_DIR}')
         else:
-            JavaWrapper.make_keys()
+            JavaWrapper.make_keys(path_name=DEFAULT_NP_MKKEYS_PATH)
             click.echo(f'Your RSA keys are stored in {USER_CONFIG_DIR}')
     else:
         public_key_path, private_key = keypair
