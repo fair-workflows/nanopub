@@ -81,5 +81,4 @@ class JavaWrapper:
 
         NOTE THAT THE JAVA TOOL ADDS _rsa TO THE END OF YOUR PATH.
         """
-        print([NANOPUB_SCRIPT, 'mkkeys', '-a', 'RSA', '-f', path_name])
         subprocess.run([NANOPUB_SCRIPT, 'mkkeys', '-a', 'RSA', '-f', path_name], check=True)
