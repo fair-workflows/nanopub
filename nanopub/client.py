@@ -127,8 +127,8 @@ class NanopubClient:
                             params=params,
                             max_num_results=max_num_results)
 
-    def find_valid_signed_nanopubs_with_pattern(self, subj: str = None, pred: str = None, obj: str = None,
-                                   max_num_results: int = 1000):
+    def find_valid_signed_nanopubs_with_pattern(self, subj: str = None, pred: str = None,
+                                                obj: str = None, max_num_results: int = 1000):
         """Pattern search in nanopubs that are signed and not retracted.
 
         Search the nanopub servers for any nanopubs matching the given RDF pattern. You can leave
@@ -189,9 +189,8 @@ class NanopubClient:
                             params=params,
                             max_num_results=max_num_results, )
 
-
     def find_valid_signed_things(self, type: str, searchterm: str = ' ',
-                    max_num_results=1000):
+                                 max_num_results=1000):
         """Search things that are signed and not retracted (experimental).
 
         Search for any nanopublications that introduce a concept of the given type, that contain
