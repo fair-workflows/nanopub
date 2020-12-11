@@ -9,6 +9,9 @@ from nanopub import NanopubClient, namespaces, Publication
 client = NanopubClient(use_test_server=True)
 
 TEST_ASSERTION = (namespaces.AUTHOR.DrBob, namespaces.HYCL.claims, rdflib.Literal('This is a test'))
+PUBKEY = 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCC686zsZaQWthNDSZO6unvhtSkXSLT8iSY/UUwD/' \
+         '7T9tabrEvFt/9UPsCsg/A4HG6xeuPtL5mVziVnzbxqi9myQOY62LBja85pYLWaZPUYakP' \
+         'HyVm9A0bRC2PUYZde+METkZ6eoqLXP26Qo5b6avPcmNnKkr5OQb7KXaeX2K2zQQIDAQAB'
 
 
 class TestNanopubClient:
@@ -26,6 +29,15 @@ class TestNanopubClient:
             assert len(results) > 0
 
         assert len(client.find_nanopubs_with_text('')) == 0
+
+    @pytest.mark.flaky(max_runs=10)
+    @skip_if_nanopub_server_unavailable
+    def test_find_nanopubs_with_text_pubkey(self):
+        results = client.find_nanopubs_with_text('test', pubkey=PUBKEY)
+        assert len(results) > 0
+
+        results = client.find_nanopubs_with_text('test', pubkey='wrong')
+        assert len(results) == 0
 
     @pytest.mark.flaky(max_runs=10)
     def test_find_nanopubs_with_text_prod(self):
@@ -61,17 +73,12 @@ class TestNanopubClient:
         """
             Check that Nanopub pattern search is returning results
         """
-        pubkey = 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCC686zsZaQWthNDSZO6unvhtSkXSLT8iSY/UUwD/' \
-                 '7T9tabrEvFt/9UPsCsg/A4HG6xeuPtL5mVziVnzbxqi9myQOY62LBja85pYLWaZPUYakP' \
-                 'HyVm9A0bRC2PUYZde+METkZ6eoqLXP26Qo5b6avPcmNnKkr5OQb7KXaeX2K2zQQIDAQAB'
         subj, pred, obj = (
             'http://purl.org/np/RA8ui7ddvV25m1qdyxR4lC8q8-G0yb3SN8AC0Bu5q8Yeg', '', '')
-        results = client.find_nanopubs_with_pattern(subj=subj, pred=pred, obj=obj, pubkey=pubkey)
+        results = client.find_nanopubs_with_pattern(subj=subj, pred=pred, obj=obj, pubkey=PUBKEY)
         assert len(results) > 0
 
-        wrong_pubkey = 'wrong public key'
-        results = client.find_nanopubs_with_pattern(subj=subj, pred=pred, obj=obj,
-                                                    pubkey=wrong_pubkey)
+        results = client.find_nanopubs_with_pattern(subj=subj, pred=pred, obj=obj, pubkey='wrong')
         assert len(results) == 0
 
     @pytest.mark.flaky(max_runs=10)
@@ -85,6 +92,15 @@ class TestNanopubClient:
 
         with pytest.raises(Exception):
             client.find_things()
+
+    @pytest.mark.flaky(max_runs=10)
+    @skip_if_nanopub_server_unavailable
+    def test_find_things_pubkey(self):
+        results = client.find_things(type='http://purl.org/net/p-plan#Plan', pubkey=PUBKEY)
+        assert len(results) > 0
+
+        results = client.find_things(type='http://purl.org/net/p-plan#Plan', pubkey='wrong')
+        assert len(results) == 0
 
     @pytest.mark.flaky(max_runs=10)
     @skip_if_nanopub_server_unavailable

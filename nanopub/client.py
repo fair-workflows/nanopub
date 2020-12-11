@@ -44,7 +44,7 @@ class NanopubClient:
         else:
             self.grlc_urls = NANOPUB_GRLC_URLS
 
-    def find_nanopubs_with_text(self, text: str, max_num_results: int = 1000):
+    def find_nanopubs_with_text(self, text: str, pubkey: str = None, max_num_results: int = 1000):
         """Text search.
 
         Search the nanopub servers for any nanopubs matching the
@@ -52,6 +52,7 @@ class NanopubClient:
 
         Args:
             text (str): The text to search on
+            pubkey (str): Public key that the matching nanopubs should be signed with
             max_num_results (int): Maximum number of result, default = 1000
 
         Returns:
@@ -63,10 +64,12 @@ class NanopubClient:
         """
         if len(text) == 0:
             return []
-
+        endpoint = 'find_nanopubs_with_text'
         params = {'text': text, 'graphpred': '', 'month': '', 'day': '', 'year': ''}
-
-        return self._search(endpoint='find_nanopubs_with_text',
+        if pubkey:
+            params['pubkey'] = pubkey
+            endpoint = 'find_signed_nanopubs_with_text'
+        return self._search(endpoint=endpoint,
                             params=params,
                             max_num_results=max_num_results)
 
@@ -107,7 +110,7 @@ class NanopubClient:
                             params=params,
                             max_num_results=max_num_results)
 
-    def find_things(self, type: str, searchterm: str = ' ',
+    def find_things(self, type: str, searchterm: str = ' ', pubkey: str = None,
                     max_num_results=1000):
         """Search things (experimental).
 
@@ -117,6 +120,7 @@ class NanopubClient:
         Args:
             type (str): A URI denoting the type of the introduced concept
             searchterm (str): The term that you want to search on
+            pubkey (str): Public key that the matching nanopubs should be signed with
             max_num_results (int): Maximum number of result, default = 1000
 
         Returns:
@@ -128,14 +132,17 @@ class NanopubClient:
         """
         if searchterm == '':
             raise ValueError(f'Searchterm can not be an empty string: {searchterm}')
-
+        endpoint = 'find_things'
         params = dict()
         params['type'] = type
         params['searchterm'] = searchterm
+        if pubkey:
+            params['pubkey'] = pubkey
+            endpoint = 'find_signed_things'
 
-        return self._search(endpoint='find_things',
+        return self._search(endpoint=endpoint,
                             params=params,
-                            max_num_results=max_num_results, )
+                            max_num_results=max_num_results)
 
     def find_retractions_of(self, uri: str) -> List[str]:
         """Find retractions of given URI
