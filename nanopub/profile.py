@@ -75,7 +75,7 @@ def get_profile() -> Profile:
     """
     try:
         return _load_profile(PROFILE_PATH)
-    except yatiml.RecognitionError as e:
+    except (yatiml.RecognitionError, FileNotFoundError) as e:
         msg = (f'{e}\nYour profile has not been set up yet, or is not set up correctly. To set'
                f' up your profile, see the instructions in README.md.')
         raise ProfileError(msg)

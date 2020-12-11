@@ -38,6 +38,15 @@ def test_fail_loading_incomplete_profile(tmpdir):
             profile.get_profile()
 
 
+def test_profile_file_not_found(tmpdir):
+    test_file = Path(tmpdir / 'profile.yml')
+    with mock.patch('nanopub.profile.PROFILE_PATH', test_file):
+        profile.get_profile.cache_clear()
+
+        with pytest.raises(profile.ProfileError):
+            profile.get_profile()
+
+
 def test_store_profile(tmpdir):
     test_file = Path(tmpdir / 'profile.yml')
 
