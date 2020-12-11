@@ -6,6 +6,11 @@ import yatiml
 
 from nanopub.definitions import PROFILE_PATH
 
+PROFILE_INSTRUCTIONS_MESSAGE = '''
+    Follow these instructions to correctly setup your nanopub profile:
+    https://nanopub.readthedocs.io/en/latest/getting-started/setup.html#setup-your-profile
+'''
+
 
 class ProfileError(RuntimeError):
     """
@@ -56,9 +61,9 @@ def get_public_key() -> str:
         with open(get_profile().public_key, 'r') as f:
             return f.read()
     except FileNotFoundError:
-        raise ProfileError(f'Public key file {get_profile().public_key} not found.\n'
-                           'Maybe your profile was not set up yet or not set up correctly. '
-                           'To set up your profile see the instructions in Readme.md')
+        raise ProfileError(f'Public key file {get_profile().public_key} for nanopub not found.\n'
+                           f'Maybe your nanopub profile was not set up yet or not set up '
+                           f'correctly. \n{PROFILE_INSTRUCTIONS_MESSAGE}')
 
 
 @lru_cache()
@@ -76,8 +81,8 @@ def get_profile() -> Profile:
     try:
         return _load_profile(PROFILE_PATH)
     except (yatiml.RecognitionError, FileNotFoundError) as e:
-        msg = (f'{e}\nYour profile has not been set up yet, or is not set up correctly. To set'
-               f' up your profile, see the instructions in README.md.')
+        msg = (f'{e}\nYour nanopub profile has not been set up yet, or is not set up correctly.\n'
+               f'{PROFILE_INSTRUCTIONS_MESSAGE}')
         raise ProfileError(msg)
 
 
