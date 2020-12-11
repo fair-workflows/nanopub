@@ -71,7 +71,8 @@ class TestNanopubClient:
     @skip_if_nanopub_server_unavailable
     def test_find_valid_signed_nanopubs_with_text(self):
         """
-        Check that Nanopub text search is returning results for a few common search terms for signed and not retracted nanopubs
+        Check that Nanopub text search is returning results for a few common search terms
+        for signed and not retracted nanopubs
         """
         searches = ['covid-19', 'europe']
 
@@ -85,7 +86,8 @@ class TestNanopubClient:
     @skip_if_nanopub_server_unavailable
     def test_find_valid_signed_nanopubs_with_pattern(self):
         """
-            Check that Nanopub pattern search is returning results for signed and not retracted nanopubs
+            Check that Nanopub pattern search is returning results
+            for signed and not retracted nanopubs
         """
         searches = [
             ('', '', ''),
@@ -102,7 +104,8 @@ class TestNanopubClient:
     @skip_if_nanopub_server_unavailable
     def test_nanopub_find_valid_signed_things(self):
         """
-        Check that Nanopub 'find_things' search is returning results for signed and not retracted nanopubs
+        Check that Nanopub 'find_things' search is returning results
+        for signed and not retracted nanopubs
         """
         results = client.find_valid_signed_things(type='http://purl.org/net/p-plan#Plan')
         assert len(results) > 0
