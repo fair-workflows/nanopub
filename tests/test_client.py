@@ -57,6 +57,25 @@ class TestNanopubClient:
 
     @pytest.mark.flaky(max_runs=10)
     @skip_if_nanopub_server_unavailable
+    def test_find_nanopubs_with_pattern_pubkey(self):
+        """
+            Check that Nanopub pattern search is returning results
+        """
+        pubkey = 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCC686zsZaQWthNDSZO6unvhtSkXSLT8iSY/UUwD/' \
+                 '7T9tabrEvFt/9UPsCsg/A4HG6xeuPtL5mVziVnzbxqi9myQOY62LBja85pYLWaZPUYakP' \
+                 'HyVm9A0bRC2PUYZde+METkZ6eoqLXP26Qo5b6avPcmNnKkr5OQb7KXaeX2K2zQQIDAQAB'
+        subj, pred, obj = (
+            'http://purl.org/np/RA8ui7ddvV25m1qdyxR4lC8q8-G0yb3SN8AC0Bu5q8Yeg', '', '')
+        results = client.find_nanopubs_with_pattern(subj=subj, pred=pred, obj=obj, pubkey=pubkey)
+        assert len(results) > 0
+
+        wrong_pubkey = 'wrong public key'
+        results = client.find_nanopubs_with_pattern(subj=subj, pred=pred, obj=obj,
+                                                    pubkey=wrong_pubkey)
+        assert len(results) == 0
+
+    @pytest.mark.flaky(max_runs=10)
+    @skip_if_nanopub_server_unavailable
     def test_nanopub_find_things(self):
         """
         Check that Nanopub 'find_things' search is returning results

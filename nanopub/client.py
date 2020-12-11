@@ -71,7 +71,7 @@ class NanopubClient:
                             max_num_results=max_num_results)
 
     def find_nanopubs_with_pattern(self, subj: str = None, pred: str = None, obj: str = None,
-                                   max_num_results: int = 1000):
+                                   pubkey: str = None, max_num_results: int = 1000):
         """Pattern search.
 
         Search the nanopub servers for any nanopubs matching the given RDF pattern. You can leave
@@ -81,6 +81,7 @@ class NanopubClient:
             subj (str): URI of the subject that you want to match triples on.
             pred (str): URI of the predicate that you want to match triples on.
             obj (str): URI of the object that you want to match triples on.
+            pubkey (str): Public key that the matching nanopubs should be signed with
             max_num_results (int): Maximum number of result, default = 1000
 
         Returns:
@@ -91,14 +92,18 @@ class NanopubClient:
 
         """
         params = {}
+        endpoint = 'find_nanopubs_with_pattern'
         if subj:
             params['subj'] = subj
         if pred:
             params['pred'] = pred
         if obj:
             params['obj'] = obj
+        if pubkey:
+            params['pubkey'] = pubkey
+            endpoint = 'find_signed_nanopubs_with_pattern'
 
-        return self._search(endpoint='find_nanopubs_with_pattern',
+        return self._search(endpoint=endpoint,
                             params=params,
                             max_num_results=max_num_results)
 
