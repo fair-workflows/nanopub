@@ -67,6 +67,14 @@ class TestNanopubClient:
         with pytest.raises(Exception):
             client.find_things()
 
+    @pytest.mark.flaky(max_runs=10)
+    @skip_if_nanopub_server_unavailable
+    def test_find_retractions_of(self):
+        uri = 'http://purl.org/np/RAnksi2yDP7jpe7F6BwWCpMOmzBEcUImkAKUeKEY_2Yus'
+        results = client.find_retractions_of(uri)
+        expected_retraction_uri = 'http://purl.org/np/RAYhe0XddJhBsJvVt0h_aq16p6f94ymc2wS-q2BAgnPVY'
+        assert expected_retraction_uri in results
+
     def test_nanopub_search(self):
         with pytest.raises(Exception):
             client._search(params=None,

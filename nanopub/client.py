@@ -6,6 +6,7 @@ import os
 import random
 import tempfile
 import warnings
+from typing import List
 
 import rdflib
 import requests
@@ -130,6 +131,18 @@ class NanopubClient:
         return self._search(endpoint='find_things',
                             params=params,
                             max_num_results=max_num_results, )
+
+    def find_retractions_of(self, uri: str) -> List[str]:
+        """Find retractions of given URI
+
+        Find all nanopublications that retract the given URI.
+
+        Returns:
+            List of uris that retract the given URI
+        """
+        results = self.find_nanopubs_with_pattern(pred=namespaces.NPX.retracts,
+                                                  obj=rdflib.URIRef(uri))
+        return [result['np'] for result in results]
 
     def _query_grlc(self, params, endpoint):
         """Query the nanopub server grlc endpoint.
