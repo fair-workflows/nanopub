@@ -67,6 +67,49 @@ class TestNanopubClient:
         with pytest.raises(Exception):
             client.find_things()
 
+    @pytest.mark.flaky(max_runs=10)
+    @skip_if_nanopub_server_unavailable
+    def test_find_valid_signed_nanopubs_with_text(self):
+        """
+        Check that Nanopub text search is returning results for a few common search terms
+        """
+        searches = ['covid-19', 'europe']
+
+        for search in searches:
+            results = client.find_valid_signed_nanopubs_with_text(search)
+            assert len(results) > 0
+
+        assert len(client.find_valid_signed_nanopubs_with_text('')) == 0
+
+    @pytest.mark.flaky(max_runs=10)
+    @skip_if_nanopub_server_unavailable
+    def test_find_valid_signed_nanopubs_with_pattern(self):
+        """
+            Check that Nanopub pattern search is returning results
+        """
+        searches = [
+            ('', '', ''),
+            ('', '', 'http://purl.org/net/p-plan#Plan'),
+            ('', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://purl.org/net/p-plan#Plan')
+        ]
+
+        for subj, pred, obj in searches:
+            results = client.find_valid_signed_nanopubs_with_pattern(subj=subj, pred=pred, obj=obj)
+            assert len(results) > 0
+            assert 'Error' not in results[0]
+
+    @pytest.mark.flaky(max_runs=10)
+    @skip_if_nanopub_server_unavailable
+    def test_nanopub_find_valid_signed_things(self):
+        """
+        Check that Nanopub 'find_things' search is returning results
+        """
+        results = client.find_valid_signed_things(type='http://purl.org/net/p-plan#Plan')
+        assert len(results) > 0
+
+        with pytest.raises(Exception):
+            client.find_valid_signed_things()
+
     def test_nanopub_search(self):
         with pytest.raises(Exception):
             client._search(params=None,
