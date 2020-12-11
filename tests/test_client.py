@@ -74,7 +74,7 @@ class TestNanopubClient:
         Check that Nanopub text search is returning results for a few common search terms
         for signed and not retracted nanopubs
         """
-        searches = ['covid-19', 'europe']
+        searches = ['test', 'US']
 
         for search in searches:
             results = client.find_valid_signed_nanopubs_with_text(search)
@@ -90,9 +90,10 @@ class TestNanopubClient:
             for signed and not retracted nanopubs
         """
         searches = [
-          ('', '', ''),
-          ('', '', 'http://purl.org/net/p-plan#Plan'),
-          ('', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://purl.org/net/p-plan#Plan')
+            ('', '', ''),
+            ('', '', 'http://purl.org/net/p-plan#Plan'),
+            ('', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 
+                'http://purl.org/net/p-plan#Plan')
         ]
 
         for subj, pred, obj in searches:
