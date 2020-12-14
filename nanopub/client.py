@@ -6,7 +6,7 @@ import os
 import random
 import tempfile
 import warnings
-from typing import List
+from typing import List, Union
 
 import rdflib
 import requests
@@ -155,19 +155,31 @@ class NanopubClient:
                             params=params,
                             max_num_results=max_num_results)
 
-    def find_retractions_of(self, uri: str, valid_only=True) -> List[str]:
+    def find_retractions_of(self, source: Union[str, Publication], valid_only=True) -> List[str]:
         """Find retractions of given URI
 
-        Find all nanopublications that retract the given URI.
+        Find all nanopublications that retract a certain nanopublication.
 
         Args:
-            uri (str): URI to find retractions for
+            source (str or nanopub.Publication): URI or Publication object to find retractions for
             valid_only (bool): Toggle returning only valid retractions, i.e. retractions that are
                 signed with the same public key as the publication they retract. Default is True.
 
         Returns:
             List of uris that retract the given URI
         """
+
+        if isinstance(source, Publication):
+            if source.is_test_publication and not self.use_test_server:
+                warnings.warn('You are trying to find retractions on the production server, '
+                              'whereas this publication lives on the test server')
+            elif not source.is_test_publication and self.use_test_server:
+                warnings.warn('You are trying to find retractions on the test server, '
+                              'whereas this publication lives on the production server')
+            uri = source.source_uri
+        else:
+            uri = source
+
         if valid_only:
             source_publication = self.fetch(uri)
             public_key = source_publication.signed_with_public_key

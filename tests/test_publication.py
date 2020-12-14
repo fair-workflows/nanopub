@@ -122,6 +122,16 @@ class TestPublication:
         public_key = publication.signed_with_public_key
         assert public_key is None
 
+    @pytest.mark.parametrize('source_uri,expected', [
+        ('http://test-server.nanopubs.lod.labs.vu.nl/foo', True),
+        ('http://purl.org/np/bar', False),
+        (None, None)])
+    def test_is_test_publication(self, source_uri, expected):
+        test_rdf = rdflib.ConjunctiveGraph()
+        test_rdf.parse(NANOPUB_SAMPLE_UNSIGNED, format='trig')
+        publication = Publication(test_rdf, source_uri=source_uri)
+        assert publication.is_test_publication == expected
+
 
 def test_replace_in_rdf():
     g = rdflib.Graph()

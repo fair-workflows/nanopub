@@ -1,3 +1,4 @@
+import warnings
 from unittest import mock
 
 import pytest
@@ -5,6 +6,7 @@ import rdflib
 
 from conftest import skip_if_nanopub_server_unavailable
 from nanopub import NanopubClient, namespaces, Publication
+from nanopub.definitions import TEST_RESOURCES_FILEPATH
 
 client = NanopubClient(use_test_server=True)
 
@@ -12,6 +14,7 @@ TEST_ASSERTION = (namespaces.AUTHOR.DrBob, namespaces.HYCL.claims, rdflib.Litera
 PUBKEY = 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCC686zsZaQWthNDSZO6unvhtSkXSLT8iSY/UUwD/' \
          '7T9tabrEvFt/9UPsCsg/A4HG6xeuPtL5mVziVnzbxqi9myQOY62LBja85pYLWaZPUYakP' \
          'HyVm9A0bRC2PUYZde+METkZ6eoqLXP26Qo5b6avPcmNnKkr5OQb7KXaeX2K2zQQIDAQAB'
+NANOPUB_SAMPLE_SIGNED = str(TEST_RESOURCES_FILEPATH / 'nanopub_sample_signed.trig')
 
 
 class TestNanopubClient:
@@ -161,6 +164,22 @@ class TestNanopubClient:
         # The filtered results should be a smaller subset of all the results, assuming that some of
         # the results are retracted nanopublications.
         assert len(all_results) > len(filtered_results)
+
+    def test_find_retractions_of_publication_raise_warning(self):
+        test_rdf = rdflib.ConjunctiveGraph()
+        test_rdf.parse(NANOPUB_SAMPLE_SIGNED, format='trig')
+        # A test publication
+        publication = Publication(rdf=test_rdf, source_uri='http://test-server/example')
+        assert publication.is_test_publication
+        # Production server client
+        client = NanopubClient(use_test_server=False)
+        client.find_nanopubs_with_pattern = mock.MagicMock()
+        # Because we try searching the prod server with a test publication this should trigger a
+        # warning.
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            client.find_retractions_of(publication, valid_only=False)
+            assert len(w) == 1
 
     @pytest.mark.flaky(max_runs=10)
     @skip_if_nanopub_server_unavailable

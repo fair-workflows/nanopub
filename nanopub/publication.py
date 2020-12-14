@@ -30,10 +30,10 @@ class Publication:
             applicable)
         introduces_concept: The concept that is introduced by this Publication.
         signed_with_public_key: The public key that this Publication is signed with.
-
+        is_test_publication: Whether this is a test publication
     """
 
-    def __init__(self, rdf=None, source_uri=None):
+    def __init__(self, rdf, source_uri=None):
         self._rdf = rdf
         self._source_uri = source_uri
 
@@ -300,6 +300,13 @@ class Publication:
             return public_key
         else:
             return None
+
+    @property
+    def is_test_publication(self) -> bool:
+        if self._source_uri is None:
+            return None
+        else:
+            return 'test' in self._source_uri
 
     def __str__(self):
         s = f'Original source URI = {self._source_uri}\n'
