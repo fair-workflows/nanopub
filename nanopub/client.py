@@ -44,7 +44,8 @@ class NanopubClient:
         else:
             self.grlc_urls = NANOPUB_GRLC_URLS
 
-    def find_nanopubs_with_text(self, text: str, pubkey: str = None, max_num_results: int = 1000):
+    def find_nanopubs_with_text(self, text: str, pubkey: str = None,
+                                filter_retracted: bool = True, max_num_results: int = 1000):
         """Text search.
 
         Search the nanopub servers for any nanopubs matching the
@@ -53,6 +54,8 @@ class NanopubClient:
         Args:
             text (str): The text to search on
             pubkey (str): Public key that the matching nanopubs should be signed with
+            filter_retracted (bool): Toggle filtering for publications that are
+                retracted. Default is True, returning only publications that are not retracted.
             max_num_results (int): Maximum number of result, default = 1000
 
         Returns:
@@ -64,43 +67,19 @@ class NanopubClient:
         """
         if len(text) == 0:
             return []
-        endpoint = 'find_nanopubs_with_text'
+        endpoint = 'find_signed_nanopubs_with_text'
         params = {'text': text, 'graphpred': '', 'month': '', 'day': '', 'year': ''}
         if pubkey:
             params['pubkey'] = pubkey
-            endpoint = 'find_signed_nanopubs_with_text'
+        if filter_retracted:
+            endpoint = 'find_valid_signed_nanopubs_with_text'
         return self._search(endpoint=endpoint,
                             params=params,
                             max_num_results=max_num_results)
 
-    def find_valid_signed_nanopubs_with_text(self, text: str, max_num_results: int = 1000):
-        """Text search in nanopubs that are signed and not retracted.
-
-        Search the nanopub servers for any nanopubs matching the
-        given search text.
-
-        Args:
-            text (str): The text to search on
-            max_num_results (int): Maximum number of result, default = 1000
-
-        Returns:
-            List of dicts depicting matching nanopublications.
-            Each dict holds: 'np': the nanopublication uri,
-            'date': date of creation of the nanopublication,
-            'description': A description of the nanopublication (if found in RDF).
-
-        """
-        if len(text) == 0:
-            return []
-
-        params = {'text': text, 'graphpred': '', 'month': '', 'day': '', 'year': ''}
-
-        return self._search(endpoint='find_valid_signed_nanopubs_with_text',
-                            params=params,
-                            max_num_results=max_num_results)
-
     def find_nanopubs_with_pattern(self, subj: str = None, pred: str = None, obj: str = None,
-                                   pubkey: str = None, max_num_results: int = 1000):
+                                   filter_retracted: bool = True, pubkey: str = None,
+                                   max_num_results: int = 1000):
         """Pattern search.
 
         Search the nanopub servers for any nanopubs matching the given RDF pattern. You can leave
@@ -111,6 +90,8 @@ class NanopubClient:
             pred (str): URI of the predicate that you want to match triples on.
             obj (str): URI of the object that you want to match triples on.
             pubkey (str): Public key that the matching nanopubs should be signed with
+            filter_retracted (bool): Toggle filtering for publications that are
+                retracted. Default is True, returning only publications that are not retracted.
             max_num_results (int): Maximum number of result, default = 1000
 
         Returns:
@@ -121,7 +102,7 @@ class NanopubClient:
 
         """
         params = {}
-        endpoint = 'find_nanopubs_with_pattern'
+        endpoint = 'find_signed_nanopubs_with_pattern'
         if subj:
             params['subj'] = subj
         if pred:
@@ -130,46 +111,15 @@ class NanopubClient:
             params['obj'] = obj
         if pubkey:
             params['pubkey'] = pubkey
-            endpoint = 'find_signed_nanopubs_with_pattern'
+        if filter_retracted:
+            endpoint = 'find_valid_signed_nanopubs_with_pattern'
 
         return self._search(endpoint=endpoint,
                             params=params,
                             max_num_results=max_num_results)
 
-    def find_valid_signed_nanopubs_with_pattern(self, subj: str = None, pred: str = None,
-                                                obj: str = None, max_num_results: int = 1000):
-        """Pattern search in nanopubs that are signed and not retracted.
-
-        Search the nanopub servers for any nanopubs matching the given RDF pattern. You can leave
-        parts of the triple to match anything by not specifying subj, pred, or obj arguments.
-
-        Args:
-            subj (str): URI of the subject that you want to match triples on.
-            pred (str): URI of the predicate that you want to match triples on.
-            obj (str): URI of the object that you want to match triples on.
-            max_num_results (int): Maximum number of result, default = 1000
-
-        Returns:
-            List of dicts depicting matching nanopublications.
-            Each dict holds: 'np': the nanopublication uri,
-            'date': date of creation of the nanopublication,
-            'description': A description of the nanopublication (if found in RDF).
-
-        """
-        params = {}
-        if subj:
-            params['subj'] = subj
-        if pred:
-            params['pred'] = pred
-        if obj:
-            params['obj'] = obj
-
-        return self._search(endpoint='find_valid_signed_nanopubs_with_pattern',
-                            params=params,
-                            max_num_results=max_num_results)
-
     def find_things(self, type: str, searchterm: str = ' ', pubkey: str = None,
-                    max_num_results=1000):
+                    filter_retracted: bool = True, max_num_results=1000):
         """Search things (experimental).
 
         Search for any nanopublications that introduce a concept of the given type, that contain
@@ -179,6 +129,8 @@ class NanopubClient:
             type (str): A URI denoting the type of the introduced concept
             searchterm (str): The term that you want to search on
             pubkey (str): Public key that the matching nanopubs should be signed with
+            filter_retracted (bool): Toggle filtering for publications that are
+                retracted. Default is True, returning only publications that are not retracted.
             max_num_results (int): Maximum number of result, default = 1000
 
         Returns:
@@ -190,45 +142,16 @@ class NanopubClient:
         """
         if searchterm == '':
             raise ValueError(f'Searchterm can not be an empty string: {searchterm}')
-        endpoint = 'find_things'
+        endpoint = 'find_signed_things'
         params = dict()
         params['type'] = type
         params['searchterm'] = searchterm
         if pubkey:
             params['pubkey'] = pubkey
-            endpoint = 'find_signed_things'
+        if filter_retracted:
+            endpoint = 'find_valid_signed_things'
 
         return self._search(endpoint=endpoint,
-                            params=params,
-                            max_num_results=max_num_results)
-
-    def find_valid_signed_things(self, type: str, searchterm: str = ' ',
-                                 max_num_results=1000):
-        """Search things that are signed and not retracted (experimental).
-
-        Search for any nanopublications that introduce a concept of the given type, that contain
-        text with the given search term.
-
-        Args:
-            type (str): A URI denoting the type of the introduced concept
-            searchterm (str): The term that you want to search on
-            max_num_results (int): Maximum number of result, default = 1000
-
-        Returns:
-            List of dicts depicting matching nanopublications.
-            Each dict holds: 'np': the nanopublication uri,
-            'date': date of creation of the nanopublication,
-            'description': A description of the nanopublication (if found in RDF).
-
-        """
-        if searchterm == '':
-            raise ValueError(f'Searchterm can not be an empty string: {searchterm}')
-
-        params = dict()
-        params['type'] = type
-        params['searchterm'] = searchterm
-
-        return self._search(endpoint='find_valid_signed_things',
                             params=params,
                             max_num_results=max_num_results)
 
@@ -255,7 +178,8 @@ class NanopubClient:
 
         results = self.find_nanopubs_with_pattern(pred=namespaces.NPX.retracts,
                                                   obj=rdflib.URIRef(uri),
-                                                  pubkey=public_key)
+                                                  pubkey=public_key,
+                                                  filter_retracted=False)
         return [result['np'] for result in results]
 
     def _query_grlc(self, params, endpoint):

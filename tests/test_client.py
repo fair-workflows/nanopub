@@ -151,6 +151,19 @@ class TestNanopubClient:
 
     @pytest.mark.flaky(max_runs=10)
     @skip_if_nanopub_server_unavailable
+    def test_find_things_filter_retracted(self):
+        filtered_results = client.find_things(type='http://purl.org/net/p-plan#Plan',
+                                              filter_retracted=True)
+        assert len(filtered_results) > 0
+        all_results = client.find_things(type='http://purl.org/net/p-plan#Plan',
+                                         filter_retracted=False)
+        assert len(all_results) > 0
+        # The filtered results should be a smaller subset of all the results, assuming that some of
+        # the results are retracted nanopublications.
+        assert len(all_results) > len(filtered_results)
+
+    @pytest.mark.flaky(max_runs=10)
+    @skip_if_nanopub_server_unavailable
     def test_find_retractions_of(self):
         uri = 'http://purl.org/np/RAnksi2yDP7jpe7F6BwWCpMOmzBEcUImkAKUeKEY_2Yus'
         results = client.find_retractions_of(uri, valid_only=False)
