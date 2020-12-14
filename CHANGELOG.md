@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `find_things`
 * `NanopubClient.find_retractions_of` method to search retractions of a given nanopublication.
 * `Publication.signed_with_public_key` property: the public key that the publication was signed with.
+* `Publication.is_test_publication` property: denoting whether this is a publicaion on the test server.
 
 ## [1.0.0] - 2020-12-08
 
