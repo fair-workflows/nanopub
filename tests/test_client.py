@@ -61,7 +61,7 @@ class TestNanopubClient:
             Check that Nanopub pattern search is returning results
         """
         searches = [
-            ('', 'http://example.org/transmits', 'http://example.org/malaria'),
+            ('', rdflib.RDF.type, rdflib.FOAF.Person),
             ('http://purl.org/np/RA8ui7ddvV25m1qdyxR4lC8q8-G0yb3SN8AC0Bu5q8Yeg', '', '')
         ]
 
