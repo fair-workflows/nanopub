@@ -106,9 +106,24 @@ class TestNanopubClient:
     @skip_if_nanopub_server_unavailable
     def test_find_retractions_of(self):
         uri = 'http://purl.org/np/RAnksi2yDP7jpe7F6BwWCpMOmzBEcUImkAKUeKEY_2Yus'
-        results = client.find_retractions_of(uri)
-        expected_retraction_uri = 'http://purl.org/np/RAYhe0XddJhBsJvVt0h_aq16p6f94ymc2wS-q2BAgnPVY'
-        assert expected_retraction_uri in results
+        results = client.find_retractions_of(uri, valid_only=False)
+        expected_uris = [
+            'http://purl.org/np/RAYhe0XddJhBsJvVt0h_aq16p6f94ymc2wS-q2BAgnPVY',
+            'http://purl.org/np/RACdYpR-6DZnT6JkEr1ItoYYXMAILjOhDqDZsMVO8EBZI']
+        for expected_uri in expected_uris:
+            assert expected_uri in results
+
+    @pytest.mark.flaky(max_runs=10)
+    @skip_if_nanopub_server_unavailable
+    def test_find_retractions_of_valid_only(self):
+        uri = 'http://purl.org/np/RAnksi2yDP7jpe7F6BwWCpMOmzBEcUImkAKUeKEY_2Yus'
+        results = client.find_retractions_of(uri, valid_only=True)
+        expected_uri = 'http://purl.org/np/RAYhe0XddJhBsJvVt0h_aq16p6f94ymc2wS-q2BAgnPVY'
+        assert expected_uri in results
+        # This is a nanopublication that is signed with a different public key than the nanopub
+        # it retracts, so it is not valid and should not be returned.
+        unexpected_uri = 'http://purl.org/np/RACdYpR-6DZnT6JkEr1ItoYYXMAILjOhDqDZsMVO8EBZI'
+        assert unexpected_uri not in results
 
     def test_nanopub_search(self):
         with pytest.raises(Exception):
@@ -216,9 +231,7 @@ class TestNanopubClient:
         # Return a mocked to-be-retracted publication object that is signed with public key
         mock_publication = mock.MagicMock()
         mock_publication.pubinfo = rdflib.Graph()
-        mock_publication.pubinfo.add((rdflib.URIRef(test_uri + '#sig'),
-                                      namespaces.NPX.hasPublicKey,
-                                      rdflib.Literal(test_public_key)))
+        mock_publication.signed_with_public_key = test_public_key
         client.fetch = mock.MagicMock(return_value=mock_publication)
 
         # Retract should be successful when public keys match

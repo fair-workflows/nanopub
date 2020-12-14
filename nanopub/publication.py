@@ -3,6 +3,7 @@
 This module holds code for representing the RDF of nanopublications, as well as helper functions to
 make handling RDF easier.
 """
+import warnings
 from datetime import datetime
 from urllib.parse import urldefrag
 
@@ -28,6 +29,7 @@ class Publication:
         source_uri (str): The URI of the nanopublication that this Publication represents (if
             applicable)
         introduces_concept: The concept that is introduced by this Publication.
+        signed_with_public_key: The public key that this Publication is signed with.
 
     """
 
@@ -273,6 +275,31 @@ class Publication:
             return concepts_introduced[0]
         else:
             raise ValueError('Nanopub introduces multiple concepts')
+
+    @property
+    def _self_ref(self):
+        """Get the self reference (i.e. 'this') from the header.
+
+        This is usually something like:
+        http://purl.org/np/RAnksi2yDP7jpe7F6BwWCpMOmzBEcUImkAKUeKEY_2Yus
+        """
+        return list(self._graphs['head'].subjects(predicate=rdflib.RDF.type,
+                                                  object=namespaces.NP.Nanopublication))[0]
+
+    @property
+    def signed_with_public_key(self):
+        if not self._source_uri:
+            return None
+        public_keys = list(self.pubinfo.objects(self._self_ref + '#sig',
+                                                namespaces.NPX.hasPublicKey))
+        if len(public_keys) > 0:
+            public_key = str(public_keys[0])
+            if len(public_keys) > 1:
+                warnings.warn(f'Nanopublication is signed with multiple public keys, we will use '
+                              f'this one: {public_key}')
+            return public_key
+        else:
+            return None
 
     def __str__(self):
         s = f'Original source URI = {self._source_uri}\n'

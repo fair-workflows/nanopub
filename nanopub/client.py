@@ -144,16 +144,30 @@ class NanopubClient:
                             params=params,
                             max_num_results=max_num_results)
 
-    def find_retractions_of(self, uri: str) -> List[str]:
+    def find_retractions_of(self, uri: str, valid_only=True) -> List[str]:
         """Find retractions of given URI
 
         Find all nanopublications that retract the given URI.
 
+        Args:
+            uri (str): URI to find retractions for
+            valid_only (bool): Toggle returning only valid retractions, i.e. retractions that are
+                signed with the same public key as the publication they retract. Default is True.
+
         Returns:
             List of uris that retract the given URI
         """
+        if valid_only:
+            source_publication = self.fetch(uri)
+            public_key = source_publication.signed_with_public_key
+            if public_key is None:
+                raise ValueError('The source publication is not signed with a public key')
+        else:
+            public_key = None
+
         results = self.find_nanopubs_with_pattern(pred=namespaces.NPX.retracts,
-                                                  obj=rdflib.URIRef(uri))
+                                                  obj=rdflib.URIRef(uri),
+                                                  pubkey=public_key)
         return [result['np'] for result in results]
 
     def _query_grlc(self, params, endpoint):
@@ -322,17 +336,11 @@ class NanopubClient:
                 match the public key in the profile
         """
         publication = self.fetch(uri)
-        their_public_keys = list(publication.pubinfo.objects(rdflib.URIRef(uri + '#sig'),
-                                                             namespaces.NPX.hasPublicKey))
-        if len(their_public_keys) > 0:
-            their_public_key = str(their_public_keys[0])
-            if len(their_public_keys) > 1:
-                warnings.warn(f'Nanopublication is signed with multiple public keys, we will use '
-                              f'this one: {their_public_key}')
-            if their_public_key != profile.get_public_key():
-                raise AssertionError('The public key in your profile does not match the public key'
-                                     'that the publication that you want to retract is signed '
-                                     'with. Use force=True to force retraction anyway.')
+        their_public_key = publication.signed_with_public_key
+        if their_public_key is not None and their_public_key != profile.get_public_key():
+            raise AssertionError('The public key in your profile does not match the public key'
+                                 'that the publication that you want to retract is signed '
+                                 'with. Use force=True to force retraction anyway.')
 
     def retract(self, uri: str, force=False):
         """Retract a nanopublication.

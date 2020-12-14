@@ -4,9 +4,11 @@ import pytest
 import rdflib
 
 from nanopub import namespaces, Publication, replace_in_rdf
-from nanopub.definitions import DUMMY_NANOPUB_URI
+from nanopub.definitions import DUMMY_NANOPUB_URI, TEST_RESOURCES_FILEPATH
 
 TEST_ORCID_ID = 'https://orcid.org/0000-0000-0000-0000'
+NANOPUB_SAMPLE_SIGNED = str(TEST_RESOURCES_FILEPATH / 'nanopub_sample_signed.trig')
+NANOPUB_SAMPLE_UNSIGNED = str(TEST_RESOURCES_FILEPATH / 'nanopub_sample_unsigned.trig')
 
 
 class TestPublication:
@@ -103,6 +105,22 @@ class TestPublication:
                                        pubinfo_rdf=pubinfo_rdf,
                                        introduces_concept=rdflib.URIRef('example'))
         Publication.from_assertion(assertion_rdf=self.test_rdf)
+
+    def test_signed_with_public_key(self):
+        test_rdf = rdflib.ConjunctiveGraph()
+        test_rdf.parse(NANOPUB_SAMPLE_SIGNED, format='trig')
+        uri = 'http://purl.org/np/RAzPytdERsBd378zHGvwgRbat1MCiS7QrxNrPxe9yDu6E'
+        publication = Publication(test_rdf, source_uri=uri)
+        public_key = publication.signed_with_public_key
+        assert public_key is not None
+
+    def test_signed_with_public_key_not_signed(self):
+        test_rdf = rdflib.ConjunctiveGraph()
+        test_rdf.parse(NANOPUB_SAMPLE_UNSIGNED, format='trig')
+        uri = 'http://purl.org/np/RAzPytdERsBd378zHGvwgRbat1MCiS7QrxNrPxe9yDu6E'
+        publication = Publication(test_rdf, source_uri=uri)
+        public_key = publication.signed_with_public_key
+        assert public_key is None
 
 
 def test_replace_in_rdf():
