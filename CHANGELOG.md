@@ -6,7 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Not released]
 
+### Changed
+* Improved error message by pointing to documentation instead of Readme upon ProfileErrors
+
 ### Fixed
+* Catch FileNotFoundError when profile.yml does not exist, raise ProfileError with useful messageinstead.
 * Fixed broken link to documentation in README.md
 
 ### Added
