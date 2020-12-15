@@ -30,6 +30,13 @@ The sections below outline the steps in each case.
 1. (**important**) announce your plan to the rest of the community _before you start working_. This announcement should be in the form of a (new) issue;
 1. (**important**) wait until some kind of consensus is reached about your idea being a good idea;
 1. if needed, fork the repository to your own Github profile and create your own feature branch off of the latest master commit. While working on your feature branch, make sure to stay up to date with the master branch by pulling in changes, possibly from the 'upstream' repository (follow the instructions [here](https://help.github.com/articles/configuring-a-remote-for-a-fork/) and [here](https://help.github.com/articles/syncing-a-fork/));
+1. install the dependencies required to run `nanopub` in development:
+
+    ```bash
+    pip install -r requirements.txt
+    pip install -r requirements-dev.txt
+    ```
+
 1. make sure the existing tests still work by running ``pytest``. Note that any pull requests to the nanopub repository on github will automatically trigger running of the test suite;
 1. check that the code is in accordance with the PEP8 style guide, by running ``flake8 . --count --show-source --statistics``,
 configuration is in `tox.ini`.
@@ -39,3 +46,7 @@ configuration is in `tox.ini`.
 1. create the pull request, e.g. following the instructions [here](https://help.github.com/articles/creating-a-pull-request/).
 
 In case you feel like you've made a valuable contribution, but you don't know how to write or run tests for it, or how to generate the documentation: don't let this discourage you from making the pull request; we can help you! Just go ahead and submit the pull request, but keep in mind that you might be asked to append additional commits to your pull request.
+
+```
+
+```
