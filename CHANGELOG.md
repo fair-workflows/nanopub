@@ -6,17 +6,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Not released]
 
+### Added
+* `pubkey` option to methods of `NanopubClient` that allows searching for publications 
+    signed with the given pubkey. For these methods:
+    - `find_nanopubs_with_text`
+    - `find_nanopubs_with_pattern`
+    - `find_things`
+* `filter_retracted` option to methods of `NanopubClient` that allows searching for publications 
+    that are note retracted. For these methods:
+    - `find_nanopubs_with_text`
+    - `find_nanopubs_with_pattern`
+    - `find_things`
+* `NanopubClient.find_retractions_of` method to search retractions of a given nanopublication.
+* `Publication.signed_with_public_key` property: the public key that the publication was signed with.
+* `Publication.is_test_publication` property: denoting whether this is a publicaion on the test server.
+
 ### Changed
 * Improved error message by pointing to documentation instead of Readme upon ProfileErrors
 
 ### Fixed
 * Catch FileNotFoundError when profile.yml does not exist, raise ProfileError with useful messageinstead.
 * Fixed broken link to documentation in README.md
-
-### Added
-* Added `find_valid_signed_nanopubs_with_text` method to NanopubClient
-* Added `find_valid_signed_nanopubs_with_pattern` method to Nanopubclient
-* Added `find_valid_signed_things` method to NanopubClient
 
 ## [1.0.0] - 2020-12-08
 
