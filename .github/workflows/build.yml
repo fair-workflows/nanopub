@@ -36,6 +36,7 @@ jobs:
         run: |
           pytest --cov
       - name: Publish coverage to Coveralls
+        if: ${{ secrets.COVERALLS_REPO_TOKEN }}
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: |
