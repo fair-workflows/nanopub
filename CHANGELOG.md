@@ -6,13 +6,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Not released]
 
-### Changed
-* Improved error message by pointing to documentation instead of Readme upon ProfileErrors
-
-### Fixed
-* Catch FileNotFoundError when profile.yml does not exist, raise ProfileError with useful messageinstead.
-* Fixed broken link to documentation in README.md
-
 ### Added
 * `pubkey` option to methods of `NanopubClient` that allows searching for publications 
     signed with the given pubkey. For these methods:
@@ -27,6 +20,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * `NanopubClient.find_retractions_of` method to search retractions of a given nanopublication.
 * `Publication.signed_with_public_key` property: the public key that the publication was signed with.
 * `Publication.is_test_publication` property: denoting whether this is a publicaion on the test server.
+
+### Changed
+* Improved error message by pointing to documentation instead of Readme upon ProfileErrors
+
+### Fixed
+* Catch FileNotFoundError when profile.yml does not exist, raise ProfileError with useful messageinstead.
+* Fixed broken link to documentation in README.md
 
 ## [1.0.0] - 2020-12-08
 
