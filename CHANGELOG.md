@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 * Fixed broken link to documentation in README.md
 
+### Added
+* Added `find_valid_signed_nanopubs_with_text` method to NanopubClient
+* Added `find_valid_signed_nanopubs_with_pattern` method to Nanopubclient
+* Added `find_valid_signed_things` method to NanopubClient
+
 ## [1.0.0] - 2020-12-08
 
 NB: All changes before [1.0.0] are collapsed in here (even though there were multiple pre-releases)

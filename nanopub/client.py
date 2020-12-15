@@ -69,6 +69,32 @@ class NanopubClient:
                             params=params,
                             max_num_results=max_num_results)
 
+    def find_valid_signed_nanopubs_with_text(self, text: str, max_num_results: int = 1000):
+        """Text search in nanopubs that are signed and not retracted.
+
+        Search the nanopub servers for any nanopubs matching the
+        given search text.
+
+        Args:
+            text (str): The text to search on
+            max_num_results (int): Maximum number of result, default = 1000
+
+        Returns:
+            List of dicts depicting matching nanopublications.
+            Each dict holds: 'np': the nanopublication uri,
+            'date': date of creation of the nanopublication,
+            'description': A description of the nanopublication (if found in RDF).
+
+        """
+        if len(text) == 0:
+            return []
+
+        params = {'text': text, 'graphpred': '', 'month': '', 'day': '', 'year': ''}
+
+        return self._search(endpoint='find_valid_signed_nanopubs_with_text',
+                            params=params,
+                            max_num_results=max_num_results)
+
     def find_nanopubs_with_pattern(self, subj: str = None, pred: str = None, obj: str = None,
                                    max_num_results: int = 1000):
         """Pattern search.
@@ -101,6 +127,38 @@ class NanopubClient:
                             params=params,
                             max_num_results=max_num_results)
 
+    def find_valid_signed_nanopubs_with_pattern(self, subj: str = None, pred: str = None,
+                                                obj: str = None, max_num_results: int = 1000):
+        """Pattern search in nanopubs that are signed and not retracted.
+
+        Search the nanopub servers for any nanopubs matching the given RDF pattern. You can leave
+        parts of the triple to match anything by not specifying subj, pred, or obj arguments.
+
+        Args:
+            subj (str): URI of the subject that you want to match triples on.
+            pred (str): URI of the predicate that you want to match triples on.
+            obj (str): URI of the object that you want to match triples on.
+            max_num_results (int): Maximum number of result, default = 1000
+
+        Returns:
+            List of dicts depicting matching nanopublications.
+            Each dict holds: 'np': the nanopublication uri,
+            'date': date of creation of the nanopublication,
+            'description': A description of the nanopublication (if found in RDF).
+
+        """
+        params = {}
+        if subj:
+            params['subj'] = subj
+        if pred:
+            params['pred'] = pred
+        if obj:
+            params['obj'] = obj
+
+        return self._search(endpoint='find_valid_signed_nanopubs_with_pattern',
+                            params=params,
+                            max_num_results=max_num_results)
+
     def find_things(self, type: str, searchterm: str = ' ',
                     max_num_results=1000):
         """Search things (experimental).
@@ -128,6 +186,36 @@ class NanopubClient:
         params['searchterm'] = searchterm
 
         return self._search(endpoint='find_things',
+                            params=params,
+                            max_num_results=max_num_results, )
+
+    def find_valid_signed_things(self, type: str, searchterm: str = ' ',
+                                 max_num_results=1000):
+        """Search things that are signed and not retracted (experimental).
+
+        Search for any nanopublications that introduce a concept of the given type, that contain
+        text with the given search term.
+
+        Args:
+            type (str): A URI denoting the type of the introduced concept
+            searchterm (str): The term that you want to search on
+            max_num_results (int): Maximum number of result, default = 1000
+
+        Returns:
+            List of dicts depicting matching nanopublications.
+            Each dict holds: 'np': the nanopublication uri,
+            'date': date of creation of the nanopublication,
+            'description': A description of the nanopublication (if found in RDF).
+
+        """
+        if searchterm == '':
+            raise ValueError(f'Searchterm can not be an empty string: {searchterm}')
+
+        params = dict()
+        params['type'] = type
+        params['searchterm'] = searchterm
+
+        return self._search(endpoint='find_valid_signed_things',
                             params=params,
                             max_num_results=max_num_results, )
 
