@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Not released]
+
+### Changed
+* Improved error message by pointing to documentation instead of Readme upon ProfileErrors
+
+### Fixed
+* Catch FileNotFoundError when profile.yml does not exist, raise ProfileError with useful messageinstead.
+* Fixed broken link to documentation in README.md
+
 ### Added
 * `pubkey` option to methods of `NanopubClient` that allows searching for publications 
     signed with the given pubkey. For these methods:

@@ -7,6 +7,8 @@ import requests
 
 from nanopub.definitions import PKG_FILEPATH
 
+from nanopub.profile import PROFILE_INSTRUCTIONS_MESSAGE
+
 # Location of nanopub tool (currently shipped along with the lib)
 NANOPUB_SCRIPT = str(PKG_FILEPATH / 'np')
 NANOPUB_TEST_SERVER = 'http://test-server.nanopubs.lod.labs.vu.nl/'
@@ -32,8 +34,8 @@ class JavaWrapper:
         rsa_key_messages = ['FileNotFoundException', 'id_rsa']
         stderr = result.stderr.decode('utf8')
         if all(m in stderr for m in rsa_key_messages):
-            raise RuntimeError('RSA key appears to be missing, see the instructions for making RSA'
-                               'keys in the setup section of the README')
+            raise RuntimeError('Nanopub RSA key appears to be missing,\n'
+                               + PROFILE_INSTRUCTIONS_MESSAGE)
         elif result.returncode != 0:
             raise RuntimeError(f'Error in nanopub java application: {stderr}')
 
