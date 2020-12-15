@@ -33,7 +33,7 @@ class Publication:
         is_test_publication: Whether this is a test publication
     """
 
-    def __init__(self, rdf, source_uri=None):
+    def __init__(self, rdf: rdflib.ConjunctiveGraph, source_uri: str = None):
         self._rdf = rdf
         self._source_uri = source_uri
 
