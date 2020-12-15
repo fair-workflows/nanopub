@@ -9,7 +9,7 @@
 The ```nanopub``` library provides a high-level, user-friendly python interface for searching, publishing and retracting nanopublications.
 
 Nanopublications are a formalized and machine-readable way of communicating
-the smallest possible units of publishable information. See [the documentation](https://nanopub.readthedocs.io/en/latest/what-are-nanopubs.html)
+the smallest possible units of publishable information. See [the documentation](https://nanopub.readthedocs.io/en/latest/getting-started/what-are-nanopubs.html)
 for more information.
 
 # Documentation
