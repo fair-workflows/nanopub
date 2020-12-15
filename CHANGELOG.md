@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Not released]
+
+### Fixed
+* Fixed broken link to documentation in README.md
+
 ### Added
 * Added `find_valid_signed_nanopubs_with_text` method to NanopubClient
 * Added `find_valid_signed_nanopubs_with_pattern` method to Nanopubclient
