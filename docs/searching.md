@@ -41,7 +41,7 @@ Each dict has the following key-value pairs:
 * `description`: A description of the nanopublication that was parsed from the nanopublication RDF.
 * `np`: The URI of the matching nanopublication.
 
-Example results (from `client.find_nanopubs_with_text('fair')`):
+Example results (from `NanopubClient.find_nanopubs_with_text('fair')`):
 ```python
 [{'date': '2020-05-01T08:05:25.575Z',
   'description': 'The primary objective of the VODAN Implementation Network is '
@@ -53,3 +53,29 @@ Example results (from `client.find_nanopubs_with_text('fair')`):
   'np': 'http://purl.org/np/RAPE0A-NrIZDeX3pvFJr0uHshocfXuUj8n_J3BkY0sMuU'}]
 ```
 
+## Returning retracted publications in search
+By default nanopublications that have a valid retraction do not show up in search results.
+A valid retraction is a retraction that is signed with the same public key as 
+the nanopublication that it retracts. 
+You can toggle this behavior with the `filter_retracted` parameter,
+here is an example with `NanopubClient.find_nanopubs_with_text`:
+```python
+from nanopub import NanopubClient
+client = NanopubClient()
+# Search for nanopublications containing the text fair, also returning retracted publications.
+results = client.find_nanopubs_with_text('fair', filter_retracted=False)
+```
+
+## Filtering search results for a particular publication key
+You can filter search results to publications that are signed with
+a specific publication key (effectively filtering on publications from a single author).
+You use the `pubkey` argument for that. 
+Here is an example with `NanopubClient.find_nanopubs_with_text`:
+```python
+from nanopub import NanopubClient, profile
+# Search for nanopublications containing the text 'test',
+# filtering on publications signed with my publication key.
+client = NanopubClient(use_test_server=True)
+my_public_key = profile.get_public_key()
+results = client.find_nanopubs_with_text('test', pubkey=my_public_key)
+```

@@ -1,3 +1,4 @@
+import warnings
 from unittest import mock
 
 import pytest
@@ -5,10 +6,15 @@ import rdflib
 
 from conftest import skip_if_nanopub_server_unavailable
 from nanopub import NanopubClient, namespaces, Publication
+from nanopub.definitions import TEST_RESOURCES_FILEPATH
 
 client = NanopubClient(use_test_server=True)
 
 TEST_ASSERTION = (namespaces.AUTHOR.DrBob, namespaces.HYCL.claims, rdflib.Literal('This is a test'))
+PUBKEY = 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCC686zsZaQWthNDSZO6unvhtSkXSLT8iSY/UUwD/' \
+         '7T9tabrEvFt/9UPsCsg/A4HG6xeuPtL5mVziVnzbxqi9myQOY62LBja85pYLWaZPUYakP' \
+         'HyVm9A0bRC2PUYZde+METkZ6eoqLXP26Qo5b6avPcmNnKkr5OQb7KXaeX2K2zQQIDAQAB'
+NANOPUB_SAMPLE_SIGNED = str(TEST_RESOURCES_FILEPATH / 'nanopub_sample_signed.trig')
 
 
 class TestNanopubClient:
@@ -26,6 +32,15 @@ class TestNanopubClient:
             assert len(results) > 0
 
         assert len(client.find_nanopubs_with_text('')) == 0
+
+    @pytest.mark.flaky(max_runs=10)
+    @skip_if_nanopub_server_unavailable
+    def test_find_nanopubs_with_text_pubkey(self):
+        results = client.find_nanopubs_with_text('test', pubkey=PUBKEY)
+        assert len(results) > 0
+
+        results = client.find_nanopubs_with_text('test', pubkey='wrong')
+        assert len(results) == 0
 
     @pytest.mark.flaky(max_runs=10)
     def test_find_nanopubs_with_text_prod(self):
@@ -46,7 +61,7 @@ class TestNanopubClient:
             Check that Nanopub pattern search is returning results
         """
         searches = [
-            ('', 'http://example.org/transmits', 'http://example.org/malaria'),
+            ('', rdflib.RDF.type, rdflib.FOAF.Person),
             ('http://purl.org/np/RA8ui7ddvV25m1qdyxR4lC8q8-G0yb3SN8AC0Bu5q8Yeg', '', '')
         ]
 
@@ -54,6 +69,20 @@ class TestNanopubClient:
             results = client.find_nanopubs_with_pattern(subj=subj, pred=pred, obj=obj)
             assert len(results) > 0
             assert 'Error' not in results[0]
+
+    @pytest.mark.flaky(max_runs=10)
+    @skip_if_nanopub_server_unavailable
+    def test_find_nanopubs_with_pattern_pubkey(self):
+        """
+            Check that Nanopub pattern search is returning results
+        """
+        subj, pred, obj = (
+            'http://purl.org/np/RA8ui7ddvV25m1qdyxR4lC8q8-G0yb3SN8AC0Bu5q8Yeg', '', '')
+        results = client.find_nanopubs_with_pattern(subj=subj, pred=pred, obj=obj, pubkey=PUBKEY)
+        assert len(results) > 0
+
+        results = client.find_nanopubs_with_pattern(subj=subj, pred=pred, obj=obj, pubkey='wrong')
+        assert len(results) == 0
 
     @pytest.mark.flaky(max_runs=10)
     @skip_if_nanopub_server_unavailable
@@ -69,50 +98,64 @@ class TestNanopubClient:
 
     @pytest.mark.flaky(max_runs=10)
     @skip_if_nanopub_server_unavailable
-    def test_find_valid_signed_nanopubs_with_text(self):
-        """
-        Check that Nanopub text search is returning results for a few common search terms
-        for signed and not retracted nanopubs
-        """
-        searches = ['test', 'US']
-
-        for search in searches:
-            results = client.find_valid_signed_nanopubs_with_text(search)
-            assert len(results) > 0
-
-        assert len(client.find_valid_signed_nanopubs_with_text('')) == 0
-
-    @pytest.mark.flaky(max_runs=10)
-    @skip_if_nanopub_server_unavailable
-    def test_find_valid_signed_nanopubs_with_pattern(self):
-        """
-            Check that Nanopub pattern search is returning results
-            for signed and not retracted nanopubs
-        """
-        searches = [
-            ('', '', ''),
-            ('', '', 'http://purl.org/net/p-plan#Plan'),
-            ('', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type',
-                'http://purl.org/net/p-plan#Plan')
-        ]
-
-        for subj, pred, obj in searches:
-            results = client.find_valid_signed_nanopubs_with_pattern(subj=subj, pred=pred, obj=obj)
-            assert len(results) > 0
-            assert 'Error' not in results[0]
-
-    @pytest.mark.flaky(max_runs=10)
-    @skip_if_nanopub_server_unavailable
-    def test_nanopub_find_valid_signed_things(self):
-        """
-        Check that Nanopub 'find_things' search is returning results
-        for signed and not retracted nanopubs
-        """
-        results = client.find_valid_signed_things(type='http://purl.org/net/p-plan#Plan')
+    def test_find_things_pubkey(self):
+        results = client.find_things(type='http://purl.org/net/p-plan#Plan', pubkey=PUBKEY)
         assert len(results) > 0
 
-        with pytest.raises(Exception):
-            client.find_valid_signed_things()
+        results = client.find_things(type='http://purl.org/net/p-plan#Plan', pubkey='wrong')
+        assert len(results) == 0
+
+    @pytest.mark.flaky(max_runs=10)
+    @skip_if_nanopub_server_unavailable
+    def test_find_things_filter_retracted(self):
+        filtered_results = client.find_things(type='http://purl.org/net/p-plan#Plan',
+                                              filter_retracted=True)
+        assert len(filtered_results) > 0
+        all_results = client.find_things(type='http://purl.org/net/p-plan#Plan',
+                                         filter_retracted=False)
+        assert len(all_results) > 0
+        # The filtered results should be a smaller subset of all the results, assuming that some of
+        # the results are retracted nanopublications.
+        assert len(all_results) > len(filtered_results)
+
+    def test_find_retractions_of_publication_raise_warning(self):
+        test_rdf = rdflib.ConjunctiveGraph()
+        test_rdf.parse(NANOPUB_SAMPLE_SIGNED, format='trig')
+        # A test publication
+        publication = Publication(rdf=test_rdf, source_uri='http://test-server/example')
+        assert publication.is_test_publication
+        # Production server client
+        client = NanopubClient(use_test_server=False)
+        client.find_nanopubs_with_pattern = mock.MagicMock()
+        # Because we try searching the prod server with a test publication this should trigger a
+        # warning.
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            client.find_retractions_of(publication, valid_only=False)
+            assert len(w) == 1
+
+    @pytest.mark.flaky(max_runs=10)
+    @skip_if_nanopub_server_unavailable
+    def test_find_retractions_of(self):
+        uri = 'http://purl.org/np/RAnksi2yDP7jpe7F6BwWCpMOmzBEcUImkAKUeKEY_2Yus'
+        results = client.find_retractions_of(uri, valid_only=False)
+        expected_uris = [
+            'http://purl.org/np/RAYhe0XddJhBsJvVt0h_aq16p6f94ymc2wS-q2BAgnPVY',
+            'http://purl.org/np/RACdYpR-6DZnT6JkEr1ItoYYXMAILjOhDqDZsMVO8EBZI']
+        for expected_uri in expected_uris:
+            assert expected_uri in results
+
+    @pytest.mark.flaky(max_runs=10)
+    @skip_if_nanopub_server_unavailable
+    def test_find_retractions_of_valid_only(self):
+        uri = 'http://purl.org/np/RAnksi2yDP7jpe7F6BwWCpMOmzBEcUImkAKUeKEY_2Yus'
+        results = client.find_retractions_of(uri, valid_only=True)
+        expected_uri = 'http://purl.org/np/RAYhe0XddJhBsJvVt0h_aq16p6f94ymc2wS-q2BAgnPVY'
+        assert expected_uri in results
+        # This is a nanopublication that is signed with a different public key than the nanopub
+        # it retracts, so it is not valid and should not be returned.
+        unexpected_uri = 'http://purl.org/np/RACdYpR-6DZnT6JkEr1ItoYYXMAILjOhDqDZsMVO8EBZI'
+        assert unexpected_uri not in results
 
     def test_nanopub_search(self):
         with pytest.raises(Exception):
@@ -220,9 +263,7 @@ class TestNanopubClient:
         # Return a mocked to-be-retracted publication object that is signed with public key
         mock_publication = mock.MagicMock()
         mock_publication.pubinfo = rdflib.Graph()
-        mock_publication.pubinfo.add((rdflib.URIRef(test_uri + '#sig'),
-                                      namespaces.NPX.hasPublicKey,
-                                      rdflib.Literal(test_public_key)))
+        mock_publication.signed_with_public_key = test_public_key
         client.fetch = mock.MagicMock(return_value=mock_publication)
 
         # Retract should be successful when public keys match
