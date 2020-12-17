@@ -34,7 +34,7 @@ setup(
     packages=['nanopub'],
     package_data={
         'nanopub': [
-            'np'
+            'nanopub-java/*'
         ],
     },
     include_package_data=True,

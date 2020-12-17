@@ -133,8 +133,5 @@ dmypy.json
 .eclipse
 .vscode
 
-# Java
-*.jar
-
 # Vim
 *.swp
