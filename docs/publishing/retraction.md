@@ -70,6 +70,6 @@ and what the nanopublications are that retract it using `NanopubClient.find_retr
 >>> client.find_retractions_of('http://purl.org/np/RAirauh-vy5f7UJEMTm08C5bh5pnWD-abb-qk3fPYWCzc')
 ['http://purl.org/np/RADjlGIB8Vqt7NbG1kqzw-4aIV_k7nyIRirMhPKEYVSlc']
 >>> # This URI has no retractions
->>>client.find_retractions_of('http://purl.org/np/RAeMfoa6I05zoUmK6sRypCIy3wIpTgS8gkum7vdfOamn8')
+>>> client.find_retractions_of('http://purl.org/np/RAeMfoa6I05zoUmK6sRypCIy3wIpTgS8gkum7vdfOamn8')
 []
 ```

@@ -4,9 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Not released]
+## [1.1.0] - 2020-12-17
 
 ### Added
+
+* Added `find_valid_signed_nanopubs_with_text` method to NanopubClient
+* Added `find_valid_signed_nanopubs_with_pattern` method to Nanopubclient
+* Added `find_valid_signed_things` method to NanopubClient
+* `.zenodo.json` for linking to zenodo
 * `pubkey` option to methods of `NanopubClient` that allows searching for publications 
     signed with the given pubkey. For these methods:
     - `find_nanopubs_with_text`
