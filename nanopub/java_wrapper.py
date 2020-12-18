@@ -4,12 +4,14 @@ from typing import Union
 
 import rdflib
 import requests
+import shutil
 
-from nanopub.definitions import PKG_FILEPATH
+from nanopub.definitions import ROOT_FILEPATH
 from nanopub.profile import PROFILE_INSTRUCTIONS_MESSAGE
 
-# Location of nanopub tool (currently shipped along with the lib)
-NANOPUB_JAVA_SCRIPT = str(PKG_FILEPATH / 'nanopub-java' / 'nanopub-java')
+NANOPUB_JAVA_SCRIPT = ('nanopub-java' if shutil.which('nanopub-java')  # In case installed with pip
+                       else ROOT_FILEPATH / 'bin' / 'nanopub-java')  # In case of local dev
+
 NANOPUB_TEST_SERVER = 'http://test-server.nanopubs.lod.labs.vu.nl/'
 
 

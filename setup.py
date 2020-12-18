@@ -32,11 +32,10 @@ setup(
     url='https://github.com/fair-workflows/nanopub/',
     install_requires=open("requirements.txt", "r").readlines(),
     packages=['nanopub'],
-    package_data={
-        'nanopub': [
-            'nanopub-java/*'
-        ],
-    },
+    data_files=[
+        ('lib', ['lib/nanopub-1.32-jar-with-dependencies.jar']),
+        ('bin', ['bin/nanopub-java'])
+    ],
     include_package_data=True,
     entry_points={
         'console_scripts': ['setup_profile=nanopub.setup_profile:main'],
