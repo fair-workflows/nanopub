@@ -48,5 +48,5 @@ configuration is in `tox.ini`.
 In case you feel like you've made a valuable contribution, but you don't know how to write or run tests for it, or how to generate the documentation: don't let this discourage you from making the pull request; we can help you! Just go ahead and submit the pull request, but keep in mind that you might be asked to append additional commits to your pull request.
 
 ## You want to update the nanopub-java dependency
-Run `nanopub/nanopub-java/nanopub-java --download` and move the generated 
-nanopub-*-jar-with-dependencies.jar file to `nanopub/nanopub-java/` folder.
+Run `bin/nanopub-java --download` and move the generated 
+nanopub-*-jar-with-dependencies.jar file to `nanopub/lib/` folder.
