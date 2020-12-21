@@ -42,6 +42,7 @@ Each dict has the following key-value pairs:
 
 Example results (from `NanopubClient.find_nanopubs_with_text('fair')`):
 ```python
+>>> print(list(results))
 [{'date': '2020-05-01T08:05:25.575Z',
   'description': 'The primary objective of the VODAN Implementation Network is '
                  'to showcase the creation and deployment of FAIR data related '
