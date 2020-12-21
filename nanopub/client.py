@@ -20,8 +20,8 @@ NANOPUB_GRLC_URLS = ["http://grlc.nanopubs.lod.labs.vu.nl/api/local/local/",
                      "http://130.60.24.146:7881/api/local/local/",
                      "https://openphacts.cs.man.ac.uk/nanopub/grlc/api/local/local/",
                      "http://grlc.np.dumontierlab.com/api/local/local/"
-                     # These servers do not support find_valid_signed_nanopubs_with_pattern
-                     # (2020-12-21)
+                     # These servers do currently not support
+                     # find_valid_signed_nanopubs_with_pattern (2020-12-21)
                      # "https://grlc.nanopubs.knows.idlab.ugent.be/api/local/local/",
                      # "http://grlc.np.scify.org/api/local/local/",
                      ]
