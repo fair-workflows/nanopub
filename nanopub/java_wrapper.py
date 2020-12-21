@@ -4,19 +4,20 @@ from typing import Union
 
 import rdflib
 import requests
+import shutil
 
-from nanopub.definitions import PKG_FILEPATH
-
+from nanopub.definitions import ROOT_FILEPATH
 from nanopub.profile import PROFILE_INSTRUCTIONS_MESSAGE
 
-# Location of nanopub tool (currently shipped along with the lib)
-NANOPUB_SCRIPT = str(PKG_FILEPATH / 'np')
+NANOPUB_JAVA_SCRIPT = ('nanopub-java' if shutil.which('nanopub-java')  # In case installed with pip
+                       else ROOT_FILEPATH / 'bin' / 'nanopub-java')  # In case of local dev
+
 NANOPUB_TEST_SERVER = 'http://test-server.nanopubs.lod.labs.vu.nl/'
 
 
 class JavaWrapper:
     """
-    Wrapper around 'np' java tool that is used to sign and publish nanopublications to
+    Wrapper around 'nanopub-java' java tool that is used to sign and publish nanopublications to
     a nanopub server.
     """
 
@@ -41,7 +42,7 @@ class JavaWrapper:
 
     def sign(self, unsigned_file: Union[str, Path]) -> str:
         unsigned_file = str(unsigned_file)
-        self._run_command(f'{NANOPUB_SCRIPT} sign ' + unsigned_file)
+        self._run_command(f'{NANOPUB_JAVA_SCRIPT} sign ' + unsigned_file)
         return self._get_signed_file(unsigned_file)
 
     def publish(self, signed: str):
@@ -58,7 +59,7 @@ class JavaWrapper:
                 r = requests.post(NANOPUB_TEST_SERVER, headers=headers, data=data)
             r.raise_for_status()
         else:
-            self._run_command(f'{NANOPUB_SCRIPT} publish ' + signed)
+            self._run_command(f'{NANOPUB_JAVA_SCRIPT} publish ' + signed)
         return self.extract_nanopub_url(signed)
 
     @staticmethod
@@ -83,4 +84,4 @@ class JavaWrapper:
 
         NOTE THAT THE JAVA TOOL ADDS _rsa TO THE END OF YOUR PATH.
         """
-        subprocess.run([NANOPUB_SCRIPT, 'mkkeys', '-a', 'RSA', '-f', path_name], check=True)
+        subprocess.run([NANOPUB_JAVA_SCRIPT, 'mkkeys', '-a', 'RSA', '-f', path_name], check=True)
