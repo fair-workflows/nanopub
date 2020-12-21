@@ -14,7 +14,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -132,9 +131,6 @@ dmypy.json
 .idea
 .eclipse
 .vscode
-
-# Java
-*.jar
 
 # Vim
 *.swp
