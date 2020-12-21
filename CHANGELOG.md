@@ -9,9 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 * Added Zenodo badge to README
+* Pagination of results for search methods of `NanopubClient`
 
 ### Changed
 * `nanopub-java` dependency is installed upon installation instead of upon runtime.
+* search methods of `NanopubClient` return iterator instead of list
 
 
 ## [1.1.0] - 2020-12-17
