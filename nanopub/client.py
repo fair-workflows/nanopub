@@ -59,7 +59,6 @@ class NanopubClient:
             pubkey (str): Public key that the matching nanopubs should be signed with
             filter_retracted (bool): Toggle filtering for publications that are
                 retracted. Default is True, returning only publications that are not retracted.
-            max_num_results (int): Maximum number of result, default = 1000
 
         Yields:
             dicts depicting matching nanopublications.
@@ -93,7 +92,6 @@ class NanopubClient:
             pubkey (str): Public key that the matching nanopubs should be signed with
             filter_retracted (bool): Toggle filtering for publications that are
                 retracted. Default is True, returning only publications that are not retracted.
-            max_num_results (int): Maximum number of result, default = 1000
 
         Yields:
             dicts depicting matching nanopublications.
