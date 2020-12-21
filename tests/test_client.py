@@ -159,17 +159,6 @@ class TestNanopubClient:
         unexpected_uri = 'http://purl.org/np/RACdYpR-6DZnT6JkEr1ItoYYXMAILjOhDqDZsMVO8EBZI'
         assert unexpected_uri not in results
 
-    def test_nanopub_search(self):
-        with pytest.raises(Exception):
-            client._search(params=None,
-                           endpoint='http://www.api.url')
-        with pytest.raises(Exception):
-            client._search(params={'search': 'text'},
-                           endpoint='http://www.api.url')
-        with pytest.raises(Exception):
-            client._search(params={'search': 'text'},
-                           endpoint=None)
-
     @pytest.mark.parametrize(
         "test_input,expected",
         [   # Input with 'v'
