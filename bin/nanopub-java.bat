@@ -1,7 +1,7 @@
 @if "%DEBUG%" == "" @echo off
 @rem ##########################################################################
 @rem
-@rem  xenon-grpc startup script for Windows
+@rem  nanopub-java startup script for Windows
 @rem
 @rem ##########################################################################
 
