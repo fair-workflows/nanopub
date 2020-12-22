@@ -60,7 +60,7 @@ set CMD_LINE_ARGS=%*
 :execute
 @rem Setup the command line
 
-set CLASSPATH=%APP_HOME%\lib\nanopub-*-jar-with-dependencies.jar
+set CLASSPATH=%APP_HOME%\lib\nanopub-1.32-jar-with-dependencies.jar
 
 @rem Execute xenon-grpc
 "%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% -classpath "%CLASSPATH%" %CMD_LINE_ARGS%
