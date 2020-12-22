@@ -34,7 +34,8 @@ setup(
     packages=['nanopub'],
     data_files=[
         ('lib', ['lib/nanopub-1.32-jar-with-dependencies.jar']),
-        ('bin', ['bin/nanopub-java'])
+        ('bin', ['bin/nanopub-java',
+                 'bin/nanopub-java.bat'])
     ],
     include_package_data=True,
     entry_points={
