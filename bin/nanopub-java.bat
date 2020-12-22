@@ -62,8 +62,8 @@ set CMD_LINE_ARGS=%*
 
 set CLASSPATH=%APP_HOME%\lib\nanopub-1.32-jar-with-dependencies.jar
 
-@rem Execute xenon-grpc
-"%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% -classpath "%CLASSPATH%" %CMD_LINE_ARGS%
+@rem Execute nanopub-java
+"%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% -jar "%CLASSPATH%" %CMD_LINE_ARGS%
 
 :end
 @rem End local scope for the variables with windows NT shell
