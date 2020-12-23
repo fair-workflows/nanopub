@@ -115,7 +115,8 @@ Searching for nanopublications
 
     # Search for all nanopublications containing the text 'fair'
     results = client.find_nanopubs_with_text('fair')
-    print(list(results))
+    for result in results:
+        print(result)
 
 
 Fetching nanopublications and inspecting them
