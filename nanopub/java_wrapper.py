@@ -35,7 +35,7 @@ class JavaWrapper:
         rsa_key_messages = ['FileNotFoundException', 'id_rsa']
         stderr = result.stderr.decode('utf8')
         if all(m in stderr for m in rsa_key_messages):
-            raise RuntimeError('Nanopub RSA keys appear to be missing,\n'
+            raise RuntimeError('Nanopub RSA key appears to be missing,\n'
                                + PROFILE_INSTRUCTIONS_MESSAGE
                                + '\nDetailed error message:\n' + stderr)
         elif result.returncode != 0:
