@@ -34,11 +34,8 @@ jobs:
            pytest --no_rsa_key -m 'no_rsa_key'
       - name: Setup nanopub profile (including RSA keys)
         run: |
-          if [ "$RUNNER_OS" == "Linux" ]; then
               printf '\n' | setup_profile --orcid_id 'https://orcid.org/1234-1234-1234-1234' --no-publish --name 'test'
-          else
-              printf '\n' > setup_profile --orcid_id 'https://orcid.org/1234-1234-1234-1234' --no-publish --name 'test'
-          fi
+        shell: bash
       - name: Test with pytest
         run: |
           pytest --cov
