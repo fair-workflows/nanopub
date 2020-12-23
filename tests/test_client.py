@@ -28,18 +28,18 @@ class TestNanopubClient:
         searches = ['test', 'US']
 
         for search in searches:
-            results = client.find_nanopubs_with_text(search)
+            results = list(client.find_nanopubs_with_text(search))
             assert len(results) > 0
-
-        assert len(client.find_nanopubs_with_text('')) == 0
+        results = list(client.find_nanopubs_with_text(''))
+        assert len(results) == 0
 
     @pytest.mark.flaky(max_runs=10)
     @skip_if_nanopub_server_unavailable
     def test_find_nanopubs_with_text_pubkey(self):
-        results = client.find_nanopubs_with_text('test', pubkey=PUBKEY)
+        results = list(client.find_nanopubs_with_text('test', pubkey=PUBKEY))
         assert len(results) > 0
 
-        results = client.find_nanopubs_with_text('test', pubkey='wrong')
+        results = list(client.find_nanopubs_with_text('test', pubkey='wrong'))
         assert len(results) == 0
 
     @pytest.mark.flaky(max_runs=10)
@@ -51,7 +51,7 @@ class TestNanopubClient:
         prod_client = NanopubClient()
         searches = ['test', 'US']
         for search in searches:
-            results = prod_client.find_nanopubs_with_text(search)
+            results = list(prod_client.find_nanopubs_with_text(search))
             assert len(results) > 0
 
     @pytest.mark.flaky(max_runs=10)
@@ -66,7 +66,7 @@ class TestNanopubClient:
         ]
 
         for subj, pred, obj in searches:
-            results = client.find_nanopubs_with_pattern(subj=subj, pred=pred, obj=obj)
+            results = list(client.find_nanopubs_with_pattern(subj=subj, pred=pred, obj=obj))
             assert len(results) > 0
             assert 'Error' not in results[0]
 
@@ -78,10 +78,12 @@ class TestNanopubClient:
         """
         subj, pred, obj = (
             'http://purl.org/np/RA8ui7ddvV25m1qdyxR4lC8q8-G0yb3SN8AC0Bu5q8Yeg', '', '')
-        results = client.find_nanopubs_with_pattern(subj=subj, pred=pred, obj=obj, pubkey=PUBKEY)
+        results = list(client.find_nanopubs_with_pattern(subj=subj, pred=pred, obj=obj,
+                                                         pubkey=PUBKEY))
         assert len(results) > 0
 
-        results = client.find_nanopubs_with_pattern(subj=subj, pred=pred, obj=obj, pubkey='wrong')
+        results = list(client.find_nanopubs_with_pattern(subj=subj, pred=pred, obj=obj,
+                                                         pubkey='wrong'))
         assert len(results) == 0
 
     @pytest.mark.flaky(max_runs=10)
@@ -90,7 +92,7 @@ class TestNanopubClient:
         """
         Check that Nanopub 'find_things' search is returning results
         """
-        results = client.find_things(type='http://purl.org/net/p-plan#Plan')
+        results = list(client.find_things(type='http://purl.org/net/p-plan#Plan'))
         assert len(results) > 0
 
         with pytest.raises(Exception):
@@ -99,20 +101,20 @@ class TestNanopubClient:
     @pytest.mark.flaky(max_runs=10)
     @skip_if_nanopub_server_unavailable
     def test_find_things_pubkey(self):
-        results = client.find_things(type='http://purl.org/net/p-plan#Plan', pubkey=PUBKEY)
+        results = list(client.find_things(type='http://purl.org/net/p-plan#Plan', pubkey=PUBKEY))
         assert len(results) > 0
 
-        results = client.find_things(type='http://purl.org/net/p-plan#Plan', pubkey='wrong')
+        results = list(client.find_things(type='http://purl.org/net/p-plan#Plan', pubkey='wrong'))
         assert len(results) == 0
 
     @pytest.mark.flaky(max_runs=10)
     @skip_if_nanopub_server_unavailable
     def test_find_things_filter_retracted(self):
-        filtered_results = client.find_things(type='http://purl.org/net/p-plan#Plan',
-                                              filter_retracted=True)
+        filtered_results = list(client.find_things(type='http://purl.org/net/p-plan#Plan',
+                                                   filter_retracted=True))
         assert len(filtered_results) > 0
-        all_results = client.find_things(type='http://purl.org/net/p-plan#Plan',
-                                         filter_retracted=False)
+        all_results = list(client.find_things(type='http://purl.org/net/p-plan#Plan',
+                                              filter_retracted=False))
         assert len(all_results) > 0
         # The filtered results should be a smaller subset of all the results, assuming that some of
         # the results are retracted nanopublications.
@@ -156,20 +158,6 @@ class TestNanopubClient:
         # it retracts, so it is not valid and should not be returned.
         unexpected_uri = 'http://purl.org/np/RACdYpR-6DZnT6JkEr1ItoYYXMAILjOhDqDZsMVO8EBZI'
         assert unexpected_uri not in results
-
-    def test_nanopub_search(self):
-        with pytest.raises(Exception):
-            client._search(params=None,
-                           max_num_results=100,
-                           endpoint='http://www.api.url')
-        with pytest.raises(Exception):
-            client._search(params={'search': 'text'},
-                           max_num_results=None,
-                           endpoint='http://www.api.url')
-        with pytest.raises(Exception):
-            client._search(params={'search': 'text'},
-                           max_num_results=100,
-                           endpoint=None)
 
     @pytest.mark.parametrize(
         "test_input,expected",
