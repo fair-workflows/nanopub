@@ -20,6 +20,10 @@ Or [follow these instructions for windows](http://kb.mit.edu/confluence/pages/vi
 ### Installing java
 If java is not installed [follow these instructions](https://www.java.com/en/download/help/index_installing.html)
 
+## Setup for users new to python
+We recommend using [anaconda](https://www.anaconda.com/products/individual) 
+to install python and manage python dependencies
+
 ## Setup your profile
 
 To publish to the nanopub server you need to setup your profile (note that you can use
