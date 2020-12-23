@@ -38,7 +38,7 @@ jobs:
               printf '\n' | setup_profile --orcid_id 'https://orcid.org/1234-1234-1234-1234' --no-publish --name 'test'
           else
               printf '\n' > setup_profile --orcid_id 'https://orcid.org/1234-1234-1234-1234' --no-publish --name 'test'
-
+          fi
       - name: Test with pytest
         run: |
           pytest --cov
