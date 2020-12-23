@@ -37,7 +37,7 @@ jobs:
         run: |
               printf '\n' | setup_profile --orcid_id 'https://orcid.org/1234-1234-1234-1234' --no-publish --name 'test'
       - name: Setup nanopub profile (including RSA keys) for Windows
-        if runner.os == 'Windows'
+        if: runner.os == 'Windows'
         run: |
               printf '\n' > setup_profile --orcid_id 'https://orcid.org/1234-1234-1234-1234' --no-publish --name 'test'
       - name: Test with pytest
