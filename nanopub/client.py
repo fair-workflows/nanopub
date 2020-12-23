@@ -6,7 +6,7 @@ import os
 import random
 import tempfile
 import warnings
-from typing import List, Union
+from typing import List, Union, Tuple
 
 import rdflib
 import requests
@@ -19,9 +19,12 @@ from nanopub.publication import Publication
 NANOPUB_GRLC_URLS = ["http://grlc.nanopubs.lod.labs.vu.nl/api/local/local/",
                      "http://130.60.24.146:7881/api/local/local/",
                      "https://openphacts.cs.man.ac.uk/nanopub/grlc/api/local/local/",
-                     "https://grlc.nanopubs.knows.idlab.ugent.be/api/local/local/",
-                     "http://grlc.np.scify.org/api/local/local/",
-                     "http://grlc.np.dumontierlab.com/api/local/local/"]
+                     "http://grlc.np.dumontierlab.com/api/local/local/"
+                     # These servers do currently not support
+                     # find_valid_signed_nanopubs_with_pattern (2020-12-21)
+                     # "https://grlc.nanopubs.knows.idlab.ugent.be/api/local/local/",
+                     # "http://grlc.np.scify.org/api/local/local/",
+                     ]
 NANOPUB_TEST_GRLC_URL = 'http://test-grlc.nanopubs.lod.labs.vu.nl/api/local/local/'
 NANOPUB_FETCH_FORMAT = 'trig'
 NANOPUB_TEST_URL = 'http://test-server.nanopubs.lod.labs.vu.nl/'
@@ -45,7 +48,7 @@ class NanopubClient:
             self.grlc_urls = NANOPUB_GRLC_URLS
 
     def find_nanopubs_with_text(self, text: str, pubkey: str = None,
-                                filter_retracted: bool = True, max_num_results: int = 1000):
+                                filter_retracted: bool = True):
         """Text search.
 
         Search the nanopub servers for any nanopubs matching the
@@ -56,10 +59,9 @@ class NanopubClient:
             pubkey (str): Public key that the matching nanopubs should be signed with
             filter_retracted (bool): Toggle filtering for publications that are
                 retracted. Default is True, returning only publications that are not retracted.
-            max_num_results (int): Maximum number of result, default = 1000
 
-        Returns:
-            List of dicts depicting matching nanopublications.
+        Yields:
+            dicts depicting matching nanopublications.
             Each dict holds: 'np': the nanopublication uri,
             'date': date of creation of the nanopublication,
             'description': A description of the nanopublication (if found in RDF).
@@ -74,12 +76,10 @@ class NanopubClient:
         if filter_retracted:
             endpoint = 'find_valid_signed_nanopubs_with_text'
         return self._search(endpoint=endpoint,
-                            params=params,
-                            max_num_results=max_num_results)
+                            params=params)
 
     def find_nanopubs_with_pattern(self, subj: str = None, pred: str = None, obj: str = None,
-                                   filter_retracted: bool = True, pubkey: str = None,
-                                   max_num_results: int = 1000):
+                                   filter_retracted: bool = True, pubkey: str = None):
         """Pattern search.
 
         Search the nanopub servers for any nanopubs matching the given RDF pattern. You can leave
@@ -92,10 +92,9 @@ class NanopubClient:
             pubkey (str): Public key that the matching nanopubs should be signed with
             filter_retracted (bool): Toggle filtering for publications that are
                 retracted. Default is True, returning only publications that are not retracted.
-            max_num_results (int): Maximum number of result, default = 1000
 
-        Returns:
-            List of dicts depicting matching nanopublications.
+        Yields:
+            dicts depicting matching nanopublications.
             Each dict holds: 'np': the nanopublication uri,
             'date': date of creation of the nanopublication,
             'description': A description of the nanopublication (if found in RDF).
@@ -114,12 +113,11 @@ class NanopubClient:
         if filter_retracted:
             endpoint = 'find_valid_signed_nanopubs_with_pattern'
 
-        return self._search(endpoint=endpoint,
-                            params=params,
-                            max_num_results=max_num_results)
+        yield from self._search(endpoint=endpoint,
+                                params=params)
 
     def find_things(self, type: str, searchterm: str = ' ', pubkey: str = None,
-                    filter_retracted: bool = True, max_num_results=1000):
+                    filter_retracted: bool = True):
         """Search things (experimental).
 
         Search for any nanopublications that introduce a concept of the given type, that contain
@@ -131,10 +129,9 @@ class NanopubClient:
             pubkey (str): Public key that the matching nanopubs should be signed with
             filter_retracted (bool): Toggle filtering for publications that are
                 retracted. Default is True, returning only publications that are not retracted.
-            max_num_results (int): Maximum number of result, default = 1000
 
-        Returns:
-            List of dicts depicting matching nanopublications.
+        Yields:
+            dicts depicting matching nanopublications.
             Each dict holds: 'np': the nanopublication uri,
             'date': date of creation of the nanopublication,
             'description': A description of the nanopublication (if found in RDF).
@@ -151,9 +148,8 @@ class NanopubClient:
         if filter_retracted:
             endpoint = 'find_valid_signed_things'
 
-        return self._search(endpoint=endpoint,
-                            params=params,
-                            max_num_results=max_num_results)
+        yield from self._search(endpoint=endpoint,
+                                params=params)
 
     def find_retractions_of(self, source: Union[str, Publication], valid_only=True) -> List[str]:
         """Find retractions of given URI
@@ -194,28 +190,36 @@ class NanopubClient:
                                                   filter_retracted=False)
         return [result['np'] for result in results]
 
-    def _query_grlc(self, params, endpoint):
+    @staticmethod
+    def _query_grlc(params: dict, endpoint: str, grlc_url: str) -> requests.Response:
+        """Query a specific nanopub server grlc endpoint."""
+        headers = {"Accept": "application/json"}
+        url = grlc_url + endpoint
+        return requests.get(url, params=params, headers=headers)
+
+    def _query_grlc_try_servers(self, params: dict, endpoint: str) -> Tuple[requests.Response, str]:
         """Query the nanopub server grlc endpoint.
 
         Query a nanopub grlc server endpoint (for example: find_text). Try several of the nanopub
         garlic servers.
+
+        Returns:
+            tuple of: r: request response, grlc_url: url of the grlc server used.
         """
-        headers = {"Accept": "application/json"}
         r = None
         random.shuffle(self.grlc_urls)  # To balance load across servers
         for grlc_url in self.grlc_urls:
-            url = grlc_url + endpoint
-            r = requests.get(url, params=params, headers=headers)
+            r = self._query_grlc(params, endpoint, grlc_url)
             if r.status_code == 502:  # Server is likely down
                 warnings.warn(f'Could not get response from {grlc_url}, trying other servers')
             else:
                 r.raise_for_status()  # For non-502 errors we don't want to try other servers
-                return r
+                return r, grlc_url
 
         raise requests.HTTPError(f'Could not get response from any of the nanopub grlc '
                                  f'endpoints, last response: {r.status_code}:{r.reason}')
 
-    def _search(self, endpoint: str, params: dict, max_num_results: int):
+    def _search(self, endpoint: str, params: dict):
         """
         General nanopub server search method. User should use e.g. find_nanopubs_with_text,
         find_things etc.
@@ -223,24 +227,31 @@ class NanopubClient:
         Args:
             endpoint: garlic endpoint to query, for example: find_things
             params: dictionary with parameters for get request
-            max_num_results: Maximum number of results to return
 
         Raises:
             JSONDecodeError: in case response can't be serialized as JSON, this can happen due to a
                 virtuoso error.
         """
-        r = self._query_grlc(params, endpoint)
-        results_json = r.json()
-
-        results_list = results_json['results']['bindings']
-        nanopubs = []
-
-        for result in results_list:
-            nanopubs.append(self._parse_search_result(result))
-            if len(nanopubs) >= max_num_results:
-                break
-
-        return nanopubs
+        has_results = True
+        page_number = 1
+        grlc_url = None
+        while has_results:
+            params['page'] = page_number
+            # First try different servers
+            if grlc_url is None:
+                r, grlc_url = self._query_grlc_try_servers(params, endpoint)
+            # If we have found a grlc server we should use that for further queries (so
+            # pagination works properly)
+            else:
+                r = self._query_grlc(params, endpoint, grlc_url)
+                r.raise_for_status()
+            results = r.json()
+            bindings = results['results']['bindings']
+            if not bindings:
+                has_results = False
+            page_number += page_number
+            for result in bindings:
+                yield self._parse_search_result(result)
 
     @staticmethod
     def _parse_search_result(result: dict):
