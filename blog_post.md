@@ -11,7 +11,6 @@ information-rich research articles written in a natural language such as English
 with all the accompanying ambiguities and misunderstandings.
 
 There are millions of papers published every year, which is far too many for a human to read or reason about. 
-Information that could be useful to others must necessarily be lost by the wayside. 
 There also exist many scientific results that are, despite being potentially useful to other researchers, 
 not yet sufficient to warrant an entire research article. 
 How do we formally communicate such findings such that they may be cited and credit attributed accordingly? 
@@ -24,7 +23,8 @@ One means of achieving this is to use 'nanopublications'.
 
 > Nanopublications are a formalized and machine-readable way of communicating the smallest possible units of publishable information. 
 
-Here is an example nanopublication (which can be found [here](http://purl.org/np/RAMzGwLotMRSQTHRCS15B6hvuYSyEupGnxZaFU3EmcItA)):
+Here is an example nanopublication of an inter-species interaction observation between a bird and an insect 
+(it can be found on the nanopub server [here](http://purl.org/np/RAMzGwLotMRSQTHRCS15B6hvuYSyEupGnxZaFU3EmcItA)):
 
 ![Example nanopublication describing an observation of a bird eating an insect](species-interaction-nanopub.png)
 
@@ -117,7 +117,7 @@ provenance of any nanopublication you will publish using this library.
 You can then publish a quick claim:
 ```python
 >>> client.claim('All cats are gray')
-Published to http://purl.org/np/RA47eJP2UBJCWuJ324c6Qw0OwtCb8wCrprwSk39am7xck```
+Published to http://purl.org/np/RA47eJP2UBJCWuJ324c6Qw0OwtCb8wCrprwSk39am7xck
 ```
 View the resulting nanopublication [here](http://purl.org/np/RA47eJP2UBJCWuJ324c6Qw0OwtCb8wCrprwSk39am7xck).
 
@@ -153,6 +153,7 @@ There are a few of those already in the making:
 * [nanotate](https://github.com/nanotate-tool/nanotate): Create nanopublications from annotations in PDF-files made with [hypothes.is](https://web.hypothes.is/)
 * [fairworkflows](https://github.com/fair-workflows/fairworkflows): Support the construction, manipulation and publishing 
 of FAIR scientific workflows using semantic technologies.
+
 ## Conclusion
 The python `nanopub` library provides a high-level, user-friendly python interface for the nanopub server,
 making it easy to publish and search small scientific publications. 
