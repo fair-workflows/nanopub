@@ -16,7 +16,6 @@ NANOPUB_DIR = '.nanopub'
 TEST_ORCID_ID = 'https://orcid.org/0000-0000-0000-0000'
 NAME = 'pietje'
 
-
 def test_provided_keypair_copied_to_nanopub_dir(tmp_path: Path):
     mock_homedir = tmp_path / 'home'
     mock_otherdir = tmp_path / 'other'
