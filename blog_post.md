@@ -16,7 +16,7 @@ not yet sufficient to warrant an entire research article.
 How do we formally communicate such findings such that they may be cited and credit attributed accordingly?
 One means of achieving this is to use 'nanopublications'.
 
-![Image showing a scientist thinking of statements that might be found in nanopublications]()
+![Image showing a scientist thinking of statements that might be found in nanopublications](blogscientist.png)
 
 
 ## What are nanopublications?
