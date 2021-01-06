@@ -43,9 +43,7 @@ def validate_orcid_id(ctx, orcid_id: str):
               default=None)
 @click.option('--newkeys', type=bool, is_flag=True, default=False,
               help='Generate new RSA public and private keys with which your nanopubs will be '
-                   'signed',
-              prompt='Do you wish to generate new RSA keys with which your nanopubs will be '
-                     'signed?')
+                   'signed')
 @click.option('--orcid_id', type=str,
               prompt='What is your ORCID iD (i.e. https://orcid.org/0000-0000-0000-0000)?',
               help='Your ORCID iD (i.e. https://orcid.org/0000-0000-0000-0000)',
