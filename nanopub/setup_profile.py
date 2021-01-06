@@ -42,10 +42,10 @@ def validate_orcid_id(ctx, orcid_id: str):
               help='Your RSA public and private keys with which your nanopubs will be signed',
               default=None)
 @click.option('--newkeys', type=bool, is_flag=True, default=False,
-              help=f'Generate new RSA public and private keys with which your nanopubs will be '
-                   f'signed',
-              prompt=f'Do you wish to generate new RSA keys with which your nanopubs will be '
-                     f'signed?')
+              help='Generate new RSA public and private keys with which your nanopubs will be '
+                   'signed',
+              prompt='Do you wish to generate new RSA keys with which your nanopubs will be '
+                     'signed?')
 @click.option('--orcid_id', type=str,
               prompt='What is your ORCID iD (i.e. https://orcid.org/0000-0000-0000-0000)?',
               help='Your ORCID iD (i.e. https://orcid.org/0000-0000-0000-0000)',
@@ -75,7 +75,7 @@ def main(orcid_id, publish, newkeys, name, keypair: Union[Tuple[Path, Path], Non
         USER_CONFIG_DIR.mkdir()
 
     if not keypair and not newkeys:
-        prompt = f'Provide the path to your public RSA key: ' \
+        prompt = 'Provide the path to your public RSA key: ' \
                  f'Leave empty for using the one in {USER_CONFIG_DIR}'
         public_key = click.prompt(prompt, type=Path, default="")
         if not public_key:
