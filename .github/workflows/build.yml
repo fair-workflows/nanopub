@@ -32,14 +32,9 @@ jobs:
       - name: Test with pytest - No RSA key tests
         run: |
            pytest --no_rsa_key -m 'no_rsa_key'
-      - name: Setup nanopub profile (including RSA keys) for linux
-        if: runner.os == 'Linux'
+      - name: Setup nanopub profile (including RSA keys)
         run: |
-              printf '\n' | setup_profile --orcid_id 'https://orcid.org/1234-1234-1234-1234' --no-publish --name 'test'
-      - name: Setup nanopub profile (including RSA keys) for Windows
-        if: runner.os == 'Windows'
-        run: |
-              printf '\n' > setup_profile --orcid_id 'https://orcid.org/1234-1234-1234-1234' --no-publish --name 'test'
+              setup_profile --orcid_id 'https://orcid.org/1234-1234-1234-1234' --no-publish --name 'test' --newkeys
       - name: Test with pytest
         run: |
           pytest --cov
