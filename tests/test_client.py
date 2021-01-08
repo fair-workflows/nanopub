@@ -62,9 +62,8 @@ class TestNanopubClient:
         case HTML is returned by the server rather than JSON.
         """
         results = client.find_nanopubs_with_text(
-            'some random string that is not in any of the nanopublications and that virtuoso does not like')
+            'a string that is not in any of the nanopublications and that virtuoso does not like')
         assert len(list(results)) == 0
-
 
     @pytest.mark.flaky(max_runs=10)
     @skip_if_nanopub_server_unavailable
