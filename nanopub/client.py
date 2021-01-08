@@ -245,7 +245,15 @@ class NanopubClient:
             else:
                 r = self._query_grlc(params, endpoint, grlc_url)
                 r.raise_for_status()
-            results = r.json()
+
+            # Check if JSON was actually returned. HTML can be returned instead
+            # if e.g. virtuoso errors on the backend (due to spaces in the search
+            # string, for example).
+            try:
+                results = r.json()
+            except ValueError:
+                return
+
             bindings = results['results']['bindings']
             if not bindings:
                 has_results = False
