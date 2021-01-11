@@ -76,7 +76,7 @@ class JavaWrapper:
         unsigned_file = Path(unsigned_file)
         return str(unsigned_file.parent / f'signed.{unsigned_file.name}')
 
-    def make_keys(self, path_name=None):
+    def make_keys(self, path_name='~/.nanopub/id'):
         """
         Use nanopub-java to make the RSA keys for this user.
         By default, this uses the path name ~/.nanopub/id and produces a key-pair:
@@ -84,7 +84,4 @@ class JavaWrapper:
 
         NOTE THAT THE JAVA TOOL ADDS _rsa TO THE END OF YOUR PATH.
         """
-        command = f'{NANOPUB_JAVA_SCRIPT} mkkeys -a RSA'
-        if path_name is not None:
-            command = command + ' -f ' + path_name
-        self._run_command(command)
+        self._run_command(f'{NANOPUB_JAVA_SCRIPT} mkkeys -a RSA -f {path_name}')
