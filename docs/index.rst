@@ -65,9 +65,9 @@ command:
 
 ::
 
-    setup_profile
+    setup_nanopub_profile
 
-It will add and store RSA keys to sign your nanopublications, publish a
+This will add and store RSA keys to sign your nanopublications, publish a
 nanopublication with your name and ORCID iD to declare that you are
 using using these RSA keys, and store your ORCID iD to automatically add
 as author to the provenance of any nanopublication you will publish

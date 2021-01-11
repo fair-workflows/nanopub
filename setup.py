@@ -38,7 +38,7 @@ setup(
     ],
     include_package_data=True,
     entry_points={
-        'console_scripts': ['setup_profile=nanopub.setup_profile:main'],
+        'console_scripts': ['setup_nanopub_profile=nanopub.setup_nanopub_profile:main'],
     },
     extras_require={
         'dev': open('requirements-dev.txt', 'r').readlines()
