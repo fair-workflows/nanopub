@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleaed] - ??
 
+### Changed
+* Rename `setup_profile` to `setup_nanopub_profile` to avoid ambiguity/clashes with other tools
+
 ### Fixed
 * Make `nanopub` package compatible Windows operating system
 

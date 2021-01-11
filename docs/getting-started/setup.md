@@ -31,7 +31,7 @@ fetch and search functionality without a profile). This allows the nanopub serve
 
 Run the following interactive command:
 ```
-setup_profile
+setup_nanopub_profile
 ```
 This will setup the following:
 
@@ -50,7 +50,7 @@ the ORCID iD to automatically add as author to the provenance of any nanopublica
 using this library.
 
 ### Introductory nanopublication
-We encourage you to make use of `setup_profile`'s option 
+We encourage you to make use of `setup_nanopub_profile`'s option 
 to publish your profile to the nanopub servers. This links your ORCID iD
 to your RSA key, thereby making all your publications linkable to you.
 Here is an [example introductory nanopublicaiton](http://purl.org/np/RAy1CYBfBYFd_TFI8Z_jr3taf6fB9u-grqsKyLzTmMvQI).
