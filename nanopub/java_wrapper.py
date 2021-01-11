@@ -84,4 +84,4 @@ class JavaWrapper:
 
         NOTE THAT THE JAVA TOOL ADDS _rsa TO THE END OF YOUR PATH.
         """
-        self._run_command(f'{NANOPUB_JAVA_SCRIPT} mkkeys -a RSA -f {path_name}')
+        self._run_command(f'{NANOPUB_JAVA_SCRIPT} mkkeys -a RSA')
