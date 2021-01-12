@@ -33,7 +33,7 @@ setup(
     install_requires=open("requirements.txt", "r").readlines(),
     packages=['nanopub'],
     data_files=[
-        ('lib', ['lib/nanopub-1.33-SNAPSHOT-jar-with-dependencies.jar']),
+        ('lib', ['lib/nanopub-1.33-jar-with-dependencies.jar']),
         ('bin', ['bin/nanopub-java',
                  'bin/nanopub-java.bat'])
     ],
