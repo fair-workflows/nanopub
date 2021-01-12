@@ -10,7 +10,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
         python-version: [3.6]
 
     steps:
@@ -34,7 +34,6 @@ jobs:
            pytest --no_rsa_key -m 'no_rsa_key'
       - name: Setup nanopub profile (including RSA keys)
         run: |
-           nanopub-java mkkeys
            setup_nanopub_profile --orcid_id https://orcid.org/1234-1234-1234-1234 --no-publish --name test --newkeys
       - name: Test with pytest
         run: |
