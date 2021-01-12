@@ -39,7 +39,7 @@ class JavaWrapper:
                                + PROFILE_INSTRUCTIONS_MESSAGE
                                + '\nDetailed error message:\n' + stderr)
         elif result.returncode != 0:
-            raise RuntimeError(f'Error in nanopub java application whn running {command}: {stderr}')
+            raise RuntimeError(f'Error in nanopub-java when running {command}: {stderr}')
 
     def sign(self, unsigned_file: Union[str, Path]) -> str:
         unsigned_file = str(unsigned_file)
