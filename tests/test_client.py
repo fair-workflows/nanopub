@@ -56,6 +56,20 @@ class TestNanopubClient:
 
     @pytest.mark.flaky(max_runs=10)
     @skip_if_nanopub_server_unavailable
+    def test_find_nanopubs_with_text_json_not_returned(self):
+        """
+        Check that text search that triggers a virtuoso error is handled correctly. In such a
+        case HTML is returned by the server rather than JSON.
+        """
+        results = client.find_nanopubs_with_text(
+            'a string that is not in any of the nanopublications'
+            ' and that virtuoso does not like')
+
+        with pytest.raises(ValueError):
+            list(results)
+
+    @pytest.mark.flaky(max_runs=10)
+    @skip_if_nanopub_server_unavailable
     def test_find_nanopubs_with_pattern(self):
         """
             Check that Nanopub pattern search is returning results
@@ -106,6 +120,15 @@ class TestNanopubClient:
 
         results = list(client.find_things(type='http://purl.org/net/p-plan#Plan', pubkey='wrong'))
         assert len(results) == 0
+
+    @pytest.mark.flaky(max_runs=10)
+    @skip_if_nanopub_server_unavailable
+    def test_nanopub_find_things_empty_searchterm(self):
+        """
+        Check that Nanopub 'find_things' search raises exception if search string is empty
+        """
+        with pytest.raises(Exception):
+            client.find_things(searchterm='')
 
     @pytest.mark.flaky(max_runs=10)
     @skip_if_nanopub_server_unavailable

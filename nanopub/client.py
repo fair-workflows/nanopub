@@ -245,7 +245,19 @@ class NanopubClient:
             else:
                 r = self._query_grlc(params, endpoint, grlc_url)
                 r.raise_for_status()
-            results = r.json()
+
+            # Check if JSON was actually returned. HTML can be returned instead
+            # if e.g. virtuoso errors on the backend (due to spaces in the search
+            # string, for example).
+            try:
+                results = r.json()
+            except ValueError as e:
+                # Try to give a more understandable error to user when the response
+                # is not JSON...
+                raise ValueError('The server returned HTML instead of the requested JSON. '
+                                 'This is usually caused by the triple store (e.g. virtuoso) '
+                                 'throwing an error for the given search query.') from e
+
             bindings = results['results']['bindings']
             if not bindings:
                 has_results = False
