@@ -39,12 +39,11 @@ def validate_orcid_id(ctx, orcid_id: str):
                     '(by default HOMEDIR/.nanopub/). '
                     'The profile will also be published to the nanopub servers.')
 @click.option('--keypair', nargs=2, type=Path,
-              prompt=f'If the public and private key you would like to use are not '
-                     f'in {USER_CONFIG_DIR}, provide them here. '
-                     f'If they are in this directory or you wish to generate new keys, '
-                     f'leave empty.',
               help='Your RSA public and private keys with which your nanopubs will be signed',
               default=None)
+@click.option('--newkeys', type=bool, is_flag=True, default=False,
+              help='Generate new RSA public and private keys with which your nanopubs will be '
+                   'signed')
 @click.option('--orcid_id', type=str,
               prompt='What is your ORCID iD (i.e. https://orcid.org/0000-0000-0000-0000)?',
               help='Your ORCID iD (i.e. https://orcid.org/0000-0000-0000-0000)',
@@ -55,7 +54,7 @@ def validate_orcid_id(ctx, orcid_id: str):
               prompt=('Would you like to publish your profile to the nanopub servers? '
                       'This links your ORCID iD to your RSA key, thereby making all your '
                       'publications linkable to you'))
-def main(orcid_id, publish, name, keypair: Union[Tuple[Path, Path], None]):
+def main(orcid_id, publish, newkeys, name, keypair: Union[Tuple[Path, Path], None]):
     """
     Interactive CLI to create a user profile.
 
@@ -65,22 +64,31 @@ def main(orcid_id, publish, name, keypair: Union[Tuple[Path, Path], None]):
         publish: if True, profile will be published to nanopub servers
         name: the name of the user
         keypair: a tuple containing the paths to the public and private RSA key to be used to sign
-            nanopubs. If empty, new keys will be generated.
+            nanopubs. If empty, new keys will be generated or the ones in the .nanopub folder
+            will be used.
     """
     click.echo('Setting up nanopub profile...')
 
     if not USER_CONFIG_DIR.exists():
         USER_CONFIG_DIR.mkdir()
 
+    if not keypair and not newkeys:
+        prompt = 'Provide the path to your public RSA key: ' \
+                 f'Leave empty for using the one in {USER_CONFIG_DIR}'
+        public_key = click.prompt(prompt, type=Path, default="")
+        if not public_key:
+            keypair = None
+        else:
+            prompt = 'Provide the path to your private RSA key: '
+            private_key = click.prompt(prompt, type=Path)
+            keypair = public_key, private_key
+
     if not keypair:
         if _rsa_keys_exist():
-            if _check_erase_existing_keys():
+            if newkeys or _check_erase_existing_keys():
                 _delete_keys()
-                JavaWrapper.make_keys(path_name=DEFAULT_KEYS_PATH_PREFIX)
-                click.echo(f'Your RSA keys are stored in {USER_CONFIG_DIR}')
-        else:
-            JavaWrapper.make_keys(path_name=DEFAULT_KEYS_PATH_PREFIX)
-            click.echo(f'Your RSA keys are stored in {USER_CONFIG_DIR}')
+        JavaWrapper().make_keys(path_name=DEFAULT_KEYS_PATH_PREFIX)
+        click.echo(f'Your RSA keys are stored in {USER_CONFIG_DIR}')
     else:
         public_key_path, private_key = keypair
 

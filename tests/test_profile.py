@@ -60,8 +60,8 @@ def test_store_profile(tmpdir):
             assert f.read() == (
                 'orcid_id: pietje\n'
                 'name: https://orcid.org/0000-0000-0000-0000\n'
-                'public_key: /home/.nanopub/id_rsa.pub\n'
-                'private_key: /home/.nanopub/id_rsa\n'
+                f"public_key: {Path('/home/.nanopub/id_rsa.pub')}\n"
+                f"private_key: {Path('/home/.nanopub/id_rsa')}\n"
                 'introduction_nanopub_uri:\n')
 
 
@@ -103,8 +103,8 @@ def test_introduction_nanopub_uri_roundtrip(tmpdir):
             assert f.read() == (
                 'orcid_id: pietje\n'
                 'name: https://orcid.org/0000-0000-0000-0000\n'
-                'public_key: /home/.nanopub/id_rsa.pub\n'
-                'private_key: /home/.nanopub/id_rsa\n'
+                f"public_key: {Path('/home/.nanopub/id_rsa.pub')}\n"
+                f"private_key: {Path('/home/.nanopub/id_rsa')}\n"
                 'introduction_nanopub_uri: https://example.com/nanopub\n')
 
         profile.get_profile.cache_clear()

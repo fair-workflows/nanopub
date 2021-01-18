@@ -7,31 +7,34 @@ on: [push, pull_request]
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python-version: [3.6]
 
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v1
+      - name: Set up Python
+        uses: actions/setup-python@v2
         with:
-          python-version: 3.7
+          python-version: ${{ matrix.python-version }}
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install .
           pip install -r requirements-dev.txt
       - name: Lint with flake8
         run: |
-          pip install flake8
           flake8 . --count --show-source --statistics
       - name: Test with pytest - No RSA key tests
         run: |
            pytest --no_rsa_key -m 'no_rsa_key'
       - name: Setup nanopub profile (including RSA keys)
         run: |
-          export PYTHONPATH=$PWD
-          printf '\n' | nanopub/setup_nanopub_profile.py --orcid_id 'https://orcid.org/1234-1234-1234-1234' --no-publish --name 'test'
+           setup_nanopub_profile --orcid_id https://orcid.org/1234-1234-1234-1234 --no-publish --name test --newkeys
       - name: Test with pytest
         run: |
           pytest --cov
@@ -44,6 +47,5 @@ jobs:
           coveralls
       - name: Build Sphinx docs
         run: |
-          export PYTHONPATH=$PWD
           cd docs
           make html

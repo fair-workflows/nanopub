@@ -88,7 +88,7 @@ def test_no_keypair_provided(tmp_path: Path):
             nanopub_path / 'profile.yml'):
 
         # Call function directly, otherwise click's prompts get in the way
-        setup_nanopub_profile.main.callback(TEST_ORCID_ID, False, NAME, keypair=None)
+        setup_nanopub_profile.main.callback(TEST_ORCID_ID, False, True, NAME, keypair=None)
 
         assert new_public_keyfile.exists()
         assert new_private_keyfile.exists()

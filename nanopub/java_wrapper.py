@@ -36,9 +36,10 @@ class JavaWrapper:
         stderr = result.stderr.decode('utf8')
         if all(m in stderr for m in rsa_key_messages):
             raise RuntimeError('Nanopub RSA key appears to be missing,\n'
-                               + PROFILE_INSTRUCTIONS_MESSAGE)
+                               + PROFILE_INSTRUCTIONS_MESSAGE
+                               + '\nDetailed error message:\n' + stderr)
         elif result.returncode != 0:
-            raise RuntimeError(f'Error in nanopub java application: {stderr}')
+            raise RuntimeError(f'Error in nanopub-java when running {command}: {stderr}')
 
     def sign(self, unsigned_file: Union[str, Path]) -> str:
         unsigned_file = str(unsigned_file)
@@ -75,8 +76,7 @@ class JavaWrapper:
         unsigned_file = Path(unsigned_file)
         return str(unsigned_file.parent / f'signed.{unsigned_file.name}')
 
-    @staticmethod
-    def make_keys(path_name='~/.nanopub/id'):
+    def make_keys(self, path_name='~/.nanopub/id'):
         """
         Use nanopub-java to make the RSA keys for this user.
         By default, this uses the path name ~/.nanopub/id and produces a key-pair:
@@ -84,4 +84,4 @@ class JavaWrapper:
 
         NOTE THAT THE JAVA TOOL ADDS _rsa TO THE END OF YOUR PATH.
         """
-        subprocess.run([NANOPUB_JAVA_SCRIPT, 'mkkeys', '-a', 'RSA', '-f', path_name], check=True)
+        self._run_command(f'{NANOPUB_JAVA_SCRIPT} mkkeys -a RSA -f {path_name}')
