@@ -251,12 +251,12 @@ class NanopubClient:
             # string, for example).
             try:
                 results = r.json()
-            except ValueError:
+            except ValueError as e:
                 # Try to give a more understandable error to user when the response
                 # is not JSON...
-                raise ValueError('The server returned HTML instead of the requested JSON.'
-                                 'This is usually caused by the triple store (e.g. virtuoso)'
-                                 'throwing an error for the given search query.')
+                raise ValueError('The server returned HTML instead of the requested JSON. '
+                                 'This is usually caused by the triple store (e.g. virtuoso) '
+                                 'throwing an error for the given search query.') from e
 
             bindings = results['results']['bindings']
             if not bindings:
