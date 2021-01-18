@@ -61,9 +61,9 @@ class TestNanopubClient:
         Check that text search that triggers a virtuoso error is handled correctly. In such a
         case HTML is returned by the server rather than JSON.
         """
-        results = client.find_nanopubs_with_text(
+        with pytest.raises(ValueError):
+            results = client.find_nanopubs_with_text(
             'a string that is not in any of the nanopublications and that virtuoso does not like')
-        assert len(list(results)) == 0
 
     @pytest.mark.flaky(max_runs=10)
     @skip_if_nanopub_server_unavailable
