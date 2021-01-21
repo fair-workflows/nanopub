@@ -33,13 +33,13 @@ cd $WORKINGDIR
 NANOPUBJAR=$(find $SCRIPTDIR -maxdepth 1 -name "nanopub-*-jar-with-dependencies.jar" 2>/dev/null | sort -n | tail -1)
 
 if [ ! -z "$NANOPUBJAR" ]; then
-  exec java -jar $NANOPUBJAR "$@"
+  exec java -Dsun.jnu.encoding=utf8 -Duser.language=en -Duser.country=US -Dfile.encoding=utf8 -jar $NANOPUBJAR "$@"
 fi
 
 NANOPUBJAR=$(find $PROJECTDIR/lib/ -maxdepth 1 -name "nanopub-*-jar-with-dependencies.jar" 2>/dev/null | sort -n | tail -1)
 
 if [ ! -z "$NANOPUBJAR" ]; then
-  exec java -jar $NANOPUBJAR "$@"
+  exec java -Dsun.jnu.encoding=utf8 -Duser.language=en -Duser.country=US -Dfile.encoding=utf8 -jar $NANOPUBJAR "$@"
 fi
 
 >&2 echo "ERROR: Failed to find nanopub jar file."
