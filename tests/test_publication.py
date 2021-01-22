@@ -135,7 +135,7 @@ class TestPublication:
     def test_construct_with_empty_rdf(self):
         test_rdf = rdflib.ConjunctiveGraph()
         with pytest.raises(ValueError):
-            publication = Publication(rdf=test_rdf)
+            Publication(rdf=test_rdf)
 
 
 def test_replace_in_rdf():
