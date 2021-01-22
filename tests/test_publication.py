@@ -132,6 +132,11 @@ class TestPublication:
         publication = Publication(test_rdf, source_uri=source_uri)
         assert publication.is_test_publication == expected
 
+    def test_construct_with_empty_rdf(self):
+        test_rdf = rdflib.ConjunctiveGraph()
+        with pytest.raises(ValueError):
+            Publication(rdf=test_rdf)
+
 
 def test_replace_in_rdf():
     g = rdflib.Graph()

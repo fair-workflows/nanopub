@@ -146,11 +146,25 @@ class TestNanopubClient:
     def test_find_retractions_of_publication_raise_warning(self):
         test_rdf = rdflib.ConjunctiveGraph()
         test_rdf.parse(NANOPUB_SAMPLE_SIGNED, format='trig')
+
         # A test publication
         publication = Publication(rdf=test_rdf, source_uri='http://test-server/example')
         assert publication.is_test_publication
         # Production server client
         client = NanopubClient(use_test_server=False)
+        client.find_nanopubs_with_pattern = mock.MagicMock()
+        # Because we try searching the prod server with a test publication this should trigger a
+        # warning.
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            client.find_retractions_of(publication, valid_only=False)
+            assert len(w) == 1
+
+        # Not a test publication
+        publication = Publication(rdf=test_rdf, source_uri='http://a-real-server/example')
+        assert not publication.is_test_publication
+        # Production server client
+        client = NanopubClient(use_test_server=True)
         client.find_nanopubs_with_pattern = mock.MagicMock()
         # Because we try searching the prod server with a test publication this should trigger a
         # warning.
