@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 * Make `nanopub` package compatible Windows operating system
 * Added UTF-8 related flags to nanopub-java (in java call) to fix issues with certain characters on certain java builds
+* Make regex in orcid validation accept ids ending with 'X'
 
 ## [1.2.0] - 2020-12-23
 
