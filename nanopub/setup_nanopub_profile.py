@@ -19,7 +19,7 @@ DEFAULT_KEYS_PATH_PREFIX = USER_CONFIG_DIR / 'id'
 DEFAULT_PRIVATE_KEY_PATH = USER_CONFIG_DIR / PRIVATE_KEY_FILE
 DEFAULT_PUBLIC_KEY_PATH = USER_CONFIG_DIR / PUBLIC_KEY_FILE
 RSA = 'RSA'
-ORCID_ID_REGEX = r'^https://orcid.org/(\d{4}-){3}\d{4}$'
+ORCID_ID_REGEX = r'^https://orcid.org/(\d{4}-){3}\d{3}(\d|X)$'
 
 
 def validate_orcid_id(ctx, orcid_id: str):
