@@ -110,7 +110,11 @@ class TestNanopubClient:
         assert len(results) > 0
 
         with pytest.raises(Exception):
-            client.find_things()
+            list(client.find_things())
+
+        with pytest.raises(Exception):
+            list(client.find_things(type='http://purl.org/net/p-plan#Plan', searchterm=''))
+
 
     @pytest.mark.flaky(max_runs=10)
     @skip_if_nanopub_server_unavailable
