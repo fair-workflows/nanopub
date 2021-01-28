@@ -115,7 +115,6 @@ class TestNanopubClient:
         with pytest.raises(Exception):
             list(client.find_things(type='http://purl.org/net/p-plan#Plan', searchterm=''))
 
-
     @pytest.mark.flaky(max_runs=10)
     @skip_if_nanopub_server_unavailable
     def test_find_things_pubkey(self):
