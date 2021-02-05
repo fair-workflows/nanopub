@@ -79,6 +79,7 @@ class Publication:
     @staticmethod
     def _validate_from_assertion_arguments(
             introduces_concept: rdflib.term.BNode, derived_from, assertion_attributed_to,
+            publication_attributed_to,
             attribute_assertion_to_profile: bool, provenance_rdf: rdflib.Graph,
             pubinfo_rdf: rdflib.Graph):
         """
@@ -102,28 +103,36 @@ class Publication:
         if provenance_rdf:
             if derived_from and (None, namespaces.PROV.wasDerivedFrom, None) in provenance_rdf:
                 raise ValueError('The provenance_rdf that you passed already contains the '
-                                 'prov:wasDerivedFrom predicate, so you can not also use the '
+                                 'prov:wasDerivedFrom predicate, so you cannot also use the '
                                  'derived_from argument')
             if (assertion_attributed_to
                     and (None, namespaces.PROV.wasAttributedTo, None) in provenance_rdf):
                 raise ValueError('The provenance_rdf that you passed already contains the '
-                                 'prov:wasAttributedTo predicate, so you can not also use the '
+                                 'prov:wasAttributedTo predicate, so you cannot also use the '
                                  'assertion_attributed_to argument')
             if (attribute_assertion_to_profile
                     and (None, namespaces.PROV.wasAttributedTo, None) in provenance_rdf):
                 raise ValueError('The provenance_rdf that you passed already contains the '
-                                 'prov:wasAttributedTo predicate, so you can not also use the '
+                                 'prov:wasAttributedTo predicate, so you cannot also use the '
                                  'attribute_assertion_to_profile argument')
         if pubinfo_rdf:
             if introduces_concept and (None, namespaces.NPX.introduces, None) in pubinfo_rdf:
                 raise ValueError('The pubinfo_rdf that you passed already contains the '
-                                 'npx:introduces predicate, so you can not also use the '
+                                 'npx:introduces predicate, so you cannot also use the '
                                  'introduces_concept argument')
+            if (None, namespaces.PROV.wasAttributedTo, None) in pubinfo_rdf:
+                raise ValueError('The pubinfo_rdf that you passed should not contain the '
+                                 'prov:wasAttributedTo predicate. If you wish to change '
+                                 'who the publication is attributed to, please use the '
+                                 'publication_attributed_to argument instead. By default '
+                                 'this is the ORCID set in your profile, but you can set '
+                                 'it to another URI if desired.')
 
     @classmethod
     def from_assertion(cls, assertion_rdf: rdflib.Graph,
                        introduces_concept: rdflib.term.BNode = None,
                        derived_from=None, assertion_attributed_to=None,
+                       publication_attributed_to=None,
                        attribute_assertion_to_profile: bool = False,
                        provenance_rdf: rdflib.Graph = None,
                        pubinfo_rdf: rdflib.Graph = None
@@ -147,6 +156,9 @@ class Publication:
                 If a list of URIs is passed, a provenance triple will be generated for each.
             assertion_attributed_to (rdflib.URIRef or str): the provenance graph will note that
                 this nanopub's assertion prov:wasAttributedTo the given URI.
+            publication_attributed_to (rdflib.URIRef or str): the pubInfo graph will note that
+                this nanopub itself prov:wasAttributedTo the given URI. If 'None' then this
+                defaults to using the ORCID id provided in the user's profile.
             attribute_assertion_to_profile (bool): Attribute the assertion to the ORCID iD in the
                 profile
             provenance_rdf (rdflib.Graph): RDF triples to be added to provenance graph of the
@@ -159,10 +171,14 @@ class Publication:
         """
         cls._validate_from_assertion_arguments(introduces_concept, derived_from,
                                                assertion_attributed_to,
+                                               publication_attributed_to,
                                                attribute_assertion_to_profile, provenance_rdf,
                                                pubinfo_rdf)
         if attribute_assertion_to_profile:
             assertion_attributed_to = rdflib.URIRef(profile.get_orcid_id())
+
+        if publication_attributed_to is None:
+            publication_attributed_to = rdflib.URIRef(profile.get_orcid_id())
 
         # Set up different contexts
         main_graph = rdflib.ConjunctiveGraph()
@@ -208,10 +224,7 @@ class Publication:
         if introduces_concept:
             cls._handle_introduces_concept(introduces_concept, pubinfo)
 
-        # Always attribute the nanopublication (not the assertion) to the ORCID iD in user profile
-        pubinfo.add((DUMMY_NAMESPACE[''],
-                     namespaces.PROV.wasAttributedTo,
-                     rdflib.URIRef(profile.get_orcid_id())))
+        cls._handle_publication_attributed_to(publication_attributed_to, pubinfo)
 
         return cls(rdf=main_graph)
 
@@ -222,6 +235,14 @@ class Publication:
         provenance.add((DUMMY_NAMESPACE.assertion,
                         namespaces.PROV.wasAttributedTo,
                         assertion_attributed_to))
+
+    @staticmethod
+    def _handle_publication_attributed_to(publication_attributed_to, pubinfo):
+        """Handler for `from_assertion` method."""
+        publication_attributed_to = rdflib.URIRef(publication_attributed_to)
+        pubinfo.add((DUMMY_NAMESPACE[''],
+                     namespaces.PROV.wasAttributedTo,
+                     publication_attributed_to))
 
     @staticmethod
     def _handle_derived_from(derived_from, provenance):
