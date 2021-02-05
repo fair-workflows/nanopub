@@ -25,5 +25,5 @@ keywords:
 license: "Apache-2.0"
 message: "If you use this software, please cite it using these metadata."
 title: "nanopub: A python library for searching, publishing and modifying nanopublications"
-version: "1.2.2"
-date-released: "2021-01-29"
+version: "1.2.3"
+date-released: "2021-02-05"
