@@ -72,6 +72,12 @@ class TestPublication:
                                                  pubinfo_rdf=self.test_rdf)
         assert self.test_triple in publication.pubinfo
 
+    def test_from_assertion_publication_attributed_to_predicate(self):
+        exampleorcid = rdflib.URIRef('exampleorcid')
+        publication = Publication.from_assertion(assertion_rdf=self.test_rdf,
+                                                publication_attributed_to=exampleorcid)
+        assert (None, namespaces.PROV.wasAttributedTo, exampleorcid) in publication.pubinfo
+
     def test_from_assertion_double_derived_from_predicate(self):
         triple = (rdflib.term.BNode(''), namespaces.PROV.wasDerivedFrom, rdflib.URIRef('example'))
         provenance_rdf = rdflib.Graph()
