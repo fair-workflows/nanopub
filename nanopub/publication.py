@@ -177,9 +177,6 @@ class Publication:
         if attribute_assertion_to_profile:
             assertion_attributed_to = rdflib.URIRef(profile.get_orcid_id())
 
-        if publication_attributed_to is None:
-            publication_attributed_to = rdflib.URIRef(profile.get_orcid_id())
-
         # Set up different contexts
         main_graph = rdflib.ConjunctiveGraph()
         head = rdflib.Graph(main_graph.store, DUMMY_NAMESPACE.Head)
@@ -239,7 +236,10 @@ class Publication:
     @staticmethod
     def _handle_publication_attributed_to(publication_attributed_to, pubinfo):
         """Handler for `from_assertion` method."""
-        publication_attributed_to = rdflib.URIRef(publication_attributed_to)
+        if publication_attributed_to is None:
+            publication_attributed_to = rdflib.URIRef(profile.get_orcid_id())
+        else:
+            publication_attributed_to = rdflib.URIRef(publication_attributed_to)
         pubinfo.add((DUMMY_NAMESPACE[''],
                      namespaces.PROV.wasAttributedTo,
                      publication_attributed_to))
