@@ -3,6 +3,7 @@
 This module holds code for representing the RDF of nanopublications, as well as helper functions to
 make handling RDF easier.
 """
+from copy import deepcopy
 import warnings
 from datetime import datetime
 from urllib.parse import urldefrag
@@ -196,6 +197,12 @@ class Publication:
         head.add((DUMMY_NAMESPACE[''], namespaces.NP.hasAssertion, DUMMY_NAMESPACE.assertion))
         head.add((DUMMY_NAMESPACE[''], namespaces.NP.hasProvenance, DUMMY_NAMESPACE.provenance))
         head.add((DUMMY_NAMESPACE[''], namespaces.NP.hasPublicationInfo, DUMMY_NAMESPACE.pubInfo))
+
+
+        # Avoid mutating the user's RDF
+        assertion_rdf = deepcopy(assertion_rdf)
+        provenance_rdf = deepcopy(assertion_rdf)
+        pubinfo_rdf = deepcopy(assertion_rdf)
 
         for user_rdf in [assertion_rdf, provenance_rdf, pubinfo_rdf]:
             if user_rdf is not None:
