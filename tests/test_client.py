@@ -276,6 +276,22 @@ class TestNanopubClient:
         assert pubinfo['nanopub_uri'] == test_published_uri
         assert pubinfo['concept_uri'] == expected_concept_uri
 
+    def test_assertion_rdf_not_mutated(self):
+        """
+        Check that the assertion rdf graph provided by the user
+        is not mutated by publishing in instances where it contains
+        a BNode.
+        """
+        rdf = rdflib.Graph()
+        rdf.add((rdflib.BNode('dontchangeme'), rdflib.RDF.type, rdflib.FOAF.Person))
+        publication = Publication.from_assertion(assertion_rdf=rdf)
+
+        client = NanopubClient()
+        client.java_wrapper.publish = mock.MagicMock()
+        client.publish(publication)
+
+        assert (rdflib.BNode('dontchangeme'), rdflib.RDF.type, rdflib.FOAF.Person) in rdf
+
     def test_retract_with_force(self):
         client = NanopubClient()
         client.java_wrapper.publish = mock.MagicMock()
