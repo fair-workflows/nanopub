@@ -143,6 +143,7 @@ class TestPublication:
         with pytest.raises(ValueError):
             Publication(rdf=test_rdf)
 
+
 def test_replace_in_rdf():
     g = rdflib.Graph()
     g.add((rdflib.Literal('DrBob'), rdflib.RDF.type, rdflib.Literal('Doctor')))
