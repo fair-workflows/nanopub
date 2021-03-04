@@ -198,7 +198,6 @@ class Publication:
         head.add((DUMMY_NAMESPACE[''], namespaces.NP.hasProvenance, DUMMY_NAMESPACE.provenance))
         head.add((DUMMY_NAMESPACE[''], namespaces.NP.hasPublicationInfo, DUMMY_NAMESPACE.pubInfo))
 
-
         # Avoid mutating the user's RDF
         assertion_rdf = deepcopy(assertion_rdf)
         provenance_rdf = deepcopy(assertion_rdf)

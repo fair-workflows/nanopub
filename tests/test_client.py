@@ -283,7 +283,7 @@ class TestNanopubClient:
         a BNode.
         """
         rdf = rdflib.Graph()
-        rdf.add( (rdflib.BNode('dontchangeme'), rdflib.RDF.type, rdflib.FOAF.Person) )
+        rdf.add((rdflib.BNode('dontchangeme'), rdflib.RDF.type, rdflib.FOAF.Person))
         publication = Publication.from_assertion(assertion_rdf=rdf)
 
         client = NanopubClient()
