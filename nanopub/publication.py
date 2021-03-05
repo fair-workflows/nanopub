@@ -200,8 +200,8 @@ class Publication:
 
         # Avoid mutating the user's RDF
         assertion_rdf = deepcopy(assertion_rdf)
-        provenance_rdf = deepcopy(assertion_rdf)
-        pubinfo_rdf = deepcopy(assertion_rdf)
+        provenance_rdf = deepcopy(provenance_rdf)
+        pubinfo_rdf = deepcopy(pubinfo_rdf)
 
         for user_rdf in [assertion_rdf, provenance_rdf, pubinfo_rdf]:
             if user_rdf is not None:
