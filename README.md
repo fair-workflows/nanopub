@@ -24,7 +24,7 @@ pip install nanopub
 ```
 
 To publish to the nanopub server you need to setup your profile. This allows the nanopub server to identify you. Run 
-the following interactive command:
+the following interactive command in the terminal:
 ```
 setup_nanopub_profile
 ```
