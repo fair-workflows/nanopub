@@ -269,7 +269,8 @@ class NanopubClient:
     def _parse_search_result(result: dict):
         """
         Parse a nanopub search result (i.e. referring to one matching nanopublication).
-        Rename 'v' to 'description', select only date, np, label and description fields and unnest them.
+        Rename 'v' to 'description', select only date, np, label and description fields
+        and unnest them.
         """
         parsed = dict()
         parsed['np'] = result['np']['value']
