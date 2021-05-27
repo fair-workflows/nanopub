@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.2.7] -
 
+### Changed
+* Prevent `setup_nanopub_profile` from ever overwriting key pair
+
 ### Fixed
 * Pin `click` at version 7.1.2, as versions >8 break `setup_nanopub_profile`
 

@@ -1,5 +1,4 @@
 #! /usr/bin/env python3
-import os
 import re
 import shutil
 from pathlib import Path
@@ -85,13 +84,12 @@ def main(orcid_id, publish, newkeys, name, keypair: Union[Tuple[Path, Path], Non
 
     if not keypair:
         if _rsa_keys_exist():
-            if newkeys or _check_erase_existing_keys():
-                _delete_keys()
-                JavaWrapper().make_keys(path_name=DEFAULT_KEYS_PATH_PREFIX)
-                click.echo(f'Your RSA keys are stored in {USER_CONFIG_DIR}')
+            click.echo(f'RSA keys already exist and are stored in {USER_CONFIG_DIR}. '
+                       f'If you want to create new ones then you must manually '
+                       f'delete these keys.')
         else:
             JavaWrapper().make_keys(path_name=DEFAULT_KEYS_PATH_PREFIX)
-            click.echo(f'Your RSA keys are stored in {USER_CONFIG_DIR}')
+            click.echo(f'Created RSA keys. Your RSA keys are stored in {USER_CONFIG_DIR}')
     else:
         public_key_path, private_key = keypair
 
@@ -122,11 +120,6 @@ def main(orcid_id, publish, newkeys, name, keypair: Union[Tuple[Path, Path], Non
 
         # Store profile nanopub uri
         store_profile(profile)
-
-
-def _delete_keys():
-    os.remove(DEFAULT_PUBLIC_KEY_PATH)
-    os.remove(DEFAULT_PRIVATE_KEY_PATH)
 
 
 def _create_this_is_me_rdf(orcid_id: str, public_key: str, name: str
