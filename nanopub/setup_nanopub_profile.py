@@ -1,5 +1,4 @@
 #! /usr/bin/env python3
-import os
 import re
 import shutil
 from pathlib import Path
@@ -85,7 +84,9 @@ def main(orcid_id, publish, newkeys, name, keypair: Union[Tuple[Path, Path], Non
 
     if not keypair:
         if _rsa_keys_exist():
-                click.echo(f'RSA keys already exist and are stored in {USER_CONFIG_DIR}. If you want to create new ones then you must manually delete these keys.')
+            click.echo(f'RSA keys already exist and are stored in {USER_CONFIG_DIR}. '
+                       f'If you want to create new ones then you must manually '
+                       f'delete these keys.')
         else:
             JavaWrapper().make_keys(path_name=DEFAULT_KEYS_PATH_PREFIX)
             click.echo(f'Created RSA keys. Your RSA keys are stored in {USER_CONFIG_DIR}')
