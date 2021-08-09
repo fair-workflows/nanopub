@@ -103,7 +103,7 @@ def test_validate_orcid_id():
     valid_ids = ['https://orcid.org/1234-5678-1234-5678',
                  'https://orcid.org/1234-5678-1234-567X']
     for orcid_id in valid_ids:
-        assert validate_orcid_id(ctx=None, param=None, orcid_id=orcid_id) == orcid_id
+        assert validate_orcid_id(ctx=None, orcid_id=orcid_id) == orcid_id
 
     invalid_ids = ['https://orcid.org/abcd-efgh-abcd-efgh',
                    'https://orcid.org/1234-5678-1234-567',
@@ -112,4 +112,4 @@ def test_validate_orcid_id():
                    '0000-0000-0000-0000']
     for orcid_id in invalid_ids:
         with pytest.raises(ValueError):
-            validate_orcid_id(ctx=None, param=None, orcid_id=orcid_id)
+            validate_orcid_id(ctx=None, orcid_id=orcid_id)
