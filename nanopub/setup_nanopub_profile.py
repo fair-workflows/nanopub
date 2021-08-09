@@ -21,10 +21,11 @@ RSA = 'RSA'
 ORCID_ID_REGEX = r'^https://orcid.org/(\d{4}-){3}\d{3}(\d|X)$'
 
 
-def validate_orcid_id(ctx, orcid_id: str):
+def validate_orcid_id(ctx, param, orcid_id: str):
     """
     Check if valid ORCID iD, should be https://orcid.org/ + 16 digit in form:
-        https://orcid.org/0000-0000-0000-0000
+        https://orcid.org/0000-0000-0000-0000. ctx and param are
+        necessary `click` callback arguments
     """
     if re.match(ORCID_ID_REGEX, orcid_id):
         return orcid_id
