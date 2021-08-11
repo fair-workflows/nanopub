@@ -40,6 +40,15 @@ def test_sign_fails_on_invalid_nanopub(tmp_path):
         java_wrapper.sign(invalid_file)
 
 
+def test_sign_fails_on_already_signed_publication(tmp_path):
+    java_wrapper = JavaWrapper(use_test_server=True)
+    temp_signed_file = tmp_path / 'signed.trig'
+    shutil.copy(NANOPUB_SAMPLE_SIGNED, temp_signed_file)
+    with pytest.raises(RuntimeError) as e:
+        java_wrapper.sign(unsigned_file=temp_signed_file)
+    assert 'The Publication you are trying to publish already has a signature' in str(e.value)
+
+
 @pytest.mark.no_rsa_key
 def test_sign_nanopub_no_rsa_key(tmp_path):
     """Test signing when no RSA key exists, only run if RSA keys are not set up."""
