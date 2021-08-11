@@ -46,7 +46,7 @@ def test_sign_fails_on_already_signed_publication(tmp_path):
     shutil.copy(NANOPUB_SAMPLE_SIGNED, temp_signed_file)
     with pytest.raises(RuntimeError) as e:
         java_wrapper.sign(unsigned_file=temp_signed_file)
-    assert 'The Publication you try to publish already has a signature' in str(e.value)
+    assert 'The Publication you are trying to publish already has a signature' in str(e.value)
 
 
 @pytest.mark.no_rsa_key
