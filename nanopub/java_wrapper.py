@@ -39,7 +39,7 @@ class JavaWrapper:
                                + PROFILE_INSTRUCTIONS_MESSAGE
                                + '\nDetailed error message:\n' + stderr)
         elif all(m in stderr for m in ['SignatureException', 'Seems to have signature']):
-            raise RuntimeError('The Publication you try to publish already has a signature, '
+            raise RuntimeError('The Publication you are trying to publish already has a signature, '
                                'this means it is likely already published. '
                                'If you want to publish a modified existing nanopublication '
                                'you need to do a few extra steps before you can publish. '
