@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 * Use latest yatiml version instead of pinned version
 
+## [1.2.9] - 2021-09-01
+### Added
+* Include LICENSE file in python setup
+
 ## [1.2.8] - 2021-09-01
 
 ### Added
