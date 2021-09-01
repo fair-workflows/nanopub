@@ -2,3 +2,4 @@ include README.md
 include nanopub/_version.py
 include requirements.txt
 include requirements-dev.txt
+include LICENSE
