@@ -166,8 +166,8 @@ class Publication:
                 defaults to using the ORCID id provided in the user's profile.
             attribute_assertion_to_profile (bool): Attribute the assertion to the ORCID iD in the
                 profile
-            attribute_publication_to_profile (bool): Attribute the publication to the ORCID iD in the
-                profile
+            attribute_publication_to_profile (bool): Attribute the publication to the ORCID iD
+                in the profile
             provenance_rdf (rdflib.Graph): RDF triples to be added to provenance graph of the
                 nanopublication.
                 This is optional, for most cases the defaults will be sufficient.
@@ -229,7 +229,11 @@ class Publication:
 
         if add_generated_at_time:
             creationtime = rdflib.Literal(datetime.now(), datatype=XSD.dateTime)
-            provenance.add((DUMMY_NAMESPACE.assertion, namespaces.PROV.generatedAtTime, creationtime))
+            provenance.add((
+                DUMMY_NAMESPACE.assertion,
+                namespaces.PROV.generatedAtTime,
+                creationtime
+            ))
             pubinfo.add((DUMMY_NAMESPACE[''], namespaces.PROV.generatedAtTime, creationtime))
 
         if assertion_attributed_to:
