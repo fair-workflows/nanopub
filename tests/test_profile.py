@@ -1,6 +1,7 @@
-import pytest
 from pathlib import Path
 from unittest import mock
+
+import pytest
 
 from nanopub import profile
 

@@ -3,7 +3,7 @@ from unittest import mock
 import pytest
 import rdflib
 
-from nanopub import namespaces, Publication, replace_in_rdf
+from nanopub import Publication, namespaces, replace_in_rdf
 from nanopub.definitions import DUMMY_NANOPUB_URI, TEST_RESOURCES_FILEPATH
 
 TEST_ORCID_ID = 'https://orcid.org/0000-0000-0000-0000'

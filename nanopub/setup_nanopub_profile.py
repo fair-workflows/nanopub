@@ -2,12 +2,12 @@
 import re
 import shutil
 from pathlib import Path
-from typing import Union, Tuple
+from typing import Tuple, Union
 
 import click
 import rdflib
 
-from nanopub import Publication, NanopubClient, namespaces
+from nanopub import NanopubClient, Publication, namespaces
 from nanopub.definitions import USER_CONFIG_DIR
 from nanopub.java_wrapper import JavaWrapper
 from nanopub.profile import Profile, store_profile
