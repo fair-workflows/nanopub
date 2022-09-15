@@ -6,7 +6,8 @@ import os
 import random
 import tempfile
 import warnings
-from typing import List, Union, Tuple
+from json import load
+from typing import List, Tuple, Union
 
 import rdflib
 import requests
@@ -14,6 +15,7 @@ import requests
 from nanopub import namespaces, profile
 from nanopub.definitions import DUMMY_NANOPUB_URI
 from nanopub.java_wrapper import JavaWrapper
+from nanopub.profile import Profile, get_profile
 from nanopub.publication import Publication
 
 NANOPUB_GRLC_URLS = ["http://grlc.nanopubs.lod.labs.vu.nl/api/local/local/",
@@ -39,13 +41,35 @@ class NanopubClient:
         use_test_server (bool): Toggle using the test nanopub server.
 
     """
-    def __init__(self, use_test_server=False):
+
+    profile: Profile = None
+    sign_explicit_private_key: bool = False
+
+    def __init__(self, 
+        use_test_server=False, 
+        profile_path: str = None,
+        sign_explicit_private_key: bool = False
+    ):
         self.use_test_server = use_test_server
         self.java_wrapper = JavaWrapper(use_test_server=use_test_server)
         if use_test_server:
             self.grlc_urls = [NANOPUB_TEST_GRLC_URL]
         else:
             self.grlc_urls = NANOPUB_GRLC_URLS
+        self.profile = get_profile(profile_path)
+        self.sign_explicit_private_key = sign_explicit_private_key
+
+
+    def create_publication(self, assertion_rdf, pubinfo_rdf, provenance_rdf):
+        return Publication.from_assertion(
+            assertion_rdf=assertion_rdf,
+            pubinfo_rdf=pubinfo_rdf,
+            provenance_rdf=provenance_rdf,
+            nanopub_profile=self.profile,
+            add_generated_at_time=False,
+            attribute_publication_to_profile=False,
+        )
+
 
     def find_nanopubs_with_text(self, text: str, pubkey: str = None,
                                 filter_retracted: bool = True):
@@ -309,6 +333,41 @@ class NanopubClient:
         nanopub_rdf.parse(data=r.text, format=NANOPUB_FETCH_FORMAT)
         return Publication(rdf=nanopub_rdf, source_uri=uri)
 
+
+    def sign(self, publication: Publication):
+        """Sign a Publication object.
+
+        Sign Publication object. It uses nanopub_java commandline tool to
+        sign the nanopublication RDF with the RSA key in the profile and then publish.
+
+        Args:
+            publication (Publication): Publication object to sign.
+
+        Returns:
+            dict of str: Publication info with: 'nanopub_uri': the URI of the signed
+            nanopublication, 'concept_uri': the URI of the introduced concept (if applicable)
+
+        """
+        # Create a temporary dir for files created during serializing and signing
+        tempdir = tempfile.mkdtemp()
+
+        # Convert nanopub rdf to trig
+        fname = 'temp.trig'
+        unsigned_fname = os.path.join(tempdir, fname)
+        publication.rdf.serialize(destination=unsigned_fname, format='trig')
+
+        # Sign the nanopub
+        if self.sign_explicit_private_key:
+            signed_file = self.java_wrapper.sign(unsigned_fname, self.profile.private_key)
+        else:
+            signed_file = self.java_wrapper.sign(unsigned_fname, None)
+
+        publication_info = {'signed_file': signed_file}
+        # publication_info = {'nanopub_uri': nanopub_uri}
+        print(f'Signed to {signed_file}')
+        return signed_file
+
+
     def publish(self, publication: Publication):
         """Publish a Publication object.
 
@@ -350,6 +409,7 @@ class NanopubClient:
             print(f'Published concept to {concept_uri}')
 
         return publication_info
+
 
     def claim(self, statement_text: str):
         """Quickly claim a statement.

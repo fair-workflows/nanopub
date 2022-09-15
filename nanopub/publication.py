@@ -13,6 +13,7 @@ from rdflib.namespace import DC, DCTERMS, RDF, XSD
 
 from nanopub import namespaces, profile
 from nanopub.definitions import DUMMY_NANOPUB_URI
+from nanopub.profile import Profile
 
 # To be replaced with the published uri upon publishing
 DUMMY_NAMESPACE = rdflib.Namespace(DUMMY_NANOPUB_URI + '#')
@@ -139,6 +140,7 @@ class Publication:
                        provenance_rdf: rdflib.Graph = None,
                        pubinfo_rdf: rdflib.Graph = None,
                        add_generated_at_time: bool = True,
+                       nanopub_profile: Profile = None
                        ):
         """Construct Nanopub object based on given assertion.
 

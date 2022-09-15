@@ -18,7 +18,8 @@ class ProfileError(RuntimeError):
     """
     pass
 
-
+# TODO: from dataclasses import dataclass
+# @dataclass()
 class Profile:
     """Represents a user profile.
 
@@ -29,6 +30,12 @@ class Profile:
         private_key: Path to the user's private key
         introduction_nanopub_uri: URI of the user's profile nanopub
     """
+
+    # orcid_id: str
+    # name: str
+    # public_key: Path
+    # private_key: Path
+    # introduction_nanopub_uri: Optional[str] = None
 
     def __init__(
             self,
@@ -67,7 +74,7 @@ def get_public_key() -> str:
 
 
 @lru_cache()
-def get_profile() -> Profile:
+def get_profile(profile_path: str = None) -> Profile:
     """Retrieve nanopub user profile.
 
     By default the profile is stored in `HOME_DIR/.nanopub/profile.yaml`.
@@ -79,7 +86,10 @@ def get_profile() -> Profile:
         yatiml.RecognitionError: If there is an error in the file.
     """
     try:
-        return _load_profile(PROFILE_PATH)
+        if profile_path:
+            return _load_profile(Path(profile_path))
+        else:
+            return _load_profile(PROFILE_PATH)
     except (yatiml.RecognitionError, FileNotFoundError) as e:
         msg = (f'{e}\nYour nanopub profile has not been set up yet, or is not set up correctly.\n'
                f'{PROFILE_INSTRUCTIONS_MESSAGE}')

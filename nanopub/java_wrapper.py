@@ -1,10 +1,10 @@
+import shutil
 import subprocess
 from pathlib import Path
 from typing import Union
 
 import rdflib
 import requests
-import shutil
 
 from nanopub.definitions import ROOT_FILEPATH
 from nanopub.profile import PROFILE_INSTRUCTIONS_MESSAGE
@@ -48,9 +48,12 @@ class JavaWrapper:
         elif result.returncode != 0:
             raise RuntimeError(f'Error in nanopub-java when running {command}: {stderr}')
 
-    def sign(self, unsigned_file: Union[str, Path]) -> str:
+    def sign(self, unsigned_file: Union[str, Path], explicit_private_key: str = None) -> str:
         unsigned_file = str(unsigned_file)
-        self._run_command(f'{NANOPUB_JAVA_SCRIPT} sign ' + unsigned_file)
+        args = ''
+        if explicit_private_key:
+            args = f'-k {explicit_private_key}'
+        self._run_command(f'{NANOPUB_JAVA_SCRIPT} sign {unsigned_file} {args}')
         return self._get_signed_file(unsigned_file)
 
     def publish(self, signed: str):
