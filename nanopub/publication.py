@@ -239,7 +239,6 @@ class Publication:
             publication_attributed_to,
             pubinfo
         )
-
         cls._handle_generated_at_time(
             add_generated_at_time,
             provenance,
