@@ -297,7 +297,6 @@ class TestNanopubClient:
         client.java_wrapper.publish = mock.MagicMock()
         client.retract('http://www.example.com/my-nanopub', force=True)
 
-
     # TODO: Not sure how to use mocks in this case (we want to get rid of the static get_public_key)
     # @mock.patch('nanopub.client.profile.get_public_key')
     # def test_retract_without_force(self, mock_get_public_key):

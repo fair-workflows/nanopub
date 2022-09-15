@@ -6,13 +6,12 @@ import os
 import random
 import tempfile
 import warnings
-from json import load
 from typing import List, Tuple, Union
 
 import rdflib
 import requests
 
-from nanopub import namespaces, profile
+from nanopub import namespaces
 from nanopub.definitions import DUMMY_NANOPUB_URI
 from nanopub.java_wrapper import JavaWrapper
 from nanopub.profile import Profile, get_profile
@@ -45,11 +44,10 @@ class NanopubClient:
     profile: Profile = None
     sign_explicit_private_key: bool = False
 
-    def __init__(self, 
-        use_test_server=False, 
-        profile_path: str = None,
-        sign_explicit_private_key: bool = False
-    ):
+    def __init__(self,
+                 use_test_server=False,
+                 profile_path: str = None,
+                 sign_explicit_private_key: bool = False):
         self.use_test_server = use_test_server
         self.java_wrapper = JavaWrapper(use_test_server=use_test_server)
         if use_test_server:
@@ -58,7 +56,6 @@ class NanopubClient:
             self.grlc_urls = NANOPUB_GRLC_URLS
         self.profile = get_profile(profile_path)
         self.sign_explicit_private_key = sign_explicit_private_key
-
 
     def create_publication(self, assertion_rdf, pubinfo_rdf, provenance_rdf):
         return Publication.from_assertion(
@@ -69,7 +66,6 @@ class NanopubClient:
             add_generated_at_time=False,
             attribute_publication_to_profile=False,
         )
-
 
     def find_nanopubs_with_text(self, text: str, pubkey: str = None,
                                 filter_retracted: bool = True):
@@ -333,7 +329,6 @@ class NanopubClient:
         nanopub_rdf.parse(data=r.text, format=NANOPUB_FETCH_FORMAT)
         return Publication(rdf=nanopub_rdf, source_uri=uri)
 
-
     def sign(self, publication: Publication):
         """Sign a Publication object.
 
@@ -361,12 +356,8 @@ class NanopubClient:
             signed_file = self.java_wrapper.sign(unsigned_fname, self.profile.private_key)
         else:
             signed_file = self.java_wrapper.sign(unsigned_fname, None)
-
-        publication_info = {'signed_file': signed_file}
-        # publication_info = {'nanopub_uri': nanopub_uri}
         print(f'Signed to {signed_file}')
         return signed_file
-
 
     def publish(self, publication: Publication):
         """Publish a Publication object.
@@ -382,16 +373,14 @@ class NanopubClient:
             nanopublication, 'concept_uri': the URI of the introduced concept (if applicable)
 
         """
-        # Create a temporary dir for files created during serializing and signing
-        tempdir = tempfile.mkdtemp()
+        signed_file = self.sign(publication)
 
-        # Convert nanopub rdf to trig
-        fname = 'temp.trig'
-        unsigned_fname = os.path.join(tempdir, fname)
-        publication.rdf.serialize(destination=unsigned_fname, format='trig')
+        # Publish the nanopub
+        if self.sign_explicit_private_key:
+            nanopub_uri = self.java_wrapper.publish(signed_file, self.profile.private_key)
+        else:
+            nanopub_uri = self.java_wrapper.publish(signed_file, None)
 
-        # Sign the nanopub and publish it
-        signed_file = self.java_wrapper.sign(unsigned_fname)
         nanopub_uri = self.java_wrapper.publish(signed_file)
         publication_info = {'nanopub_uri': nanopub_uri}
         print(f'Published to {nanopub_uri}')
@@ -409,7 +398,6 @@ class NanopubClient:
             print(f'Published concept to {concept_uri}')
 
         return publication_info
-
 
     def claim(self, statement_text: str):
         """Quickly claim a statement.
@@ -435,7 +423,8 @@ class NanopubClient:
         provenance_rdf.add((orcid_id_uri, namespaces.HYCL.claims, this_statement))
         publication = Publication.from_assertion(assertion_rdf=assertion_rdf,
                                                  attribute_assertion_to_profile=True,
-                                                 provenance_rdf=provenance_rdf)
+                                                 provenance_rdf=provenance_rdf,
+                                                 nanopub_profile=self.profile)
         return self.publish(publication)
 
     def _check_public_keys_match(self, uri):
@@ -475,5 +464,6 @@ class NanopubClient:
         assertion_rdf.add((rdflib.URIRef(orcid_id), namespaces.NPX.retracts,
                            rdflib.URIRef(uri)))
         publication = Publication.from_assertion(assertion_rdf=assertion_rdf,
-                                                 attribute_assertion_to_profile=True)
+                                                 attribute_assertion_to_profile=True,
+                                                 nanopub_profile=self.profile)
         return self.publish(publication)

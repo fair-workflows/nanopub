@@ -67,7 +67,7 @@ class JavaWrapper:
         args = ''
         if explicit_private_key:
             args = f'-k {explicit_private_key}'
-            
+
         if self.use_test_server:
             headers = {'content-type': 'application/x-www-form-urlencoded'}
             with open(signed, 'rb') as data:

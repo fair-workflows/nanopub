@@ -181,12 +181,13 @@ class Publication:
                                                publication_attributed_to,
                                                attribute_assertion_to_profile, provenance_rdf,
                                                pubinfo_rdf)
-        
+
         if not nanopub_profile:
-            # Quick hack, if people use this function without providing a Profile, 
-            # then we try to load the default one. Not perfect, but we do it to keep backward compatibility
+            # Quick hack, if people use this function without providing a Profile,
+            # then we try to load the default one. Not perfect,
+            # but we do it to keep backward compatibility
             nanopub_profile = profile.get_profile()
-        
+
         if attribute_assertion_to_profile:
             assertion_attributed_to = rdflib.URIRef(nanopub_profile.orcid_id)
 

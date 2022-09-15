@@ -18,6 +18,7 @@ class ProfileError(RuntimeError):
     """
     pass
 
+
 # TODO: from dataclasses import dataclass
 # @dataclass()
 class Profile:
@@ -50,7 +51,6 @@ class Profile:
         self.private_key = private_key
         self.introduction_nanopub_uri = introduction_nanopub_uri
 
-    
     def get_public_key(self) -> str:
         """Returns the user's public key."""
         try:
@@ -58,8 +58,8 @@ class Profile:
                 return f.read()
         except FileNotFoundError:
             raise ProfileError(f'Public key file {self.public_key} for nanopub not found.\n'
-                            f'Maybe your nanopub profile was not set up yet or not set up '
-                            f'correctly. \n{PROFILE_INSTRUCTIONS_MESSAGE}')
+                               f'Maybe your nanopub profile was not set up yet or not set up '
+                               f'correctly. \n{PROFILE_INSTRUCTIONS_MESSAGE}')
 
 
 _load_profile = yatiml.load_function(Profile)
