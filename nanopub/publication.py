@@ -140,7 +140,10 @@ class Publication:
                        provenance_rdf: rdflib.Graph = None,
                        pubinfo_rdf: rdflib.Graph = None,
                        add_generated_at_time: bool = True,
-                       nanopub_profile: Profile = None
+                       nanopub_profile: Profile = profile.get_profile()
+                       # Quick hack, if people use this function without providing
+                       # a Profile, then we try to load the default one.
+                       # Not perfect, but we do it to keep backward compatibility
                        ):
         """Construct Nanopub object based on given assertion.
 
@@ -182,12 +185,6 @@ class Publication:
                                                attribute_assertion_to_profile, provenance_rdf,
                                                pubinfo_rdf)
 
-        if not nanopub_profile:
-            # Quick hack, if people use this function without providing a Profile,
-            # then we try to load the default one. Not perfect,
-            # but we do it to keep backward compatibility
-            nanopub_profile = profile.get_profile()
-
         if attribute_assertion_to_profile:
             assertion_attributed_to = rdflib.URIRef(nanopub_profile.orcid_id)
 
@@ -228,15 +225,6 @@ class Publication:
         if pubinfo_rdf is not None:
             pubinfo += pubinfo_rdf
 
-        if add_generated_at_time:
-            creationtime = rdflib.Literal(datetime.now(), datatype=XSD.dateTime)
-            provenance.add((
-                DUMMY_NAMESPACE.assertion,
-                namespaces.PROV.generatedAtTime,
-                creationtime
-            ))
-            pubinfo.add((DUMMY_NAMESPACE[''], namespaces.PROV.generatedAtTime, creationtime))
-
         if assertion_attributed_to:
             cls._handle_assertion_attributed_to(assertion_attributed_to, provenance)
 
@@ -246,10 +234,33 @@ class Publication:
         if introduces_concept:
             cls._handle_introduces_concept(introduces_concept, pubinfo)
 
-        if attribute_publication_to_profile:
-            cls._handle_publication_attributed_to(publication_attributed_to, pubinfo)
+        cls._handle_publication_attributed_to(
+            attribute_publication_to_profile,
+            publication_attributed_to,
+            pubinfo
+        )
+
+        cls._handle_generated_at_time(
+            add_generated_at_time,
+            provenance,
+            pubinfo
+        )
 
         return cls(rdf=main_graph)
+
+    @staticmethod
+    def _handle_generated_at_time(add_generated_at_time,
+                                  provenance,
+                                  pubinfo):
+        """Handler for `from_assertion` method."""
+        if add_generated_at_time:
+            creationtime = rdflib.Literal(datetime.now(), datatype=XSD.dateTime)
+            provenance.add((
+                DUMMY_NAMESPACE.assertion,
+                namespaces.PROV.generatedAtTime,
+                creationtime
+            ))
+            pubinfo.add((DUMMY_NAMESPACE[''], namespaces.PROV.generatedAtTime, creationtime))
 
     @staticmethod
     def _handle_assertion_attributed_to(assertion_attributed_to, provenance):
@@ -260,15 +271,18 @@ class Publication:
                         assertion_attributed_to))
 
     @staticmethod
-    def _handle_publication_attributed_to(publication_attributed_to, pubinfo):
+    def _handle_publication_attributed_to(attribute_publication_to_profile,
+                                          publication_attributed_to,
+                                          pubinfo):
         """Handler for `from_assertion` method."""
-        if publication_attributed_to is None:
-            publication_attributed_to = rdflib.URIRef(profile.get_orcid_id())
-        else:
-            publication_attributed_to = rdflib.URIRef(publication_attributed_to)
-        pubinfo.add((DUMMY_NAMESPACE[''],
-                     namespaces.PROV.wasAttributedTo,
-                     publication_attributed_to))
+        if attribute_publication_to_profile:
+            if publication_attributed_to is None:
+                publication_attributed_to = rdflib.URIRef(profile.get_orcid_id())
+            else:
+                publication_attributed_to = rdflib.URIRef(publication_attributed_to)
+            pubinfo.add((DUMMY_NAMESPACE[''],
+                        namespaces.PROV.wasAttributedTo,
+                        publication_attributed_to))
 
     @staticmethod
     def _handle_derived_from(derived_from, provenance):
