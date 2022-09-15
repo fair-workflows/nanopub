@@ -431,7 +431,7 @@ class NanopubClient:
         assertion_rdf.add((this_statement, rdflib.RDFS.label, rdflib.Literal(statement_text)))
 
         provenance_rdf = rdflib.Graph()
-        orcid_id_uri = rdflib.URIRef(profile.get_orcid_id())
+        orcid_id_uri = rdflib.URIRef(self.profile.orcid_id)
         provenance_rdf.add((orcid_id_uri, namespaces.HYCL.claims, this_statement))
         publication = Publication.from_assertion(assertion_rdf=assertion_rdf,
                                                  attribute_assertion_to_profile=True,
@@ -447,7 +447,7 @@ class NanopubClient:
         """
         publication = self.fetch(uri)
         their_public_key = publication.signed_with_public_key
-        if their_public_key is not None and their_public_key != profile.get_public_key():
+        if their_public_key is not None and their_public_key != self.profile.get_public_key():
             raise AssertionError('The public key in your profile does not match the public key'
                                  'that the publication that you want to retract is signed '
                                  'with. Use force=True to force retraction anyway.')
@@ -471,7 +471,7 @@ class NanopubClient:
         if not force:
             self._check_public_keys_match(uri)
         assertion_rdf = rdflib.Graph()
-        orcid_id = profile.get_orcid_id()
+        orcid_id = self.profile.orcid_id
         assertion_rdf.add((rdflib.URIRef(orcid_id), namespaces.NPX.retracts,
                            rdflib.URIRef(uri)))
         publication = Publication.from_assertion(assertion_rdf=assertion_rdf,

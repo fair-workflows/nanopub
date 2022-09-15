@@ -50,6 +50,17 @@ class Profile:
         self.private_key = private_key
         self.introduction_nanopub_uri = introduction_nanopub_uri
 
+    
+    def get_public_key(self) -> str:
+        """Returns the user's public key."""
+        try:
+            with open(self.public_key, 'r') as f:
+                return f.read()
+        except FileNotFoundError:
+            raise ProfileError(f'Public key file {self.public_key} for nanopub not found.\n'
+                            f'Maybe your nanopub profile was not set up yet or not set up '
+                            f'correctly. \n{PROFILE_INSTRUCTIONS_MESSAGE}')
+
 
 _load_profile = yatiml.load_function(Profile)
 
@@ -62,15 +73,16 @@ def get_orcid_id() -> str:
     return get_profile().orcid_id
 
 
-def get_public_key() -> str:
-    """Returns the user's public key."""
-    try:
-        with open(get_profile().public_key, 'r') as f:
-            return f.read()
-    except FileNotFoundError:
-        raise ProfileError(f'Public key file {get_profile().public_key} for nanopub not found.\n'
-                           f'Maybe your nanopub profile was not set up yet or not set up '
-                           f'correctly. \n{PROFILE_INSTRUCTIONS_MESSAGE}')
+# TODO: remove, this should be in the Profile object
+# def get_public_key() -> str:
+#     """Returns the user's public key."""
+#     try:
+#         with open(get_profile().public_key, 'r') as f:
+#             return f.read()
+#     except FileNotFoundError:
+#         raise ProfileError(f'Public key file {get_profile().public_key} for nanopub not found.\n'
+#                            f'Maybe your nanopub profile was not set up yet or not set up '
+#                            f'correctly. \n{PROFILE_INSTRUCTIONS_MESSAGE}')
 
 
 @lru_cache()

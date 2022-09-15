@@ -81,13 +81,13 @@ def test_get_public_key(tmpdir):
 
         # Check for fail if keys are not there
         with pytest.raises(profile.ProfileError):
-            profile.get_public_key()
+            p.get_public_key()
 
         # Check correct keys are returned if they do exist
         with open(public_key_path, 'w') as outfile:
             outfile.write(fake_public_key)
 
-        assert profile.get_public_key() == fake_public_key
+        assert p.get_public_key() == fake_public_key
 
 
 def test_introduction_nanopub_uri_roundtrip(tmpdir):

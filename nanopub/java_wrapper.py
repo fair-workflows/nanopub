@@ -56,7 +56,7 @@ class JavaWrapper:
         self._run_command(f'{NANOPUB_JAVA_SCRIPT} sign {unsigned_file} {args}')
         return self._get_signed_file(unsigned_file)
 
-    def publish(self, signed: str):
+    def publish(self, signed: str, explicit_private_key: str = None):
         """ Publish.
 
         Publish the signed nanopub to the nanopub server. Publishing to the real server depends
@@ -64,13 +64,17 @@ class JavaWrapper:
 
         TODO: Use nanopub-java for publishing to test once it supports it.
         """
+        args = ''
+        if explicit_private_key:
+            args = f'-k {explicit_private_key}'
+            
         if self.use_test_server:
             headers = {'content-type': 'application/x-www-form-urlencoded'}
             with open(signed, 'rb') as data:
                 r = requests.post(NANOPUB_TEST_SERVER, headers=headers, data=data)
             r.raise_for_status()
         else:
-            self._run_command(f'{NANOPUB_JAVA_SCRIPT} publish ' + signed)
+            self._run_command(f'{NANOPUB_JAVA_SCRIPT} publish {signed} {args}')
         return self.extract_nanopub_url(signed)
 
     @staticmethod
