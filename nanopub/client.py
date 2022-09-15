@@ -57,14 +57,20 @@ class NanopubClient:
         self.profile = get_profile(profile_path)
         self.sign_explicit_private_key = sign_explicit_private_key
 
-    def create_publication(self, assertion_rdf, pubinfo_rdf, provenance_rdf):
+    def create_publication(self,
+                           assertion_rdf: rdflib.Graph,
+                           pubinfo_rdf: rdflib.Graph,
+                           provenance_rdf: rdflib.Graph,
+                           attribute_publication_to_profile: bool = False,
+                           add_generated_at_time: bool = False
+                           ):
         return Publication.from_assertion(
             assertion_rdf=assertion_rdf,
             pubinfo_rdf=pubinfo_rdf,
             provenance_rdf=provenance_rdf,
             nanopub_profile=self.profile,
-            add_generated_at_time=False,
-            attribute_publication_to_profile=False,
+            add_generated_at_time=add_generated_at_time,
+            attribute_publication_to_profile=attribute_publication_to_profile,
         )
 
     def find_nanopubs_with_text(self, text: str, pubkey: str = None,
