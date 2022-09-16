@@ -10,6 +10,7 @@ from typing import List, Tuple, Union
 
 import rdflib
 import requests
+from rdflib.namespace import DC, DCTERMS, RDF, RDFS, XSD
 
 from nanopub import namespaces
 from nanopub.definitions import DUMMY_NANOPUB_URI
@@ -29,7 +30,8 @@ NANOPUB_GRLC_URLS = ["http://grlc.nanopubs.lod.labs.vu.nl/api/local/local/",
 NANOPUB_TEST_GRLC_URL = 'http://test-grlc.nanopubs.lod.labs.vu.nl/api/local/local/'
 NANOPUB_FETCH_FORMAT = 'trig'
 NANOPUB_TEST_URL = 'http://test-server.nanopubs.lod.labs.vu.nl/'
-
+DUMMY_NAMESPACE = rdflib.Namespace(DUMMY_NANOPUB_URI + '#')
+NP_URI = DUMMY_NAMESPACE['']
 
 class NanopubClient:
     """
@@ -61,9 +63,9 @@ class NanopubClient:
                            assertion_rdf: rdflib.Graph,
                            pubinfo_rdf: rdflib.Graph,
                            provenance_rdf: rdflib.Graph,
-                           attribute_publication_to_profile: bool = False,
-                           add_generated_at_time: bool = False
-                           ):
+                           attribute_publication_to_profile: bool = True,
+                           add_generated_at_time: bool = True
+                           ) -> Publication:
         return Publication.from_assertion(
             assertion_rdf=assertion_rdf,
             pubinfo_rdf=pubinfo_rdf,
@@ -72,6 +74,93 @@ class NanopubClient:
             add_generated_at_time=add_generated_at_time,
             attribute_publication_to_profile=attribute_publication_to_profile,
         )
+
+    def create_nanopub_index(self,
+                             np_list: List[str],
+                             title: str,
+                             description: str,
+                             creation_time: str,
+                             creators: List[str],
+                             see_also: str = None) -> Publication:
+        """Create a Nanopub index.
+
+        Publish a list of nanopub URIs in a Nanopub Index
+
+        Args:
+            np_list: List of nanopub URIs
+            title: Title of the Nanopub Index
+            description: Description of the Nanopub Index
+            creation_time: Creation time of the Nanopub Index, in format YYYY-MM-DDThh-mm-ss
+            creators: List of the ORCID of the creators of the Nanopub Index
+            see_also: A URL to a page with further information on the Nanopub Index
+        """
+        PAV = rdflib.Namespace("http://purl.org/pav/")
+        assertion = rdflib.Graph()
+        assertion.bind("pav", PAV)
+        assertion.bind("prov", namespaces.PROV)
+        assertion.bind("pmid", rdflib.Namespace('http://www.ncbi.nlm.nih.gov/pubmed/'))
+        assertion.bind("orcid", namespaces.ORCID)
+        assertion.bind("ntemplate", rdflib.Namespace('https://w3id.org/np/o/ntemplate/'))
+
+        for np in np_list:
+            assertion.add((
+                NP_URI,
+                namespaces.NPX.includesElement,
+                rdflib.URIRef(np)
+            ))
+
+        pubinfo = rdflib.Graph()
+        pubinfo.add((
+            NP_URI,
+            RDF.type,
+            namespaces.NPX.NanopubIndex
+        ))
+        pubinfo.add((
+            NP_URI,
+            DC.title,
+            rdflib.Literal(title)
+        ))
+        pubinfo.add((
+            NP_URI,
+            DC.description,
+            rdflib.Literal(description)
+        ))
+        if see_also:
+            pubinfo.add((
+                NP_URI,
+                RDFS.seeAlso,
+                rdflib.URIRef(see_also)
+            ))
+        for creator in creators:
+            pubinfo.add((
+                NP_URI,
+                PAV.createdBy,
+                rdflib.URIRef(creator)
+            ))
+        # TODO: use current time if not provided
+        # datetime.datetime.now().astimezone().replace(microsecond=0).isoformat()
+        pubinfo.add((
+            NP_URI,
+            DCTERMS.created,
+            rdflib.Literal(creation_time, datatype=XSD.dateTime, normalize=False)
+        ))
+
+        prov = rdflib.Graph()
+        prov.add((
+            DUMMY_NAMESPACE.assertion,
+            RDF.type,
+            namespaces.NPX.IndexAssertion
+        ))
+
+        publication = Publication.from_assertion(
+            assertion_rdf=assertion,
+            pubinfo_rdf=pubinfo,
+            provenance_rdf=prov,
+            nanopub_profile=self.profile,
+            add_generated_at_time=True,
+            attribute_publication_to_profile=True
+        )
+        return publication
 
     def find_nanopubs_with_text(self, text: str, pubkey: str = None,
                                 filter_retracted: bool = True):

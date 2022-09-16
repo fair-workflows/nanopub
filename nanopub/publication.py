@@ -239,26 +239,15 @@ class Publication:
             publication_attributed_to,
             pubinfo
         )
-        cls._handle_generated_at_time(
-            add_generated_at_time,
-            provenance,
-            pubinfo
-        )
+        cls._handle_generated_at_time(add_generated_at_time, pubinfo)
 
         return cls(rdf=main_graph)
 
     @staticmethod
-    def _handle_generated_at_time(add_generated_at_time,
-                                  provenance,
-                                  pubinfo):
+    def _handle_generated_at_time(add_generated_at_time, pubinfo):
         """Handler for `from_assertion` method."""
         if add_generated_at_time:
             creationtime = rdflib.Literal(datetime.now(), datatype=XSD.dateTime)
-            provenance.add((
-                DUMMY_NAMESPACE.assertion,
-                namespaces.PROV.generatedAtTime,
-                creationtime
-            ))
             pubinfo.add((DUMMY_NAMESPACE[''], namespaces.PROV.generatedAtTime, creationtime))
 
     @staticmethod
