@@ -241,7 +241,7 @@ class Publication:
         cls._handle_publication_attributed_to(
             attribute_publication_to_profile,
             publication_attributed_to,
-            pubinfo
+            pubinfo, nanopub_profile
         )
         cls._handle_generated_at_time(add_pubinfo_generated_time,
                                       add_prov_generated_time,
@@ -275,11 +275,11 @@ class Publication:
     @staticmethod
     def _handle_publication_attributed_to(attribute_publication_to_profile,
                                           publication_attributed_to,
-                                          pubinfo):
+                                          pubinfo, nanopub_profile):
         """Handler for `from_assertion` method."""
         if attribute_publication_to_profile:
             if publication_attributed_to is None:
-                publication_attributed_to = rdflib.URIRef(profile.get_orcid_id())
+                publication_attributed_to = rdflib.URIRef(nanopub_profile.orcid_id)
             else:
                 publication_attributed_to = rdflib.URIRef(publication_attributed_to)
             pubinfo.add((DUMMY_NAMESPACE[''],

@@ -66,7 +66,7 @@ class NanopubClient:
                            provenance_rdf: rdflib.Graph,
                            add_prov_generated_time: bool = True,
                            add_pubinfo_generated_time: bool = True,
-                           attribute_assertion_to_profile: bool = True,
+                           attribute_assertion_to_profile: bool = False,
                            attribute_publication_to_profile: bool = True,
                            assertion_attributed_to=None,
                            publication_attributed_to=None,
