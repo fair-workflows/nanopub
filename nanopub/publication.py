@@ -139,7 +139,8 @@ class Publication:
                        attribute_publication_to_profile: bool = True,
                        provenance_rdf: rdflib.Graph = None,
                        pubinfo_rdf: rdflib.Graph = None,
-                       add_generated_at_time: bool = True,
+                       add_pubinfo_generated_time: bool = True,
+                       add_prov_generated_time: bool = True,
                        nanopub_profile: Profile = profile.get_profile()
                        # Quick hack, if people use this function without providing
                        # a Profile, then we try to load the default one.
@@ -239,16 +240,26 @@ class Publication:
             publication_attributed_to,
             pubinfo
         )
-        cls._handle_generated_at_time(add_generated_at_time, pubinfo)
+        cls._handle_generated_at_time(add_pubinfo_generated_time,
+                                      add_prov_generated_time,
+                                      pubinfo, provenance)
 
         return cls(rdf=main_graph)
 
     @staticmethod
-    def _handle_generated_at_time(add_generated_at_time, pubinfo):
+    def _handle_generated_at_time(add_pubinfo_generated_time,
+                                  add_prov_generated_time,
+                                  pubinfo, provenance):
         """Handler for `from_assertion` method."""
-        if add_generated_at_time:
-            creationtime = rdflib.Literal(datetime.now(), datatype=XSD.dateTime)
+        creationtime = rdflib.Literal(datetime.now(), datatype=XSD.dateTime)
+        if add_pubinfo_generated_time:
             pubinfo.add((DUMMY_NAMESPACE[''], namespaces.PROV.generatedAtTime, creationtime))
+        if add_prov_generated_time:
+            provenance.add((
+                DUMMY_NAMESPACE.assertion,
+                namespaces.PROV.generatedAtTime,
+                creationtime
+            ))
 
     @staticmethod
     def _handle_assertion_attributed_to(assertion_attributed_to, provenance):
@@ -359,7 +370,7 @@ class Publication:
 
     def __str__(self):
         s = f'Original source URI = {self._source_uri}\n'
-        s += self._rdf.serialize(format='trig').decode('utf-8')
+        s += self._rdf.serialize(format='trig')
         return s
 
 

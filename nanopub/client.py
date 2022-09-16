@@ -64,14 +64,16 @@ class NanopubClient:
                            pubinfo_rdf: rdflib.Graph,
                            provenance_rdf: rdflib.Graph,
                            attribute_publication_to_profile: bool = True,
-                           add_generated_at_time: bool = True
+                           add_prov_generated_time: bool = True,
+                           add_pubinfo_generated_time: bool = True
                            ) -> Publication:
         return Publication.from_assertion(
             assertion_rdf=assertion_rdf,
             pubinfo_rdf=pubinfo_rdf,
             provenance_rdf=provenance_rdf,
             nanopub_profile=self.profile,
-            add_generated_at_time=add_generated_at_time,
+            add_prov_generated_time=add_prov_generated_time,
+            add_pubinfo_generated_time=add_pubinfo_generated_time,
             attribute_publication_to_profile=attribute_publication_to_profile,
         )
 
@@ -157,7 +159,8 @@ class NanopubClient:
             pubinfo_rdf=pubinfo,
             provenance_rdf=prov,
             nanopub_profile=self.profile,
-            add_generated_at_time=True,
+            add_pubinfo_generated_time=True,
+            add_prov_generated_time=False,
             attribute_publication_to_profile=True
         )
         return publication
