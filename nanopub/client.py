@@ -64,9 +64,13 @@ class NanopubClient:
                            assertion_rdf: rdflib.Graph,
                            pubinfo_rdf: rdflib.Graph,
                            provenance_rdf: rdflib.Graph,
-                           attribute_publication_to_profile: bool = True,
                            add_prov_generated_time: bool = True,
-                           add_pubinfo_generated_time: bool = True
+                           add_pubinfo_generated_time: bool = True,
+                           attribute_assertion_to_profile: bool = True,
+                           attribute_publication_to_profile: bool = True,
+                           assertion_attributed_to=None,
+                           publication_attributed_to=None,
+                           derived_from=None,
                            ) -> Publication:
         return Publication.from_assertion(
             assertion_rdf=assertion_rdf,
@@ -76,6 +80,10 @@ class NanopubClient:
             add_prov_generated_time=add_prov_generated_time,
             add_pubinfo_generated_time=add_pubinfo_generated_time,
             attribute_publication_to_profile=attribute_publication_to_profile,
+            attribute_assertion_to_profile=attribute_assertion_to_profile,
+            assertion_attributed_to=assertion_attributed_to,
+            publication_attributed_to=publication_attributed_to,
+            derived_from=derived_from
         )
 
     def create_nanopub_index(self,
