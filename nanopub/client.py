@@ -33,6 +33,7 @@ NANOPUB_TEST_URL = 'http://test-server.nanopubs.lod.labs.vu.nl/'
 DUMMY_NAMESPACE = rdflib.Namespace(DUMMY_NANOPUB_URI + '#')
 NP_URI = DUMMY_NAMESPACE['']
 
+
 class NanopubClient:
     """
     Provides utility functions for searching, creating and publishing RDF graphs
@@ -457,6 +458,32 @@ class NanopubClient:
         print(f'Signed to {signed_file}')
         return signed_file
 
+
+    def publish_signed(self, signed_path: str):
+        """Publish a signed publication file.
+
+        Args:
+            signed_path: Path to the signed file of a nanopub.
+
+        Returns:
+            dict of str: Publication info with: 'nanopub_uri': the URI of the published
+            nanopublication, 'concept_uri': the URI of the introduced concept (if applicable)
+
+        """
+        # signed_path = self.sign(publication)
+
+        # Publish the nanopub
+        if self.sign_explicit_private_key:
+            nanopub_uri = self.java_wrapper.publish(signed_path, self.profile.private_key)
+        else:
+            nanopub_uri = self.java_wrapper.publish(signed_path, None)
+
+        publication_info = {'nanopub_uri': nanopub_uri}
+        print(f'Published to {nanopub_uri}')
+
+        return publication_info
+
+
     def publish(self, publication: Publication):
         """Publish a Publication object.
 
@@ -473,15 +500,7 @@ class NanopubClient:
         """
         signed_file = self.sign(publication)
 
-        # Publish the nanopub
-        if self.sign_explicit_private_key:
-            nanopub_uri = self.java_wrapper.publish(signed_file, self.profile.private_key)
-        else:
-            nanopub_uri = self.java_wrapper.publish(signed_file, None)
-
-        nanopub_uri = self.java_wrapper.publish(signed_file)
-        publication_info = {'nanopub_uri': nanopub_uri}
-        print(f'Published to {nanopub_uri}')
+        publication_info = self.publish_signed(signed_file)
 
         if publication.introduces_concept:
             concept_uri = str(publication.introduces_concept)
@@ -491,7 +510,7 @@ class NanopubClient:
             # and appends a fragment, given by the 'name' of the blank node. For example, if a
             # blank node with name 'step' was passed as introduces_concept, the concept will be
             # published with a URI that looks like [published nanopub URI]#step.
-            concept_uri = concept_uri.replace(DUMMY_NANOPUB_URI, nanopub_uri)
+            concept_uri = concept_uri.replace(DUMMY_NANOPUB_URI, publication_info['nanopub_uri'])
             publication_info['concept_uri'] = concept_uri
             print(f'Published concept to {concept_uri}')
 
