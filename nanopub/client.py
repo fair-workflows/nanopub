@@ -15,23 +15,25 @@ from rdflib.namespace import DC, DCTERMS, RDF, RDFS, XSD
 from nanopub import namespaces
 from nanopub.definitions import DUMMY_NANOPUB_URI
 from nanopub.java_wrapper import JavaWrapper
+from nanopub.nanopub_index import NanopubIndex
 from nanopub.profile import Profile, get_profile
 from nanopub.publication import Publication
 
-NANOPUB_GRLC_URLS = ["http://grlc.nanopubs.lod.labs.vu.nl/api/local/local/",
-                     "http://130.60.24.146:7881/api/local/local/",
-                     "https://openphacts.cs.man.ac.uk/nanopub/grlc/api/local/local/",
-                     "http://grlc.np.dumontierlab.com/api/local/local/"
-                     # These servers do currently not support
-                     # find_valid_signed_nanopubs_with_pattern (2020-12-21)
-                     # "https://grlc.nanopubs.knows.idlab.ugent.be/api/local/local/",
-                     # "http://grlc.np.scify.org/api/local/local/",
-                     ]
-NANOPUB_TEST_GRLC_URL = 'http://test-grlc.nanopubs.lod.labs.vu.nl/api/local/local/'
-NANOPUB_FETCH_FORMAT = 'trig'
-NANOPUB_TEST_URL = 'http://test-server.nanopubs.lod.labs.vu.nl/'
-DUMMY_NAMESPACE = rdflib.Namespace(DUMMY_NANOPUB_URI + '#')
-NP_URI = DUMMY_NAMESPACE['']
+NANOPUB_GRLC_URLS = [
+    "http://grlc.nanopubs.lod.labs.vu.nl/api/local/local/",
+    "http://130.60.24.146:7881/api/local/local/",
+    "https://openphacts.cs.man.ac.uk/nanopub/grlc/api/local/local/",
+    "http://grlc.np.dumontierlab.com/api/local/local/"
+    # These servers do currently not support
+    # find_valid_signed_nanopubs_with_pattern (2020-12-21)
+    # "https://grlc.nanopubs.knows.idlab.ugent.be/api/local/local/",
+    # "http://grlc.np.scify.org/api/local/local/",
+]
+NANOPUB_TEST_GRLC_URL = "http://test-grlc.nanopubs.lod.labs.vu.nl/api/local/local/"
+NANOPUB_FETCH_FORMAT = "trig"
+NANOPUB_TEST_URL = "http://test-server.nanopubs.lod.labs.vu.nl/"
+DUMMY_NAMESPACE = rdflib.Namespace(DUMMY_NANOPUB_URI + "#")
+NP_URI = DUMMY_NAMESPACE[""]
 
 
 class NanopubClient:
@@ -47,10 +49,12 @@ class NanopubClient:
     profile: Profile = None
     sign_explicit_private_key: bool = False
 
-    def __init__(self,
-                 use_test_server=False,
-                 profile_path: str = None,
-                 sign_explicit_private_key: bool = False):
+    def __init__(
+        self,
+        use_test_server=False,
+        profile_path: str = None,
+        sign_explicit_private_key: bool = False,
+    ):
         self.use_test_server = use_test_server
         self.java_wrapper = JavaWrapper(use_test_server=use_test_server)
         if use_test_server:
@@ -60,39 +64,42 @@ class NanopubClient:
         self.profile = get_profile(profile_path)
         self.sign_explicit_private_key = sign_explicit_private_key
 
-    def create_publication(self,
-                           assertion_rdf: rdflib.Graph,
-                           pubinfo_rdf: rdflib.Graph,
-                           provenance_rdf: rdflib.Graph,
-                           add_prov_generated_time: bool = True,
-                           add_pubinfo_generated_time: bool = True,
-                           attribute_assertion_to_profile: bool = False,
-                           attribute_publication_to_profile: bool = True,
-                           assertion_attributed_to=None,
-                           publication_attributed_to=None,
-                           derived_from=None,
-                           ) -> Publication:
+    def create_publication(
+        self,
+        assertion_rdf: rdflib.Graph,
+        pubinfo_rdf: rdflib.Graph,
+        provenance_rdf: rdflib.Graph,
+        add_prov_generated_time: bool = True,
+        add_pubinfo_generated_time: bool = True,
+        attribute_assertion_to_profile: bool = False,
+        attribute_publication_to_profile: bool = True,
+        assertion_attributed_to=None,
+        publication_attributed_to=None,
+        derived_from=None,
+    ) -> Publication:
         return Publication.from_assertion(
+            nanopub_profile=self.profile,
             assertion_rdf=assertion_rdf,
             pubinfo_rdf=pubinfo_rdf,
             provenance_rdf=provenance_rdf,
-            nanopub_profile=self.profile,
             add_prov_generated_time=add_prov_generated_time,
             add_pubinfo_generated_time=add_pubinfo_generated_time,
             attribute_publication_to_profile=attribute_publication_to_profile,
             attribute_assertion_to_profile=attribute_assertion_to_profile,
             assertion_attributed_to=assertion_attributed_to,
             publication_attributed_to=publication_attributed_to,
-            derived_from=derived_from
+            derived_from=derived_from,
         )
 
-    def create_nanopub_index(self,
-                             np_list: List[str],
-                             title: str,
-                             description: str,
-                             creation_time: str,
-                             creators: List[str],
-                             see_also: str = None) -> Publication:
+    def create_nanopub_index(
+        self,
+        np_list: List[str],
+        title: str,
+        description: str,
+        creation_time: str,
+        creators: List[str],
+        see_also: str = None,
+    ) -> Publication:
         """Create a Nanopub index.
 
         Publish a list of nanopub URIs in a Nanopub Index
@@ -105,77 +112,19 @@ class NanopubClient:
             creators: List of the ORCID of the creators of the Nanopub Index
             see_also: A URL to a page with further information on the Nanopub Index
         """
-        PAV = rdflib.Namespace("http://purl.org/pav/")
-        assertion = rdflib.Graph()
-        assertion.bind("pav", PAV)
-        assertion.bind("prov", namespaces.PROV)
-        assertion.bind("pmid", rdflib.Namespace('http://www.ncbi.nlm.nih.gov/pubmed/'))
-        assertion.bind("orcid", namespaces.ORCID)
-        assertion.bind("ntemplate", rdflib.Namespace('https://w3id.org/np/o/ntemplate/'))
-
-        for np in np_list:
-            assertion.add((
-                NP_URI,
-                namespaces.NPX.includesElement,
-                rdflib.URIRef(np)
-            ))
-
-        pubinfo = rdflib.Graph()
-        pubinfo.add((
-            NP_URI,
-            RDF.type,
-            namespaces.NPX.NanopubIndex
-        ))
-        pubinfo.add((
-            NP_URI,
-            DC.title,
-            rdflib.Literal(title)
-        ))
-        pubinfo.add((
-            NP_URI,
-            DC.description,
-            rdflib.Literal(description)
-        ))
-        if see_also:
-            pubinfo.add((
-                NP_URI,
-                RDFS.seeAlso,
-                rdflib.URIRef(see_also)
-            ))
-        for creator in creators:
-            pubinfo.add((
-                NP_URI,
-                PAV.createdBy,
-                rdflib.URIRef(creator)
-            ))
-        # TODO: use current time if not provided
-        # datetime.datetime.now().astimezone().replace(microsecond=0).isoformat()
-        pubinfo.add((
-            NP_URI,
-            DCTERMS.created,
-            rdflib.Literal(creation_time, datatype=XSD.dateTime, normalize=False)
-        ))
-
-        prov = rdflib.Graph()
-        prov.add((
-            DUMMY_NAMESPACE.assertion,
-            RDF.type,
-            namespaces.NPX.IndexAssertion
-        ))
-
-        publication = Publication.from_assertion(
-            assertion_rdf=assertion,
-            pubinfo_rdf=pubinfo,
-            provenance_rdf=prov,
-            nanopub_profile=self.profile,
-            add_pubinfo_generated_time=True,
-            add_prov_generated_time=False,
-            attribute_publication_to_profile=True
+        return NanopubIndex(
+            np_list=np_list,
+            title=title,
+            description=description,
+            creation_time=creation_time,
+            creators=creators,
+            see_also=see_also,
+            profile=self.profile,
         )
-        return publication
 
-    def find_nanopubs_with_text(self, text: str, pubkey: str = None,
-                                filter_retracted: bool = True):
+    def find_nanopubs_with_text(
+        self, text: str, pubkey: str = None, filter_retracted: bool = True
+    ):
         """Text search.
 
         Search the nanopub servers for any nanopubs matching the
@@ -196,17 +145,22 @@ class NanopubClient:
         """
         if len(text) == 0:
             return []
-        endpoint = 'find_signed_nanopubs_with_text'
-        params = {'text': text, 'graphpred': '', 'month': '', 'day': '', 'year': ''}
+        endpoint = "find_signed_nanopubs_with_text"
+        params = {"text": text, "graphpred": "", "month": "", "day": "", "year": ""}
         if pubkey:
-            params['pubkey'] = pubkey
+            params["pubkey"] = pubkey
         if filter_retracted:
-            endpoint = 'find_valid_signed_nanopubs_with_text'
-        return self._search(endpoint=endpoint,
-                            params=params)
+            endpoint = "find_valid_signed_nanopubs_with_text"
+        return self._search(endpoint=endpoint, params=params)
 
-    def find_nanopubs_with_pattern(self, subj: str = None, pred: str = None, obj: str = None,
-                                   filter_retracted: bool = True, pubkey: str = None):
+    def find_nanopubs_with_pattern(
+        self,
+        subj: str = None,
+        pred: str = None,
+        obj: str = None,
+        filter_retracted: bool = True,
+        pubkey: str = None,
+    ):
         """Pattern search.
 
         Search the nanopub servers for any nanopubs matching the given RDF pattern. You can leave
@@ -228,23 +182,27 @@ class NanopubClient:
 
         """
         params = {}
-        endpoint = 'find_signed_nanopubs_with_pattern'
+        endpoint = "find_signed_nanopubs_with_pattern"
         if subj:
-            params['subj'] = subj
+            params["subj"] = subj
         if pred:
-            params['pred'] = pred
+            params["pred"] = pred
         if obj:
-            params['obj'] = obj
+            params["obj"] = obj
         if pubkey:
-            params['pubkey'] = pubkey
+            params["pubkey"] = pubkey
         if filter_retracted:
-            endpoint = 'find_valid_signed_nanopubs_with_pattern'
+            endpoint = "find_valid_signed_nanopubs_with_pattern"
 
-        yield from self._search(endpoint=endpoint,
-                                params=params)
+        yield from self._search(endpoint=endpoint, params=params)
 
-    def find_things(self, type: str, searchterm: str = ' ', pubkey: str = None,
-                    filter_retracted: bool = True):
+    def find_things(
+        self,
+        type: str,
+        searchterm: str = " ",
+        pubkey: str = None,
+        filter_retracted: bool = True,
+    ):
         """Search things (experimental).
 
         Search for any nanopublications that introduce a concept of the given type, that contain
@@ -264,21 +222,22 @@ class NanopubClient:
             'description': A description of the nanopublication (if found in RDF).
 
         """
-        if searchterm == '':
-            raise ValueError(f'Searchterm can not be an empty string: {searchterm}')
-        endpoint = 'find_signed_things'
+        if searchterm == "":
+            raise ValueError(f"Searchterm can not be an empty string: {searchterm}")
+        endpoint = "find_signed_things"
         params = dict()
-        params['type'] = type
-        params['searchterm'] = searchterm
+        params["type"] = type
+        params["searchterm"] = searchterm
         if pubkey:
-            params['pubkey'] = pubkey
+            params["pubkey"] = pubkey
         if filter_retracted:
-            endpoint = 'find_valid_signed_things'
+            endpoint = "find_valid_signed_things"
 
-        yield from self._search(endpoint=endpoint,
-                                params=params)
+        yield from self._search(endpoint=endpoint, params=params)
 
-    def find_retractions_of(self, source: Union[str, Publication], valid_only=True) -> List[str]:
+    def find_retractions_of(
+        self, source: Union[str, Publication], valid_only=True
+    ) -> List[str]:
         """Find retractions of given URI
 
         Find all nanopublications that retract a certain nanopublication.
@@ -294,11 +253,15 @@ class NanopubClient:
 
         if isinstance(source, Publication):
             if source.is_test_publication and not self.use_test_server:
-                warnings.warn('You are trying to find retractions on the production server, '
-                              'whereas this publication lives on the test server')
+                warnings.warn(
+                    "You are trying to find retractions on the production server, "
+                    "whereas this publication lives on the test server"
+                )
             elif not source.is_test_publication and self.use_test_server:
-                warnings.warn('You are trying to find retractions on the test server, '
-                              'whereas this publication lives on the production server')
+                warnings.warn(
+                    "You are trying to find retractions on the test server, "
+                    "whereas this publication lives on the production server"
+                )
             uri = source.source_uri
         else:
             uri = source
@@ -307,15 +270,19 @@ class NanopubClient:
             source_publication = self.fetch(uri)
             public_key = source_publication.signed_with_public_key
             if public_key is None:
-                raise ValueError('The source publication is not signed with a public key')
+                raise ValueError(
+                    "The source publication is not signed with a public key"
+                )
         else:
             public_key = None
 
-        results = self.find_nanopubs_with_pattern(pred=namespaces.NPX.retracts,
-                                                  obj=rdflib.URIRef(uri),
-                                                  pubkey=public_key,
-                                                  filter_retracted=False)
-        return [result['np'] for result in results]
+        results = self.find_nanopubs_with_pattern(
+            pred=namespaces.NPX.retracts,
+            obj=rdflib.URIRef(uri),
+            pubkey=public_key,
+            filter_retracted=False,
+        )
+        return [result["np"] for result in results]
 
     @staticmethod
     def _query_grlc(params: dict, endpoint: str, grlc_url: str) -> requests.Response:
@@ -324,7 +291,9 @@ class NanopubClient:
         url = grlc_url + endpoint
         return requests.get(url, params=params, headers=headers)
 
-    def _query_grlc_try_servers(self, params: dict, endpoint: str) -> Tuple[requests.Response, str]:
+    def _query_grlc_try_servers(
+        self, params: dict, endpoint: str
+    ) -> Tuple[requests.Response, str]:
         """Query the nanopub server grlc endpoint.
 
         Query a nanopub grlc server endpoint (for example: find_text). Try several of the nanopub
@@ -338,13 +307,17 @@ class NanopubClient:
         for grlc_url in self.grlc_urls:
             r = self._query_grlc(params, endpoint, grlc_url)
             if r.status_code == 502:  # Server is likely down
-                warnings.warn(f'Could not get response from {grlc_url}, trying other servers')
+                warnings.warn(
+                    f"Could not get response from {grlc_url}, trying other servers"
+                )
             else:
                 r.raise_for_status()  # For non-502 errors we don't want to try other servers
                 return r, grlc_url
 
-        raise requests.HTTPError(f'Could not get response from any of the nanopub grlc '
-                                 f'endpoints, last response: {r.status_code}:{r.reason}')
+        raise requests.HTTPError(
+            f"Could not get response from any of the nanopub grlc "
+            f"endpoints, last response: {r.status_code}:{r.reason}"
+        )
 
     def _search(self, endpoint: str, params: dict):
         """
@@ -363,7 +336,7 @@ class NanopubClient:
         page_number = 1
         grlc_url = None
         while has_results:
-            params['page'] = page_number
+            params["page"] = page_number
             # First try different servers
             if grlc_url is None:
                 r, grlc_url = self._query_grlc_try_servers(params, endpoint)
@@ -381,11 +354,13 @@ class NanopubClient:
             except ValueError as e:
                 # Try to give a more understandable error to user when the response
                 # is not JSON...
-                raise ValueError('The server returned HTML instead of the requested JSON. '
-                                 'This is usually caused by the triple store (e.g. virtuoso) '
-                                 'throwing an error for the given search query.') from e
+                raise ValueError(
+                    "The server returned HTML instead of the requested JSON. "
+                    "This is usually caused by the triple store (e.g. virtuoso) "
+                    "throwing an error for the given search query."
+                ) from e
 
-            bindings = results['results']['bindings']
+            bindings = results["results"]["bindings"]
             if not bindings:
                 has_results = False
             page_number += page_number
@@ -400,17 +375,17 @@ class NanopubClient:
         and unnest them.
         """
         parsed = dict()
-        parsed['np'] = result['np']['value']
+        parsed["np"] = result["np"]["value"]
 
-        if 'v' in result:
-            parsed['description'] = result['v']['value']
-        elif 'description' in result:
-            parsed['description'] = result['description']['value']
+        if "v" in result:
+            parsed["description"] = result["v"]["value"]
+        elif "description" in result:
+            parsed["description"] = result["description"]["value"]
         else:
-            parsed['description'] = ''
-        if 'label' in result:
-            parsed['label'] = result['label']['value']
-        parsed['date'] = result['date']['value']
+            parsed["description"] = ""
+        if "label" in result:
+            parsed["label"] = result["label"]["value"]
+        parsed["date"] = result["date"]["value"]
         return parsed
 
     def fetch(self, uri: str):
@@ -424,12 +399,12 @@ class NanopubClient:
         Returns:
             Publication: a Publication object representing the nanopublication.
         """
-        r = requests.get(uri + '.' + NANOPUB_FETCH_FORMAT)
+        r = requests.get(uri + "." + NANOPUB_FETCH_FORMAT)
         if not r.ok and self.use_test_server:
             # Let's try the test server
-            nanopub_id = uri.rsplit('/', 1)[-1]
+            nanopub_id = uri.rsplit("/", 1)[-1]
             uri = NANOPUB_TEST_URL + nanopub_id
-            r = requests.get(uri + '.' + NANOPUB_FETCH_FORMAT)
+            r = requests.get(uri + "." + NANOPUB_FETCH_FORMAT)
         r.raise_for_status()
 
         nanopub_rdf = rdflib.ConjunctiveGraph()
@@ -454,18 +429,19 @@ class NanopubClient:
         tempdir = tempfile.mkdtemp()
 
         # Convert nanopub rdf to trig
-        fname = 'temp.trig'
+        fname = "temp.trig"
         unsigned_fname = os.path.join(tempdir, fname)
-        publication.rdf.serialize(destination=unsigned_fname, format='trig')
+        publication.rdf.serialize(destination=unsigned_fname, format="trig")
 
         # Sign the nanopub
         if self.sign_explicit_private_key:
-            signed_file = self.java_wrapper.sign(unsigned_fname, self.profile.private_key)
+            signed_file = self.java_wrapper.sign(
+                unsigned_fname, self.profile.private_key
+            )
         else:
             signed_file = self.java_wrapper.sign(unsigned_fname, None)
-        print(f'Signed to {signed_file}')
+        print(f"Signed to {signed_file}")
         return signed_file
-
 
     def publish_signed(self, signed_path: str):
         """Publish a signed publication file.
@@ -482,15 +458,16 @@ class NanopubClient:
 
         # Publish the nanopub
         if self.sign_explicit_private_key:
-            nanopub_uri = self.java_wrapper.publish(signed_path, self.profile.private_key)
+            nanopub_uri = self.java_wrapper.publish(
+                signed_path, self.profile.private_key
+            )
         else:
             nanopub_uri = self.java_wrapper.publish(signed_path, None)
 
-        publication_info = {'nanopub_uri': nanopub_uri}
-        print(f'Published to {nanopub_uri}')
+        publication_info = {"nanopub_uri": nanopub_uri}
+        print(f"Published to {nanopub_uri}")
 
         return publication_info
-
 
     def publish(self, publication: Publication):
         """Publish a Publication object.
@@ -518,9 +495,11 @@ class NanopubClient:
             # and appends a fragment, given by the 'name' of the blank node. For example, if a
             # blank node with name 'step' was passed as introduces_concept, the concept will be
             # published with a URI that looks like [published nanopub URI]#step.
-            concept_uri = concept_uri.replace(DUMMY_NANOPUB_URI, publication_info['nanopub_uri'])
-            publication_info['concept_uri'] = concept_uri
-            print(f'Published concept to {concept_uri}')
+            concept_uri = concept_uri.replace(
+                DUMMY_NANOPUB_URI, publication_info["nanopub_uri"]
+            )
+            publication_info["concept_uri"] = concept_uri
+            print(f"Published concept to {concept_uri}")
 
         return publication_info
 
@@ -539,21 +518,25 @@ class NanopubClient:
 
         """
         assertion_rdf = rdflib.Graph()
-        this_statement = rdflib.term.BNode('mystatement')
+        this_statement = rdflib.term.BNode("mystatement")
         assertion_rdf.add((this_statement, rdflib.RDF.type, namespaces.HYCL.Statement))
-        assertion_rdf.add((this_statement, rdflib.RDFS.label, rdflib.Literal(statement_text)))
+        assertion_rdf.add(
+            (this_statement, rdflib.RDFS.label, rdflib.Literal(statement_text))
+        )
 
         provenance_rdf = rdflib.Graph()
         orcid_id_uri = rdflib.URIRef(self.profile.orcid_id)
         provenance_rdf.add((orcid_id_uri, namespaces.HYCL.claims, this_statement))
-        publication = Publication.from_assertion(assertion_rdf=assertion_rdf,
-                                                 attribute_assertion_to_profile=True,
-                                                 provenance_rdf=provenance_rdf,
-                                                 nanopub_profile=self.profile)
+        publication = Publication.from_assertion(
+            assertion_rdf=assertion_rdf,
+            attribute_assertion_to_profile=True,
+            provenance_rdf=provenance_rdf,
+            nanopub_profile=self.profile,
+        )
         return self.publish(publication)
 
     def _check_public_keys_match(self, uri):
-        """ Check for matching public keys of a nanopublication with the profile.
+        """Check for matching public keys of a nanopublication with the profile.
 
         Raises:
             AssertionError: When the nanopublication is signed with a public key that does not
@@ -561,10 +544,15 @@ class NanopubClient:
         """
         publication = self.fetch(uri)
         their_public_key = publication.signed_with_public_key
-        if their_public_key is not None and their_public_key != self.profile.get_public_key():
-            raise AssertionError('The public key in your profile does not match the public key'
-                                 'that the publication that you want to retract is signed '
-                                 'with. Use force=True to force retraction anyway.')
+        if (
+            their_public_key is not None
+            and their_public_key != self.profile.get_public_key()
+        ):
+            raise AssertionError(
+                "The public key in your profile does not match the public key"
+                "that the publication that you want to retract is signed "
+                "with. Use force=True to force retraction anyway."
+            )
 
     def retract(self, uri: str, force=False):
         """Retract a nanopublication.
@@ -586,9 +574,12 @@ class NanopubClient:
             self._check_public_keys_match(uri)
         assertion_rdf = rdflib.Graph()
         orcid_id = self.profile.orcid_id
-        assertion_rdf.add((rdflib.URIRef(orcid_id), namespaces.NPX.retracts,
-                           rdflib.URIRef(uri)))
-        publication = Publication.from_assertion(assertion_rdf=assertion_rdf,
-                                                 attribute_assertion_to_profile=True,
-                                                 nanopub_profile=self.profile)
+        assertion_rdf.add(
+            (rdflib.URIRef(orcid_id), namespaces.NPX.retracts, rdflib.URIRef(uri))
+        )
+        publication = Publication.from_assertion(
+            assertion_rdf=assertion_rdf,
+            attribute_assertion_to_profile=True,
+            nanopub_profile=self.profile,
+        )
         return self.publish(publication)
