@@ -16,6 +16,7 @@ from nanopub import namespaces, profile
 from nanopub.definitions import DUMMY_NAMESPACE
 from nanopub.profile import Profile
 from nanopub.namespaces import HYCL, NP, NPX, PAV, ORCID, NTEMPLATE
+from nanopub.nanopub_config import NanopubConfig
 
 
 class Nanopublication:
@@ -36,60 +37,48 @@ class Nanopublication:
 
     def __init__(
         self,
+        # *args,
         assertion: Graph = Graph(),
         provenance: Graph = Graph(),
         pubinfo: Graph = Graph(),
         rdf: ConjunctiveGraph = None,
         source_uri: str = None,
-
-        introduces_concept: rdflib.term.BNode = None,
-        derived_from=None,
-        assertion_attributed_to=None,
-        publication_attributed_to=None,
-        attribute_assertion_to_profile: bool = False,
-        attribute_publication_to_profile: bool = True,
-        add_pubinfo_generated_time: bool = True,
-        add_prov_generated_time: bool = True,
-        nanopub_profile: Profile = None
+        introduces_concept: BNode = None,
+        config: NanopubConfig = NanopubConfig(),
+        profile: Profile = None
+        # **kwargs
     ) -> None:
-        # self._graphs = {}
-        # main_graph = ConjunctiveGraph()
+        self._profile = profile
         self._source_uri = source_uri
+        self._concept_uri = None
+        self._signed_file = None
+        self.config = config
 
         if rdf:
             self._rdf = self._preformat_graph(rdf)
-            # for c in rdf.contexts():
-            #     graphid = urldefrag(c.identifier).fragment.lower()
-            #     if graphid == "assertion":
-            #         # print(f'Extracted {len(c)} from assertion')
-            #         self.assertion = self._preformat_graph(c)
-            #     if graphid == "provenance":
-            #         self.provenance = self._preformat_graph(c)
-            #     if graphid == "pubinfo":
-            #         self.pubinfo = self._preformat_graph(c)
         else:
             self._rdf = self._preformat_graph(ConjunctiveGraph())
 
-        self.head = rdflib.Graph(self._rdf.store, DUMMY_NAMESPACE.Head)
-        self.assertion = rdflib.Graph(self._rdf.store, DUMMY_NAMESPACE.assertion)
-        self.provenance = rdflib.Graph(self._rdf.store, DUMMY_NAMESPACE.provenance)
-        self.pubinfo = rdflib.Graph(self._rdf.store, DUMMY_NAMESPACE.pubInfo)
+        self.head = Graph(self._rdf.store, DUMMY_NAMESPACE.Head)
+        self.assertion = Graph(self._rdf.store, DUMMY_NAMESPACE.assertion)
+        self.provenance = Graph(self._rdf.store, DUMMY_NAMESPACE.provenance)
+        self.pubinfo = Graph(self._rdf.store, DUMMY_NAMESPACE.pubInfo)
 
-        self.head.add((DUMMY_NAMESPACE[""], RDF.type, namespaces.NP.Nanopublication))
+        self.head.add((DUMMY_NAMESPACE[""], RDF.type, NP.Nanopublication))
         self.head.add(
-            (DUMMY_NAMESPACE[""], namespaces.NP.hasAssertion, DUMMY_NAMESPACE.assertion)
+            (DUMMY_NAMESPACE[""], NP.hasAssertion, DUMMY_NAMESPACE.assertion)
         )
         self.head.add(
             (
                 DUMMY_NAMESPACE[""],
-                namespaces.NP.hasProvenance,
+                NP.hasProvenance,
                 DUMMY_NAMESPACE.provenance,
             )
         )
         self.head.add(
             (
                 DUMMY_NAMESPACE[""],
-                namespaces.NP.hasPublicationInfo,
+                NP.hasPublicationInfo,
                 DUMMY_NAMESPACE.pubInfo,
             )
         )
@@ -100,19 +89,21 @@ class Nanopublication:
 
         self._validate_from_assertion_arguments(
             introduces_concept=introduces_concept,
-            derived_from=derived_from,
-            assertion_attributed_to=assertion_attributed_to,
-            attribute_assertion_to_profile=attribute_assertion_to_profile,
+            derived_from=self.config.derived_from,
+            assertion_attributed_to=self.config.assertion_attributed_to,
+            attribute_assertion_to_profile=self.config.attribute_assertion_to_profile,
             # publication_attributed_to=publication_attributed_to,
         )
-        self._handle_generated_at_time(add_pubinfo_generated_time, add_prov_generated_time)
-        self._handle_assertion_attributed_to(assertion_attributed_to)
-        self._handle_publication_attributed_to(
-            attribute_publication_to_profile,
-            publication_attributed_to,
-            nanopub_profile
+        self._handle_generated_at_time(
+            self.config.add_pubinfo_generated_time,
+            self.config.add_prov_generated_time
         )
-        self._handle_derived_from(derived_from=derived_from)
+        self._handle_assertion_attributed_to(self.config.assertion_attributed_to)
+        self._handle_publication_attributed_to(
+            self.config.attribute_publication_to_profile,
+            self.config.publication_attributed_to
+        )
+        self._handle_derived_from(derived_from=self.config.derived_from)
 
         # Concatenate prefixes declarations from all provided graphs in the main graph
         for user_rdf in [assertion, provenance, pubinfo]:
@@ -185,22 +176,20 @@ class Nanopublication:
         """
         for s, p, o in rdf:
             rdf.remove((s, p, o))
-            if isinstance(s, rdflib.term.BNode):
+            if isinstance(s, BNode):
                 s = DUMMY_NAMESPACE[str(s)]
-            if isinstance(o, rdflib.term.BNode):
+            if isinstance(o, BNode):
                 o = DUMMY_NAMESPACE[str(o)]
             rdf.add((s, p, o))
 
 
     def _validate_from_assertion_arguments(
         self,
-        introduces_concept: rdflib.term.BNode,
+        introduces_concept: BNode,
         derived_from,
         assertion_attributed_to,
         attribute_assertion_to_profile: bool,
         # publication_attributed_to,
-        # provenance_rdf: rdflib.Graph,
-        # pubinfo_rdf: rdflib.Graph,
     ):
         """
         Validate arguments for `from_assertion` method.
@@ -214,7 +203,7 @@ class Nanopublication:
                 "argument."
             )
 
-        if introduces_concept and not isinstance(introduces_concept, rdflib.term.BNode):
+        if introduces_concept and not isinstance(introduces_concept, BNode):
             raise ValueError(
                 "If you want a nanopublication to introduce a concept, you need to "
                 'pass it as an rdflib.term.BNode("concept_name"). This will make '
@@ -225,7 +214,7 @@ class Nanopublication:
         if self.provenance:
             if (
                 derived_from
-                and (None, namespaces.PROV.wasDerivedFrom, None) in self.provenance
+                and (None, PROV.wasDerivedFrom, None) in self.provenance
             ):
                 raise ValueError(
                     "The provenance_rdf that you passed already contains the "
@@ -234,7 +223,7 @@ class Nanopublication:
                 )
             if (
                 assertion_attributed_to
-                and (None, namespaces.PROV.wasAttributedTo, None) in self.provenance
+                and (None, PROV.wasAttributedTo, None) in self.provenance
             ):
                 raise ValueError(
                     "The provenance_rdf that you passed already contains the "
@@ -243,7 +232,7 @@ class Nanopublication:
                 )
             if (
                 attribute_assertion_to_profile
-                and (None, namespaces.PROV.wasAttributedTo, None) in self.provenance
+                and (None, PROV.wasAttributedTo, None) in self.provenance
             ):
                 raise ValueError(
                     "The provenance_rdf that you passed already contains the "
@@ -253,14 +242,14 @@ class Nanopublication:
         if self.pubinfo:
             if (
                 introduces_concept
-                and (None, namespaces.NPX.introduces, None) in self.pubinfo
+                and (None, NPX.introduces, None) in self.pubinfo
             ):
                 raise ValueError(
                     "The pubinfo_rdf that you passed already contains the "
                     "npx:introduces predicate, so you cannot also use the "
                     "introduces_concept argument"
                 )
-            if (None, namespaces.PROV.wasAttributedTo, None) in self.pubinfo:
+            if (None, PROV.wasAttributedTo, None) in self.pubinfo:
                 raise ValueError(
                     "The pubinfo_rdf that you passed should not contain the "
                     "prov:wasAttributedTo predicate. If you wish to change "
@@ -279,13 +268,13 @@ class Nanopublication:
         creationtime = rdflib.Literal(datetime.now(), datatype=XSD.dateTime)
         if add_pubinfo_generated_time:
             self.pubinfo.add(
-                (DUMMY_NAMESPACE[""], namespaces.PROV.generatedAtTime, creationtime)
+                (DUMMY_NAMESPACE[""], PROV.generatedAtTime, creationtime)
             )
         if add_prov_generated_time:
             self.provenance.add(
                 (
                     DUMMY_NAMESPACE.assertion,
-                    namespaces.PROV.generatedAtTime,
+                    PROV.generatedAtTime,
                     creationtime,
                 )
             )
@@ -293,32 +282,34 @@ class Nanopublication:
 
     def _handle_assertion_attributed_to(self, assertion_attributed_to):
         """Handler for `from_assertion` method."""
-        assertion_attributed_to = rdflib.URIRef(assertion_attributed_to)
-        self.provenance.add(
-            (
-                DUMMY_NAMESPACE.assertion,
-                namespaces.PROV.wasAttributedTo,
-                assertion_attributed_to,
+        if assertion_attributed_to:
+            assertion_attributed_to = URIRef(assertion_attributed_to)
+            self.provenance.add(
+                (
+                    DUMMY_NAMESPACE.assertion,
+                    PROV.wasAttributedTo,
+                    assertion_attributed_to,
+                )
             )
-        )
 
 
     def _handle_publication_attributed_to(
         self,
         attribute_publication_to_profile,
         publication_attributed_to,
-        nanopub_profile,
     ):
         """Handler for `from_assertion` method."""
         if attribute_publication_to_profile:
+            if not self._profile:
+                raise ValueError("No nanopub profile provided, but attribute_publication_to_profile is enabled")
             if publication_attributed_to is None:
-                publication_attributed_to = rdflib.URIRef(nanopub_profile.orcid_id)
+                publication_attributed_to = rdflib.URIRef(self._profile.orcid_id)
             else:
                 publication_attributed_to = rdflib.URIRef(publication_attributed_to)
             self.pubinfo.add(
                 (
                     DUMMY_NAMESPACE[""],
-                    namespaces.PROV.wasAttributedTo,
+                    PROV.wasAttributedTo,
                     publication_attributed_to,
                 )
             )
@@ -326,54 +317,83 @@ class Nanopublication:
 
     def _handle_derived_from(self, derived_from):
         """Handler for `from_assertion` method."""
-        if isinstance(derived_from, list):
-            list_of_uris = derived_from
-        else:
-            list_of_uris = [derived_from]
+        if derived_from:
+            if isinstance(derived_from, list):
+                list_of_uris = derived_from
+            else:
+                list_of_uris = [derived_from]
 
-        for derived_from_uri in list_of_uris:
-            derived_from_uri = rdflib.URIRef(derived_from_uri)
-            self.provenance.add(
-                (
-                    DUMMY_NAMESPACE.assertion,
-                    namespaces.PROV.wasDerivedFrom,
-                    derived_from_uri,
+            for derived_from_uri in list_of_uris:
+                derived_from_uri = rdflib.URIRef(derived_from_uri)
+                self.provenance.add(
+                    (
+                        DUMMY_NAMESPACE.assertion,
+                        PROV.wasDerivedFrom,
+                        derived_from_uri,
+                    )
                 )
-            )
 
 
     def _handle_introduces_concept(self, introduces_concept):
         """Handler for `from_assertion` method."""
-        introduces_concept = DUMMY_NAMESPACE[str(introduces_concept)]
-        self.pubinfo.add(
-            (DUMMY_NAMESPACE[""], namespaces.NPX.introduces, introduces_concept)
-        )
+        if introduces_concept:
+            introduces_concept = DUMMY_NAMESPACE[str(introduces_concept)]
+            self.pubinfo.add(
+                (DUMMY_NAMESPACE[""], NPX.introduces, introduces_concept)
+            )
 
     @property
     def rdf(self):
         return self._rdf
 
-
     # @property
     # def assertion(self):
-    #     return self._graphs["assertion"]
+    #     return self._assertion
 
     # @property
     # def pubinfo(self):
-    #     return self._graphs["pubinfo"]
+    #     return self._pubinfo
 
     # @property
     # def provenance(self):
-    #     return self._graphs["provenance"]
+    #     return self._provenance
 
     @property
     def source_uri(self):
         return self._source_uri
 
+    @source_uri.setter
+    def source_uri(self, value):
+        self._source_uri = value
+
+    @property
+    def signed_file(self):
+        return self._signed_file
+
+    @signed_file.setter
+    def signed_file(self, value):
+        self._signed_file = value
+
+    @property
+    def concept_uri(self):
+        return self._concept_uri
+
+    @concept_uri.setter
+    def concept_uri(self, value):
+        self._concept_uri = value
+
+    @property
+    def profile(self):
+        return self._profile
+
+    @profile.setter
+    def profile(self, value):
+        self._profile = value
+
     @property
     def introduces_concept(self):
         concepts_introduced = list()
-        for s, p, o in self.pubinfo.triples((None, namespaces.NPX.introduces, None)):
+        for s, p, o in self.pubinfo.triples((None, NPX.introduces, None)):
             concepts_introduced.append(o)
 
         if len(concepts_introduced) == 0:
@@ -392,7 +412,7 @@ class Nanopublication:
         """
         return list(
             self.head.subjects(
-                predicate=rdflib.RDF.type, object=namespaces.NP.Nanopublication
+                predicate=rdflib.RDF.type, object=NP.Nanopublication
             )
         )[0]
 
@@ -401,7 +421,7 @@ class Nanopublication:
         if not self._source_uri:
             return None
         public_keys = list(
-            self.pubinfo.objects(self._self_ref + "#sig", namespaces.NPX.hasPublicKey)
+            self.pubinfo.objects(self._self_ref + "#sig", NPX.hasPublicKey)
         )
         if len(public_keys) > 0:
             public_key = str(public_keys[0])
@@ -427,8 +447,16 @@ class Nanopublication:
         s += self._rdf.serialize(format="trig")
         return s
 
+    # @property
+    # def signed_file_rdf(self) -> ConjunctiveGraph:
+    #     if not self.signed_file:
+    #         raise ValueError("No signed file available for this Nanopublication")
+    #     g = ConjunctiveGraph()
+    #     g.parse(self.signed_file, format="trig")
+    #     return g
 
-def replace_in_rdf(rdf: rdflib.Graph, oldvalue, newvalue):
+
+def replace_in_rdf(rdf: Graph, oldvalue, newvalue):
     """Replace values in RDF.
 
     Replace all subjects or objects matching `oldvalue` with `newvalue`. Replaces in place.

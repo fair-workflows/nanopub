@@ -21,13 +21,18 @@ class JavaWrapper:
     a nanopub server.
     """
 
-    def __init__(self, use_test_server=False):
+    def __init__(
+            self,
+            use_test_server: bool =False,
+            explicit_private_key: str = None
+        ):
         """Construct JavaWrapper.
 
         Args:
             use_test_server: Toggle using the test nanopub server.
         """
         self.use_test_server = use_test_server
+        self.explicit_private_key = explicit_private_key
 
     @staticmethod
     def _run_command(command):
@@ -48,15 +53,15 @@ class JavaWrapper:
         elif result.returncode != 0:
             raise RuntimeError(f'Error in nanopub-java when running {command}: {stderr}')
 
-    def sign(self, unsigned_file: Union[str, Path], explicit_private_key: str = None) -> str:
+    def sign(self, unsigned_file: Union[str, Path]) -> str:
         unsigned_file = str(unsigned_file)
         args = ''
-        if explicit_private_key:
-            args = f'-k {explicit_private_key}'
+        if self.explicit_private_key:
+            args = f'-k {self.explicit_private_key}'
         self._run_command(f'{NANOPUB_JAVA_SCRIPT} sign {unsigned_file} {args}')
         return self._get_signed_file(unsigned_file)
 
-    def publish(self, signed: str, explicit_private_key: str = None):
+    def publish(self, signed: str):
         """ Publish.
 
         Publish the signed nanopub to the nanopub server. Publishing to the real server depends
@@ -65,8 +70,8 @@ class JavaWrapper:
         TODO: Use nanopub-java for publishing to test once it supports it.
         """
         args = ''
-        if explicit_private_key:
-            args = f'-k {explicit_private_key}'
+        if self.explicit_private_key:
+            args = f'-k {self.explicit_private_key}'
 
         if self.use_test_server:
             headers = {'content-type': 'application/x-www-form-urlencoded'}

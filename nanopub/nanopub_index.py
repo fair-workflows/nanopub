@@ -2,25 +2,16 @@
 """This module includes a client for the nanopub server.
 """
 
-import os
-import random
-import tempfile
-import warnings
-from typing import List, Tuple, Union
+from typing import List, Union
 
-import rdflib
-import requests
-from rdflib.namespace import DC, DCTERMS, RDF, RDFS, XSD
+from rdflib import Graph, Literal, Namespace, URIRef, ConjunctiveGraph, BNode
+from rdflib.namespace import DC, DCTERMS, PROV, RDF, RDFS, VOID, XSD
 
-from nanopub import namespaces
-from nanopub.definitions import DUMMY_NANOPUB_URI
-from nanopub.java_wrapper import JavaWrapper
-from nanopub.profile import Profile, get_profile
-from nanopub.publication import Publication
+from nanopub.definitions import DUMMY_NAMESPACE, DUMMY_URI
+from nanopub.profile import Profile
 from nanopub.nanopublication import Nanopublication
-
-DUMMY_NAMESPACE = rdflib.Namespace(DUMMY_NANOPUB_URI + "#")
-NP_URI = DUMMY_NAMESPACE[""]
+from nanopub.namespaces import HYCL, NP, NPX, PAV, ORCID, NTEMPLATE
+from nanopub.nanopub_config import NanopubConfig
 
 
 class NanopubIndex(Nanopublication):
@@ -45,53 +36,39 @@ class NanopubIndex(Nanopublication):
         creators: List[str],
         see_also: str = None,
         profile: Profile = None,
-        add_pubinfo_generated_time=True,
-        add_prov_generated_time=False,
-        attribute_publication_to_profile=True,
+        config: NanopubConfig = NanopubConfig(
+            add_prov_generated_time=False,
+            add_pubinfo_generated_time=True,
+            attribute_publication_to_profile=True,
+        ),
+        top_level: bool = False,
     ) -> None:
         super().__init__(
-            nanopub_profile=profile,
-            add_pubinfo_generated_time=add_pubinfo_generated_time,
-            add_prov_generated_time=add_prov_generated_time,
-            attribute_publication_to_profile=attribute_publication_to_profile,
+            profile=profile,
+            config=config,
         )
 
-        # assertion = rdflib.Graph()
-        # assertion.bind("pav", namespaces.PAV)
-        # assertion.bind("prov", namespaces.PROV)
-        # assertion.bind("pmid", namespaces.PMID)
-        # assertion.bind("orcid", namespaces.ORCID)
-        # assertion.bind("ntemplate", namespaces.NTEMPLATE)
-
         for np in np_list:
-            self.assertion.add((NP_URI, namespaces.NPX.includesElement, rdflib.URIRef(np)))
+            if top_level:
+                self.assertion.add((DUMMY_URI, NPX.appendsIndex, URIRef(np)))
+            else:
+                self.assertion.add((DUMMY_URI, NPX.includesElement, URIRef(np)))
 
-        self.pubinfo.add((NP_URI, RDF.type, namespaces.NPX.NanopubIndex))
-        self.pubinfo.add((NP_URI, DC.title, rdflib.Literal(title)))
-        self.pubinfo.add((NP_URI, DC.description, rdflib.Literal(description)))
+        self.pubinfo.add((DUMMY_URI, RDF.type, NPX.NanopubIndex))
+        self.pubinfo.add((DUMMY_URI, DC.title, Literal(title)))
+        self.pubinfo.add((DUMMY_URI, DC.description, Literal(description)))
         if see_also:
-            self.pubinfo.add((NP_URI, RDFS.seeAlso, rdflib.URIRef(see_also)))
+            self.pubinfo.add((DUMMY_URI, RDFS.seeAlso, URIRef(see_also)))
         for creator in creators:
-            self.pubinfo.add((NP_URI, namespaces.PAV.createdBy, rdflib.URIRef(creator)))
+            self.pubinfo.add((DUMMY_URI, PAV.createdBy, URIRef(creator)))
         # TODO: use current time if not provided
         # datetime.datetime.now().astimezone().replace(microsecond=0).isoformat()
         self.pubinfo.add(
             (
-                NP_URI,
+                DUMMY_URI,
                 DCTERMS.created,
-                rdflib.Literal(creation_time, datatype=XSD.dateTime, normalize=False),
+                Literal(creation_time, datatype=XSD.dateTime, normalize=False),
             )
         )
 
-        self.prov.add((DUMMY_NAMESPACE.assertion, RDF.type, namespaces.NPX.IndexAssertion))
-
-        # publication = Publication.from_assertion(
-        #     assertion_rdf=assertion,
-        #     pubinfo_rdf=pubinfo,
-        #     provenance_rdf=prov,
-        #     nanopub_profile=profile,
-        #     add_pubinfo_generated_time=True,
-        #     add_prov_generated_time=False,
-        #     attribute_publication_to_profile=True,
-        # )
-        # return publication
+        self.provenance.add((DUMMY_NAMESPACE.assertion, RDF.type, NPX.IndexAssertion))

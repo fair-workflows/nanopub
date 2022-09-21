@@ -38,6 +38,7 @@ class Publication:
     def __init__(self, rdf: rdflib.ConjunctiveGraph, source_uri: str = None):
         self._rdf = rdf
         self._source_uri = source_uri
+        self._signed_file = None
 
         # Extract the Head, pubinfo, provenance and assertion graphs from the assigned nanopub rdf
         self._graphs = {}
@@ -325,6 +326,18 @@ class Publication:
     @property
     def source_uri(self):
         return self._source_uri
+
+    @source_uri.setter
+    def source_uri(self, value):
+        self._source_uri = value
+
+    @property
+    def signed_file(self):
+        return self._signed_file
+
+    @signed_file.setter
+    def signed_file(self, value):
+        self._signed_file = value
 
     @property
     def introduces_concept(self):

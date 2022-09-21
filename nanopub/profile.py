@@ -20,7 +20,7 @@ class ProfileError(RuntimeError):
 
 
 # TODO: from dataclasses import dataclass
-# @dataclass()
+# @dataclass
 class Profile:
     """Represents a user profile.
 
@@ -37,6 +37,8 @@ class Profile:
     # public_key: Path
     # private_key: Path
     # introduction_nanopub_uri: Optional[str] = None
+
+    # def __init__(self, path: str = str(PROFILE_PATH) ) -> None:
 
     def __init__(
             self,

@@ -17,6 +17,7 @@
    publishing/using-publication-namespace
    publishing/setting-subgraphs
    publishing/retraction
+   publishing/using-new-nanopublication-object
 
 .. toctree::
    :maxdepth: 1

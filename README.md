@@ -23,7 +23,7 @@ Install using pip:
 pip install nanopub
 ```
 
-To publish to the nanopub server you need to setup your profile. This allows the nanopub server to identify you. Run 
+To publish to the nanopub server you need to setup your profile. This allows the nanopub server to identify you. Run
 the following command in the terminal:
 ```
 setup_nanopub_profile
@@ -81,6 +81,28 @@ for s, p, o in publication.assertion:
     print(s, p, o)
 
 ```
-                                         
+
 ## Dependencies
 The ```nanopub``` library currently uses the [```nanopub-java```](https://github.com/Nanopublication/nanopub-java) tool for signing and publishing new nanopublications. This is automatically installed by the library.
+
+## Development
+
+Install additional dependencies for development:
+
+```bash
+pip install -r requirements-dev.txt
+```
+
+Generate documentation in `docs/_build`:
+
+```bash
+cd docs
+make html
+python3 -m webbrowser _build/html/index.html
+```
+
+Run the tests:
+
+```bash
+pytest
+```

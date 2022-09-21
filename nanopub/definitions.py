@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 from rdflib import Namespace
@@ -12,3 +13,7 @@ PROFILE_PATH = USER_CONFIG_DIR / "profile.yml"
 DUMMY_NANOPUB_URI = "http://purl.org/nanopub/temp/mynanopub"
 DUMMY_NAMESPACE = Namespace(DUMMY_NANOPUB_URI + "#")
 DUMMY_URI = DUMMY_NAMESPACE[""]
+
+MAX_TRIPLES_PER_NANOPUB = 1200
+
+log = logging.getLogger()

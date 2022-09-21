@@ -5,6 +5,7 @@
 import os
 import random
 import tempfile
+from turtle import pu
 import warnings
 from typing import List, Tuple, Union
 
@@ -13,11 +14,14 @@ import requests
 from rdflib.namespace import DC, DCTERMS, RDF, RDFS, XSD
 
 from nanopub import namespaces
-from nanopub.definitions import DUMMY_NANOPUB_URI
+from nanopub.definitions import DUMMY_NANOPUB_URI, log, MAX_TRIPLES_PER_NANOPUB
 from nanopub.java_wrapper import JavaWrapper
 from nanopub.nanopub_index import NanopubIndex
-from nanopub.profile import Profile, get_profile
+from nanopub.profile import get_profile
 from nanopub.publication import Publication
+from nanopub.nanopublication import Nanopublication
+from nanopub.nanopub_config import NanopubConfig
+# from nanopub import NanopubConfig, Nanopublication, NanopubIndex, Profile
 
 NANOPUB_GRLC_URLS = [
     "http://grlc.nanopubs.lod.labs.vu.nl/api/local/local/",
@@ -46,50 +50,206 @@ class NanopubClient:
 
     """
 
-    profile: Profile = None
-    sign_explicit_private_key: bool = False
-
     def __init__(
         self,
         use_test_server=False,
         profile_path: str = None,
         sign_explicit_private_key: bool = False,
+        nanopub_config: NanopubConfig = NanopubConfig()
     ):
         self.use_test_server = use_test_server
-        self.java_wrapper = JavaWrapper(use_test_server=use_test_server)
         if use_test_server:
             self.grlc_urls = [NANOPUB_TEST_GRLC_URL]
         else:
             self.grlc_urls = NANOPUB_GRLC_URLS
+
         self.profile = get_profile(profile_path)
         self.sign_explicit_private_key = sign_explicit_private_key
 
-    def create_publication(
-        self,
-        assertion_rdf: rdflib.Graph,
-        pubinfo_rdf: rdflib.Graph,
-        provenance_rdf: rdflib.Graph,
-        add_prov_generated_time: bool = True,
-        add_pubinfo_generated_time: bool = True,
-        attribute_assertion_to_profile: bool = False,
-        attribute_publication_to_profile: bool = True,
-        assertion_attributed_to=None,
-        publication_attributed_to=None,
-        derived_from=None,
-    ) -> Publication:
-        return Publication.from_assertion(
-            nanopub_profile=self.profile,
-            assertion_rdf=assertion_rdf,
-            pubinfo_rdf=pubinfo_rdf,
-            provenance_rdf=provenance_rdf,
-            add_prov_generated_time=add_prov_generated_time,
-            add_pubinfo_generated_time=add_pubinfo_generated_time,
-            attribute_publication_to_profile=attribute_publication_to_profile,
-            attribute_assertion_to_profile=attribute_assertion_to_profile,
-            assertion_attributed_to=assertion_attributed_to,
-            publication_attributed_to=publication_attributed_to,
-            derived_from=derived_from,
+        self.nanopub_config = nanopub_config
+        # print(self.nanopub_config)
+
+        sign_with_key = None
+        if sign_explicit_private_key:
+            sign_with_key = self.profile.private_key
+
+        self.java_wrapper = JavaWrapper(
+            use_test_server=use_test_server,
+            explicit_private_key=sign_with_key
         )
+
+
+    ### CREATE AND PUBLISH NANOPUBS
+
+    def create_nanopub(
+        self,
+        assertion: rdflib.Graph = rdflib.Graph(),
+        pubinfo: rdflib.Graph = rdflib.Graph(),
+        provenance: rdflib.Graph = rdflib.Graph(),
+        nanopub_config: NanopubConfig=None,
+    ) -> Nanopublication:
+        if not nanopub_config:
+            nanopub_config = self.nanopub_config
+
+        # return Publication.from_assertion(
+        return Nanopublication(
+            assertion=assertion,
+            pubinfo=pubinfo,
+            provenance=provenance,
+            config=nanopub_config,
+            profile=self.profile,
+        )
+
+
+    def sign(self, publication: Union[Publication,Nanopublication]):
+        """Sign a Publication object.
+
+        Sign Publication object. It uses nanopub_java commandline tool to
+        sign the nanopublication RDF with the RSA key in the profile and then publish.
+
+        Args:
+            publication (Publication): Publication object to sign.
+
+        Returns:
+            dict of str: Publication info with: 'nanopub_uri': the URI of the signed
+            nanopublication, 'concept_uri': the URI of the introduced concept (if applicable)
+
+        """
+        # Create a temporary dir for files created during serializing and signing
+        tempdir = tempfile.mkdtemp()
+
+        # Convert nanopub rdf to trig
+        fname = "temp.trig"
+        unsigned_fname = os.path.join(tempdir, fname)
+        publication.rdf.serialize(destination=unsigned_fname, format="trig")
+
+        # Sign the nanopub
+        signed_file = self.java_wrapper.sign(unsigned_fname)
+        publication.signed_file = signed_file
+        log.info(f"Signed to {signed_file}")
+        return publication
+
+
+    # TODO: keep?
+    def publish_signed(self, signed_path: str):
+        """Publish a signed publication file.
+
+        Args:
+            signed_path: Path to the signed file of a nanopub.
+
+        Returns:
+            dict of str: Publication info with: 'nanopub_uri': the URI of the published
+            nanopublication, 'concept_uri': the URI of the introduced concept (if applicable)
+
+        """
+        nanopub_uri = self.java_wrapper.publish(signed_path)
+
+        publication_info = {"nanopub_uri": nanopub_uri}
+        log.info(f"Published to {nanopub_uri}")
+
+        return publication_info
+
+
+    def publish(self, publication: Union[Publication,Nanopublication]):
+        """Publish a Publication object.
+
+        Publish Publication object to the nanopub server. It uses nanopub_java commandline tool to
+        sign the nanopublication RDF with the RSA key in the profile and then publish.
+
+        Args:
+            publication (Publication): Publication object to publish.
+
+        Returns:
+            dict of str: Publication info with: 'nanopub_uri': the URI of the published
+            nanopublication, 'concept_uri': the URI of the introduced concept (if applicable)
+
+        """
+        if not publication.signed_file:
+            publication = self.sign(publication)
+
+        publication.source_uri = self.java_wrapper.publish(publication.signed_file)
+        log.info(f"Nanopub published to {publication.source_uri}")
+
+        if publication.introduces_concept:
+            concept_uri = str(publication.introduces_concept)
+            # Replace the DUMMY_NANOPUB_URI with the actually published nanopub uri. This is
+            # necessary if a blank node was passed as introduces_concept. In that case the
+            # Nanopub.from_assertion method replaces the blank node with the base nanopub's URI
+            # and appends a fragment, given by the 'name' of the blank node. For example, if a
+            # blank node with name 'step' was passed as introduces_concept, the concept will be
+            # published with a URI that looks like [published nanopub URI]#step.
+            concept_uri = concept_uri.replace(
+                DUMMY_NANOPUB_URI, publication.source_uri
+            )
+            publication.concept_uri = concept_uri
+            log.info(f"Published concept to {concept_uri}")
+
+        return publication
+
+
+    def claim(self, statement_text: str):
+        """Quickly claim a statement.
+
+        Constructs statement triples around the provided text following the Hypotheses and Claims
+        Ontology (http://purl.org/petapico/o/hycl).
+
+        Args:
+            statement_text (str): the text of the statement, example: 'All cats are grey'
+
+        Returns:
+            dict of str: Publication info with: 'nanopub_uri': the URI of the published
+            nanopublication, 'concept_uri': the URI of the introduced concept (if applicable)
+
+        """
+        assertion_rdf = rdflib.Graph()
+        this_statement = rdflib.term.BNode("mystatement")
+        assertion_rdf.add((this_statement, rdflib.RDF.type, namespaces.HYCL.Statement))
+        assertion_rdf.add(
+            (this_statement, rdflib.RDFS.label, rdflib.Literal(statement_text))
+        )
+
+        provenance_rdf = rdflib.Graph()
+        orcid_id_uri = rdflib.URIRef(self.profile.orcid_id)
+        provenance_rdf.add((orcid_id_uri, namespaces.HYCL.claims, this_statement))
+        publication = Publication.from_assertion(
+            assertion_rdf=assertion_rdf,
+            attribute_assertion_to_profile=True,
+            provenance_rdf=provenance_rdf,
+            nanopub_profile=self.profile,
+        )
+        return self.publish(publication)
+
+
+    def retract(self, uri: str, force=False):
+        """Retract a nanopublication.
+
+        Publish a retraction nanpublication that declares retraction of the nanopublication that
+        corresponds to the 'uri' argument.
+
+        Args:
+            uri (str): The uri pointing to the to-be-retracted nanopublication
+            force (bool): Toggle using force to retract, this will even retract the
+                nanopublication if it is signed with a different public key than the one
+                in the user profile.
+
+        Returns:
+            dict of str: Publication info with: 'nanopub_uri': the URI of the published
+            nanopublication, 'concept_uri': the URI of the introduced concept (if applicable)
+        """
+        if not force:
+            self._check_public_keys_match(uri)
+        assertion_rdf = rdflib.Graph()
+        orcid_id = self.profile.orcid_id
+        assertion_rdf.add(
+            (rdflib.URIRef(orcid_id), namespaces.NPX.retracts, rdflib.URIRef(uri))
+        )
+        publication = Publication.from_assertion(
+            assertion_rdf=assertion_rdf,
+            attribute_assertion_to_profile=True,
+            nanopub_profile=self.profile,
+        )
+        return self.publish(publication)
+
 
     def create_nanopub_index(
         self,
@@ -99,7 +259,10 @@ class NanopubClient:
         creation_time: str,
         creators: List[str],
         see_also: str = None,
-    ) -> Publication:
+        nanopub_config: NanopubConfig = None,
+        # pub_list: List[Nanopublication] = [],
+        publish: bool = False,
+    ) -> List[Nanopublication]:
         """Create a Nanopub index.
 
         Publish a list of nanopub URIs in a Nanopub Index
@@ -112,15 +275,84 @@ class NanopubClient:
             creators: List of the ORCID of the creators of the Nanopub Index
             see_also: A URL to a page with further information on the Nanopub Index
         """
-        return NanopubIndex(
-            np_list=np_list,
-            title=title,
-            description=description,
-            creation_time=creation_time,
-            creators=creators,
-            see_also=see_also,
-            profile=self.profile,
-        )
+        if not nanopub_config:
+            nanopub_config = self.nanopub_config
+        pub_list = []
+        for i in range(0, len(np_list), MAX_TRIPLES_PER_NANOPUB):
+            np_chunk = np_list[i:i+MAX_TRIPLES_PER_NANOPUB]
+            pub = NanopubIndex(
+                np_chunk,
+                title,
+                description,
+                creation_time,
+                creators,
+                see_also,
+                profile=self.profile,
+                config=nanopub_config,
+                top_level=False
+            )
+            if publish:
+                pub = self.publish(pub)
+                pub_uri = pub.source_uri
+                log.info(f"Published Nanopub Index {pub.source_uri}")
+            else:
+                pub = self.sign(pub)
+                pub_uri = "file://" + pub.signed_file
+                log.info(f"Signed Nanopub Index: {str(pub)}")
+
+            pub_list.append(pub_uri)
+
+        if len(pub_list) > 1:
+            toplevel_pub = NanopubIndex(
+                pub_list,
+                title,
+                description,
+                creation_time,
+                creators,
+                see_also,
+                profile=self.profile,
+                config=nanopub_config,
+                top_level=True
+            )
+
+            if publish:
+                toplevel_pub = self.publish(toplevel_pub)
+                toplevel_uri = toplevel_pub.source_uri
+                log.info(f"Published top level Nanopub Index: {toplevel_uri}")
+            else:
+                toplevel_pub = self.sign(toplevel_pub)
+                toplevel_uri = "file://" + toplevel_pub.signed_file
+                log.info(f"Signed top level Nanopub Index: {toplevel_uri}")
+
+            pub_list.append(toplevel_uri)
+
+        return pub_list
+
+
+
+    def _check_public_keys_match(self, uri):
+        """Check for matching public keys of a nanopublication with the profile.
+
+        Raises:
+            AssertionError: When the nanopublication is signed with a public key that does not
+                match the public key in the profile
+        """
+        publication = self.fetch(uri)
+        their_public_key = publication.signed_with_public_key
+        if (
+            their_public_key is not None
+            and their_public_key != self.profile.get_public_key()
+        ):
+            raise AssertionError(
+                "The public key in your profile does not match the public key"
+                "that the publication that you want to retract is signed "
+                "with. Use force=True to force retraction anyway."
+            )
+
+
+
+
+    ### FIND NANOPUBS
 
     def find_nanopubs_with_text(
         self, text: str, pubkey: str = None, filter_retracted: bool = True
@@ -410,176 +642,3 @@ class NanopubClient:
         nanopub_rdf = rdflib.ConjunctiveGraph()
         nanopub_rdf.parse(data=r.text, format=NANOPUB_FETCH_FORMAT)
         return Publication(rdf=nanopub_rdf, source_uri=uri)
-
-    def sign(self, publication: Publication):
-        """Sign a Publication object.
-
-        Sign Publication object. It uses nanopub_java commandline tool to
-        sign the nanopublication RDF with the RSA key in the profile and then publish.
-
-        Args:
-            publication (Publication): Publication object to sign.
-
-        Returns:
-            dict of str: Publication info with: 'nanopub_uri': the URI of the signed
-            nanopublication, 'concept_uri': the URI of the introduced concept (if applicable)
-
-        """
-        # Create a temporary dir for files created during serializing and signing
-        tempdir = tempfile.mkdtemp()
-
-        # Convert nanopub rdf to trig
-        fname = "temp.trig"
-        unsigned_fname = os.path.join(tempdir, fname)
-        publication.rdf.serialize(destination=unsigned_fname, format="trig")
-
-        # Sign the nanopub
-        if self.sign_explicit_private_key:
-            signed_file = self.java_wrapper.sign(
-                unsigned_fname, self.profile.private_key
-            )
-        else:
-            signed_file = self.java_wrapper.sign(unsigned_fname, None)
-        print(f"Signed to {signed_file}")
-        return signed_file
-
-    def publish_signed(self, signed_path: str):
-        """Publish a signed publication file.
-
-        Args:
-            signed_path: Path to the signed file of a nanopub.
-
-        Returns:
-            dict of str: Publication info with: 'nanopub_uri': the URI of the published
-            nanopublication, 'concept_uri': the URI of the introduced concept (if applicable)
-
-        """
-        # signed_path = self.sign(publication)
-
-        # Publish the nanopub
-        if self.sign_explicit_private_key:
-            nanopub_uri = self.java_wrapper.publish(
-                signed_path, self.profile.private_key
-            )
-        else:
-            nanopub_uri = self.java_wrapper.publish(signed_path, None)
-
-        publication_info = {"nanopub_uri": nanopub_uri}
-        print(f"Published to {nanopub_uri}")
-
-        return publication_info
-
-    def publish(self, publication: Publication):
-        """Publish a Publication object.
-
-        Publish Publication object to the nanopub server. It uses nanopub_java commandline tool to
-        sign the nanopublication RDF with the RSA key in the profile and then publish.
-
-        Args:
-            publication (Publication): Publication object to publish.
-
-        Returns:
-            dict of str: Publication info with: 'nanopub_uri': the URI of the published
-            nanopublication, 'concept_uri': the URI of the introduced concept (if applicable)
-
-        """
-        signed_file = self.sign(publication)
-
-        publication_info = self.publish_signed(signed_file)
-
-        if publication.introduces_concept:
-            concept_uri = str(publication.introduces_concept)
-            # Replace the DUMMY_NANOPUB_URI with the actually published nanopub uri. This is
-            # necessary if a blank node was passed as introduces_concept. In that case the
-            # Nanopub.from_assertion method replaces the blank node with the base nanopub's URI
-            # and appends a fragment, given by the 'name' of the blank node. For example, if a
-            # blank node with name 'step' was passed as introduces_concept, the concept will be
-            # published with a URI that looks like [published nanopub URI]#step.
-            concept_uri = concept_uri.replace(
-                DUMMY_NANOPUB_URI, publication_info["nanopub_uri"]
-            )
-            publication_info["concept_uri"] = concept_uri
-            print(f"Published concept to {concept_uri}")
-
-        return publication_info
-
-    def claim(self, statement_text: str):
-        """Quickly claim a statement.
-
-        Constructs statement triples around the provided text following the Hypotheses and Claims
-        Ontology (http://purl.org/petapico/o/hycl).
-
-        Args:
-            statement_text (str): the text of the statement, example: 'All cats are grey'
-
-        Returns:
-            dict of str: Publication info with: 'nanopub_uri': the URI of the published
-            nanopublication, 'concept_uri': the URI of the introduced concept (if applicable)
-
-        """
-        assertion_rdf = rdflib.Graph()
-        this_statement = rdflib.term.BNode("mystatement")
-        assertion_rdf.add((this_statement, rdflib.RDF.type, namespaces.HYCL.Statement))
-        assertion_rdf.add(
-            (this_statement, rdflib.RDFS.label, rdflib.Literal(statement_text))
-        )
-
-        provenance_rdf = rdflib.Graph()
-        orcid_id_uri = rdflib.URIRef(self.profile.orcid_id)
-        provenance_rdf.add((orcid_id_uri, namespaces.HYCL.claims, this_statement))
-        publication = Publication.from_assertion(
-            assertion_rdf=assertion_rdf,
-            attribute_assertion_to_profile=True,
-            provenance_rdf=provenance_rdf,
-            nanopub_profile=self.profile,
-        )
-        return self.publish(publication)
-
-    def _check_public_keys_match(self, uri):
-        """Check for matching public keys of a nanopublication with the profile.
-
-        Raises:
-            AssertionError: When the nanopublication is signed with a public key that does not
-                match the public key in the profile
-        """
-        publication = self.fetch(uri)
-        their_public_key = publication.signed_with_public_key
-        if (
-            their_public_key is not None
-            and their_public_key != self.profile.get_public_key()
-        ):
-            raise AssertionError(
-                "The public key in your profile does not match the public key"
-                "that the publication that you want to retract is signed "
-                "with. Use force=True to force retraction anyway."
-            )
-
-    def retract(self, uri: str, force=False):
-        """Retract a nanopublication.
-
-        Publish a retraction nanpublication that declares retraction of the nanopublication that
-        corresponds to the 'uri' argument.
-
-        Args:
-            uri (str): The uri pointing to the to-be-retracted nanopublication
-            force (bool): Toggle using force to retract, this will even retract the
-                nanopublication if it is signed with a different public key than the one
-                in the user profile.
-
-        Returns:
-            dict of str: Publication info with: 'nanopub_uri': the URI of the published
-            nanopublication, 'concept_uri': the URI of the introduced concept (if applicable)
-        """
-        if not force:
-            self._check_public_keys_match(uri)
-        assertion_rdf = rdflib.Graph()
-        orcid_id = self.profile.orcid_id
-        assertion_rdf.add(
-            (rdflib.URIRef(orcid_id), namespaces.NPX.retracts, rdflib.URIRef(uri))
-        )
-        publication = Publication.from_assertion(
-            assertion_rdf=assertion_rdf,
-            attribute_assertion_to_profile=True,
-            nanopub_profile=self.profile,
-        )
-        return self.publish(publication)

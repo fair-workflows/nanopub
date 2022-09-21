@@ -273,8 +273,8 @@ class TestNanopubClient:
             introduces_concept=test_concept,
         )
         pubinfo = client.publish(nanopub)
-        assert pubinfo['nanopub_uri'] == test_published_uri
-        assert pubinfo['concept_uri'] == expected_concept_uri
+        assert pubinfo.nanopub_uri == test_published_uri
+        assert pubinfo.concept_uri == expected_concept_uri
 
     def test_assertion_rdf_not_mutated(self):
         """

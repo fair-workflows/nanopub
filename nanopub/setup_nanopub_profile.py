@@ -118,7 +118,7 @@ def main(orcid_id, publish, newkeys, name, keypair: Union[Tuple[Path, Path], Non
         client = NanopubClient()
         result = client.publish(np)
 
-        profile.nanopub_uri = result['concept_uri']
+        profile.nanopub_uri = result.concept_uri
 
         # Store profile nanopub uri
         store_profile(profile)
