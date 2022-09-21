@@ -10,7 +10,7 @@ from urllib.parse import urldefrag
 
 import rdflib
 from rdflib import Graph, Literal, Namespace, URIRef, ConjunctiveGraph, BNode
-from rdflib.namespace import DC, DCTERMS, PROV, RDF, RDFS, VOID, XSD
+from rdflib.namespace import DC, DCTERMS, PROV, RDF, RDFS, VOID, XSD, FOAF
 
 from nanopub import namespaces, profile
 from nanopub.definitions import DUMMY_NAMESPACE
@@ -153,6 +153,7 @@ class Nanopublication:
         g.bind("dcterms", DCTERMS)
         g.bind("orcid", ORCID)
         g.bind("ntemplate", NTEMPLATE)
+        g.bind("foaf", FOAF)
 
         self._replace_blank_nodes(g)
         return g

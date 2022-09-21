@@ -21,6 +21,7 @@ from nanopub.profile import get_profile
 from nanopub.publication import Publication
 from nanopub.nanopublication import Nanopublication
 from nanopub.nanopub_config import NanopubConfig
+from nanopub.nanopub_introduction import NanopubIntroduction
 # from nanopub import NanopubConfig, Nanopublication, NanopubIndex, Profile
 
 NANOPUB_GRLC_URLS = [
@@ -249,6 +250,28 @@ class NanopubClient:
             nanopub_profile=self.profile,
         )
         return self.publish(publication)
+
+
+    def create_nanopub_intro(
+        self,
+        public_key: str = None,
+        nanopub_config: NanopubConfig = None,
+    ) -> NanopubIntroduction:
+        """Create a Nanopub Introduction to bind a public/private key pair to an ORCID.
+
+        Args:
+            np_list: List of nanopub URIs
+            title: Title of the Nanopub Index
+            description: Description of the Nanopub Index
+            creation_time: Creation time of the Nanopub Index, in format YYYY-MM-DDThh-mm-ss
+            creators: List of the ORCID of the creators of the Nanopub Index
+            see_also: A URL to a page with further information on the Nanopub Index
+        """
+        return NanopubIntroduction(
+            public_key=public_key,
+            profile=self.profile,
+            config=nanopub_config,
+        )
 
 
     def create_nanopub_index(
