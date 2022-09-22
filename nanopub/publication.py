@@ -341,7 +341,7 @@ class Publication:
         np_serialized = self._rdf.serialize(format='trig')
 
         # In rdflib v5, .serialize() returns a bytes object that needs to be decoded.
-        # (rdflib 6+ returns a str) 
+        # (rdflib 6+ returns a str)
         if isinstance(np_serialized, bytes):
             np_serialized = np_serialized.decode('utf-8')
 
