@@ -5,7 +5,6 @@
 import os
 import random
 import tempfile
-from turtle import pu
 import warnings
 from typing import List, Tuple, Union
 
@@ -255,7 +254,7 @@ class NanopubClient:
     def create_nanopub_intro(
         self,
         public_key: str = None,
-        nanopub_config: NanopubConfig = None,
+        # nanopub_config: NanopubConfig = None,
     ) -> NanopubIntroduction:
         """Create a Nanopub Introduction to bind a public/private key pair to an ORCID.
 
@@ -270,7 +269,7 @@ class NanopubClient:
         return NanopubIntroduction(
             public_key=public_key,
             profile=self.profile,
-            config=nanopub_config,
+            # config=nanopub_config,
         )
 
 

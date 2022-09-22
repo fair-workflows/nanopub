@@ -61,6 +61,16 @@ class JavaWrapper:
         self._run_command(f'{NANOPUB_JAVA_SCRIPT} sign {unsigned_file} {args}')
         return self._get_signed_file(unsigned_file)
 
+
+    # Implement sign/publish in python:
+    # 1. Use trusty-uri lib to get the trusty URI
+    # 2. Replace the temp nanopub URIs in the graph by the generated trusty URI
+    # 3. Add signature in pubinfo (how to generate it?)
+    # In java SignatureUtils > createSignedNanopub
+    # 4. Publish to one of the np servers: https://monitor.petapico.org/
+    # post.setEntity(new StringEntity(nanopubString, "UTF-8"));
+    # post.setHeader("Content-Type", RDFFormat.TRIG.getDefaultMIMEType());
+
     def publish(self, signed: str):
         """ Publish.
 

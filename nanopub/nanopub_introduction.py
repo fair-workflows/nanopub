@@ -62,11 +62,11 @@ class NanopubIntroduction(Nanopublication):
             public_exponent=65537,
             key_size=2048
         )
-        encrypted_pem_private_key = private_key.private_bytes(
+
+        unencrypted_pem_private_key = private_key.private_bytes(
             encoding=serialization.Encoding.PEM,
-            format=serialization.PrivateFormat.PKCS8,
+            format=serialization.PrivateFormat.TraditionalOpenSSL,
             encryption_algorithm=serialization.NoEncryption()
-            # encryption_algorithm=serialization.BestAvailableEncryption(b"password")
         )
         pem_public_key = private_key.public_key().public_bytes(
             encoding=serialization.Encoding.PEM,
@@ -74,7 +74,7 @@ class NanopubIntroduction(Nanopublication):
         )
         # Store key pair
         private_key_file = open(self.profile.private_key, "w")
-        private_key_file.write(encrypted_pem_private_key.decode())
+        private_key_file.write(unencrypted_pem_private_key.decode())
         private_key_file.close()
         public_key_file = open(self.profile.public_key, "w")
         public_key_file.write(pem_public_key.decode())
