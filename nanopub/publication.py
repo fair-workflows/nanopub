@@ -364,7 +364,16 @@ class Publication:
 
     def __str__(self):
         s = f'Original source URI = {self._source_uri}\n'
-        s += self._rdf.serialize(format='trig').decode('utf-8')
+
+        np_serialized = self._rdf.serialize(format='trig')
+
+        # In rdflib v5, .serialize() returns a bytes object that needs to be decoded.
+        # (rdflib 6+ returns a str)
+        if isinstance(np_serialized, bytes):
+            np_serialized = np_serialized.decode('utf-8')
+
+        s += np_serialized
+
         return s
 
 
