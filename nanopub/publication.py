@@ -3,13 +3,13 @@
 This module holds code for representing the RDF of nanopublications, as well as helper functions to
 make handling RDF easier.
 """
-from copy import deepcopy
 import warnings
+from copy import deepcopy
 from datetime import datetime
 from urllib.parse import urldefrag
 
 import rdflib
-from rdflib.namespace import RDF, DC, DCTERMS, XSD
+from rdflib.namespace import DC, DCTERMS, RDF, XSD
 
 from nanopub import namespaces, profile
 from nanopub.definitions import DUMMY_NANOPUB_URI
@@ -135,8 +135,10 @@ class Publication:
                        derived_from=None, assertion_attributed_to=None,
                        publication_attributed_to=None,
                        attribute_assertion_to_profile: bool = False,
+                       attribute_publication_to_profile: bool = True,
                        provenance_rdf: rdflib.Graph = None,
-                       pubinfo_rdf: rdflib.Graph = None
+                       pubinfo_rdf: rdflib.Graph = None,
+                       add_generated_at_time: bool = True,
                        ):
         """Construct Nanopub object based on given assertion.
 
@@ -162,13 +164,15 @@ class Publication:
                 defaults to using the ORCID id provided in the user's profile.
             attribute_assertion_to_profile (bool): Attribute the assertion to the ORCID iD in the
                 profile
+            attribute_publication_to_profile (bool): Attribute the publication to the ORCID iD
+                in the profile
             provenance_rdf (rdflib.Graph): RDF triples to be added to provenance graph of the
                 nanopublication.
                 This is optional, for most cases the defaults will be sufficient.
             pubinfo_rdf (rdflib.Graph): RDF triples to be added to the publication info graph of the
                 nanopublication.
                 This is optional, for most cases the defaults will be sufficient.
-
+            add_generated_at_time (bool): Add prov:generatedAtTime in the pubinfo and prov graphs
         """
         cls._validate_from_assertion_arguments(introduces_concept, derived_from,
                                                assertion_attributed_to,
@@ -203,6 +207,7 @@ class Publication:
         provenance_rdf = deepcopy(provenance_rdf)
         pubinfo_rdf = deepcopy(pubinfo_rdf)
 
+        # Concatenate prefixes declarations from all graphs in the main graph
         for user_rdf in [assertion_rdf, provenance_rdf, pubinfo_rdf]:
             if user_rdf is not None:
                 for prefix, namespace in user_rdf.namespaces():
@@ -214,10 +219,6 @@ class Publication:
         if pubinfo_rdf is not None:
             pubinfo += pubinfo_rdf
 
-        creationtime = rdflib.Literal(datetime.now(), datatype=XSD.dateTime)
-        provenance.add((DUMMY_NAMESPACE.assertion, namespaces.PROV.generatedAtTime, creationtime))
-        pubinfo.add((DUMMY_NAMESPACE[''], namespaces.PROV.generatedAtTime, creationtime))
-
         if assertion_attributed_to:
             cls._handle_assertion_attributed_to(assertion_attributed_to, provenance)
 
@@ -227,9 +228,32 @@ class Publication:
         if introduces_concept:
             cls._handle_introduces_concept(introduces_concept, pubinfo)
 
-        cls._handle_publication_attributed_to(publication_attributed_to, pubinfo)
+        cls._handle_publication_attributed_to(
+            attribute_publication_to_profile,
+            publication_attributed_to,
+            pubinfo
+        )
+        cls._handle_generated_at_time(
+            add_generated_at_time,
+            provenance,
+            pubinfo
+        )
 
         return cls(rdf=main_graph)
+
+    @staticmethod
+    def _handle_generated_at_time(add_generated_at_time,
+                                  provenance,
+                                  pubinfo):
+        """Handler for `from_assertion` method."""
+        if add_generated_at_time:
+            creationtime = rdflib.Literal(datetime.now(), datatype=XSD.dateTime)
+            provenance.add((
+                DUMMY_NAMESPACE.assertion,
+                namespaces.PROV.generatedAtTime,
+                creationtime
+            ))
+            pubinfo.add((DUMMY_NAMESPACE[''], namespaces.PROV.generatedAtTime, creationtime))
 
     @staticmethod
     def _handle_assertion_attributed_to(assertion_attributed_to, provenance):
@@ -240,15 +264,18 @@ class Publication:
                         assertion_attributed_to))
 
     @staticmethod
-    def _handle_publication_attributed_to(publication_attributed_to, pubinfo):
+    def _handle_publication_attributed_to(attribute_publication_to_profile,
+                                          publication_attributed_to,
+                                          pubinfo):
         """Handler for `from_assertion` method."""
-        if publication_attributed_to is None:
-            publication_attributed_to = rdflib.URIRef(profile.get_orcid_id())
-        else:
-            publication_attributed_to = rdflib.URIRef(publication_attributed_to)
-        pubinfo.add((DUMMY_NAMESPACE[''],
-                     namespaces.PROV.wasAttributedTo,
-                     publication_attributed_to))
+        if attribute_publication_to_profile:
+            if publication_attributed_to is None:
+                publication_attributed_to = rdflib.URIRef(profile.get_orcid_id())
+            else:
+                publication_attributed_to = rdflib.URIRef(publication_attributed_to)
+            pubinfo.add((DUMMY_NAMESPACE[''],
+                        namespaces.PROV.wasAttributedTo,
+                        publication_attributed_to))
 
     @staticmethod
     def _handle_derived_from(derived_from, provenance):
