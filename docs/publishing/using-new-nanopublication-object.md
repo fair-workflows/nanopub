@@ -7,50 +7,6 @@ content of your nanopublication: the assertion.
 ## Prerequisits for publishing
 Before you can publish you should [setup your profile](../getting-started/setup)
 
-## Quickly publishing nanopublications using `claim`
-You can quickly publish a nanopublicaiton with a single simple statement using the `claim` method:
-```python
-from nanopub import NanopubClient, NanopubConfig
-
-# Create the client (we use use_test_server=True to point to the test server)
-client = NanopubClient(use_test_server=True)
-
-# Publish a simple statement to the server
-client.claim('All cats are gray')
->>>>> Published to http://purl.org/np/RA47eJP2UBJCWuJ324c6Qw0OwtCb8wCrprwSk39am7xck
-```
-View the resulting nanopublication [here](http://purl.org/np/RA47eJP2UBJCWuJ324c6Qw0OwtCb8wCrprwSk39am7xck).
-
-The generated RDF makes use of the Hypotheses and Claims Ontology ([HYCL](http://purl.org/petapico/o/hycl))
-
-This is the assertion part of the nanopublication, denoting the statement:
-```turtle
-@prefix hycl: <http://purl.org/petapico/o/hycl#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix sub: <http://purl.org/np/RA47eJP2UBJCWuJ324c6Qw0OwtCb8wCrprwSk39am7xck#> .
-
-sub:assertion {
-    sub:mystatement a hycl:Statement ;
-        rdfs:label "All cats are gray" .
-}
-```
-
-The provenance part of the nanopublication denotes that the ORCID iD from the profile claimed the
-statement:
-```turtle
-@prefix hycl: <http://purl.org/petapico/o/hycl#> .
-@prefix prov: <http://www.w3.org/ns/prov#> .
-@prefix sub: <http://purl.org/np/RA47eJP2UBJCWuJ324c6Qw0OwtCb8wCrprwSk39am7xck#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-
-sub:provenance {
-    sub:assertion prov:generatedAtTime "2020-12-01T10:39:09.427920"^^xsd:dateTime ;
-        prov:wasAttributedTo <https://orcid.org/0000-0000-0000-0000> .
-
-    <https://orcid.org/0000-0000-0000-0000> hycl:claims sub:mystatement .
-}
-```
-
 ## A simple recipe for publishing RDF triples
 You can use `Publication` objects to easily publish nanopublications with your assertion
 (think of the assertion as the content of your nanopublication).
@@ -61,7 +17,7 @@ This is a 3-step recipe that works for most cases:
   3) Make a `Nanopublication` object using the assertion, making use of `NanopubClient.create_nanopub()`.
   4) Publish the `Nanopublication` object using `NanopubClient.publish()`.
 
-Here is a minimal example:
+Here is an example:
 ```python
 import rdflib
 from nanopub import NanopubClient, NanopubConfig

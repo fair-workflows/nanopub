@@ -7,6 +7,7 @@
    getting-started/what-are-nanopubs
    getting-started/setup
    getting-started/test-server
+   getting-started/development
 
 .. toctree::
    :maxdepth: 1

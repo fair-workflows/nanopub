@@ -104,5 +104,5 @@ python3 -m webbrowser _build/html/index.html
 Run the tests:
 
 ```bash
-pytest
+pytest -s
 ```
