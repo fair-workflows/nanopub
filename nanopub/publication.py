@@ -250,6 +250,15 @@ class Publication:
 
         return cls(rdf=main_graph)
 
+
+    def update_from_signed(self, signed_filepath: str) -> None:
+        """Update the pub RDF to the signed one"""
+        self._signed_file = signed_filepath
+        self._rdf = rdflib.ConjunctiveGraph()
+        self._rdf.parse(signed_filepath, format="trig")
+        self._source_uri = self.get_source_uri_from_graph
+
+
     @staticmethod
     def _handle_generated_at_time(add_pubinfo_generated_time,
                                   add_prov_generated_time,
@@ -361,6 +370,16 @@ class Publication:
         """
         return list(self._graphs['head'].subjects(predicate=rdflib.RDF.type,
                                                   object=namespaces.NP.Nanopublication))[0]
+
+    @property
+    def get_source_uri_from_graph(self):
+        """Get the self reference (i.e. 'this') from the header.
+
+        This is usually something like:
+        http://purl.org/np/RAnksi2yDP7jpe7F6BwWCpMOmzBEcUImkAKUeKEY_2Yus
+        """
+        return self._self_ref
+
 
     @property
     def signed_with_public_key(self):

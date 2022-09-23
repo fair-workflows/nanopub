@@ -128,11 +128,13 @@ class NanopubClient:
         # Sign the nanopub
         signed_file = self.java_wrapper.sign(unsigned_fname)
 
-        publication.signed_file = signed_file
-        # Update the pub RDF to the signed one
-        publication.rdf = ConjunctiveGraph()
-        publication.rdf.parse(signed_file, format="trig")
-        publication.source_uri = publication.get_source_uri_from_graph
+        publication.update_from_signed(signed_file)
+
+        # publication.signed_file = signed_file
+        # # Update the pub RDF to the signed one
+        # publication.rdf = ConjunctiveGraph()
+        # publication.rdf.parse(signed_file, format="trig")
+        # publication.source_uri = publication.get_source_uri_from_graph
         log.info(f"Signed {publication.source_uri} in {signed_file}")
         return publication
 

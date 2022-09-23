@@ -346,13 +346,22 @@ class Nanopublication:
                 (DUMMY_NAMESPACE[""], NPX.introduces, introduces_concept)
             )
 
+
+    def update_from_signed(self, signed_filepath: str) -> None:
+        """Update the pub RDF to the signed one"""
+        self._signed_file = signed_filepath
+        self._rdf = ConjunctiveGraph()
+        self._rdf.parse(signed_filepath, format="trig")
+        self._source_uri = self.get_source_uri_from_graph
+        self.head = Graph(self._rdf.store, DUMMY_NAMESPACE.Head)
+        self.assertion = Graph(self._rdf.store, DUMMY_NAMESPACE.assertion)
+        self.provenance = Graph(self._rdf.store, DUMMY_NAMESPACE.provenance)
+        self.pubinfo = Graph(self._rdf.store, DUMMY_NAMESPACE.pubInfo)
+
+
     @property
     def rdf(self):
         return self._rdf
-
-    @rdf.setter
-    def rdf(self, value):
-        self._rdf = value
 
     # @property
     # def assertion(self):
@@ -412,17 +421,17 @@ class Nanopublication:
             raise ValueError("Nanopub introduces multiple concepts")
 
     @property
-    def get_source_uri_from_graph(self):
+    def get_source_uri_from_graph(self) -> str:
         """Get the source URI of the nanopublication from the header.
 
         This is usually something like:
         http://purl.org/np/RAnksi2yDP7jpe7F6BwWCpMOmzBEcUImkAKUeKEY_2Yus
         """
-        return list(
-            self.head.subjects(
+        return str(list(
+            self._rdf.subjects(
                 predicate=rdflib.RDF.type, object=NP.Nanopublication
             )
-        )[0]
+        )[0])
 
     @property
     def signed_with_public_key(self):
