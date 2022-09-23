@@ -4,19 +4,16 @@ This module holds code for representing the RDF of nanopublications, as well as 
 make handling RDF easier.
 """
 import warnings
-from copy import deepcopy
 from datetime import datetime
-from urllib.parse import urldefrag
 
 import rdflib
-from rdflib import Graph, Literal, Namespace, URIRef, ConjunctiveGraph, BNode
-from rdflib.namespace import DC, DCTERMS, PROV, RDF, RDFS, VOID, XSD, FOAF
+from rdflib import BNode, ConjunctiveGraph, Graph, URIRef
+from rdflib.namespace import DC, DCTERMS, FOAF, PROV, RDF, XSD
 
-from nanopub import namespaces, profile
 from nanopub.definitions import DUMMY_NAMESPACE
-from nanopub.profile import Profile
-from nanopub.namespaces import HYCL, NP, NPX, PAV, ORCID, NTEMPLATE
+from nanopub.namespaces import HYCL, NP, NPX, NTEMPLATE, ORCID, PAV
 from nanopub.nanopub_config import NanopubConfig
+from nanopub.profile import Profile
 
 
 class Nanopublication:

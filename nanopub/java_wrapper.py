@@ -23,7 +23,7 @@ class JavaWrapper:
 
     def __init__(
             self,
-            use_test_server: bool =False,
+            use_test_server: bool = False,
             explicit_private_key: str = None
         ):
         """Construct JavaWrapper.
@@ -61,7 +61,6 @@ class JavaWrapper:
         self._run_command(f'{NANOPUB_JAVA_SCRIPT} sign {unsigned_file} {args}')
         return self._get_signed_file(unsigned_file)
 
-
     # Implement sign/publish in python:
     # 1. Use trusty-uri lib to get the trusty URI
     # 2. Replace the temp nanopub URIs in the graph by the generated trusty URI
@@ -72,11 +71,10 @@ class JavaWrapper:
     # post.setHeader("Content-Type", RDFFormat.TRIG.getDefaultMIMEType());
 
     def publish(self, signed: str):
-        """ Publish.
+        """Publish.
 
         Publish the signed nanopub to the nanopub server. Publishing to the real server depends
         on nanopub-java, for the test server we do a simple POST request.
-
         TODO: Use nanopub-java for publishing to test once it supports it.
         """
         args = ''

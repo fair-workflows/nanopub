@@ -2,16 +2,16 @@
 """This module includes a client for the nanopub server.
 """
 
-from typing import List, Union
+from typing import List
 
-from rdflib import Graph, Literal, Namespace, URIRef, ConjunctiveGraph, BNode
-from rdflib.namespace import DC, DCTERMS, PROV, RDF, RDFS, VOID, XSD
+from rdflib import Literal, URIRef
+from rdflib.namespace import DC, DCTERMS, RDF, RDFS, XSD
 
 from nanopub.definitions import DUMMY_NAMESPACE, DUMMY_URI
-from nanopub.profile import Profile
-from nanopub.nanopublication import Nanopublication
-from nanopub.namespaces import HYCL, NP, NPX, PAV, ORCID, NTEMPLATE
+from nanopub.namespaces import NPX, PAV
 from nanopub.nanopub_config import NanopubConfig
+from nanopub.nanopublication import Nanopublication
+from nanopub.profile import Profile
 
 
 class NanopubIndex(Nanopublication):

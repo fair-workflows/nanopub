@@ -4,9 +4,9 @@ from unittest import mock
 import pytest
 import rdflib
 
-from tests.conftest import skip_if_nanopub_server_unavailable
 from nanopub import NanopubClient, Publication, namespaces
 from nanopub.definitions import TEST_RESOURCES_FILEPATH
+from tests.conftest import skip_if_nanopub_server_unavailable
 
 client = NanopubClient(use_test_server=True)
 

@@ -1,15 +1,11 @@
-import warnings
-from unittest import mock
-from pathlib import Path
 import os
 import tempfile
 
-import pytest
-import rdflib
-from rdflib import BNode, Graph, Literal, URIRef
+from rdflib import BNode, Graph, Literal
 
-from nanopub import NanopubClient, namespaces, NanopubConfig
+from nanopub import NanopubClient, NanopubConfig, namespaces
 from nanopub.definitions import TEST_RESOURCES_FILEPATH
+
 # from tests.conftest import skip_if_nanopub_server_unavailable
 
 temp_profile_path = os.path.join(tempfile.mkdtemp(), "profile.yml")
@@ -31,7 +27,7 @@ client = NanopubClient(
     profile_path=temp_profile_path,
     sign_explicit_private_key=True,
     nanopub_config=NanopubConfig(
-    	add_prov_generated_time=False,
+        add_prov_generated_time=False,
         add_pubinfo_generated_time=False,
         attribute_assertion_to_profile=True,
         attribute_publication_to_profile=True,

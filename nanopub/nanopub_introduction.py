@@ -2,15 +2,15 @@
 """This module includes a client for the nanopub server.
 """
 
-from rdflib import Graph, Literal, Namespace, URIRef, ConjunctiveGraph, BNode
-from rdflib.namespace import DC, DCTERMS, PROV, RDF, RDFS, VOID, XSD, FOAF
 from Crypto.PublicKey import RSA
+from rdflib import Literal, URIRef
+from rdflib.namespace import FOAF
 
-from nanopub.definitions import log, DUMMY_NAMESPACE
-from nanopub.profile import Profile
-from nanopub.nanopublication import Nanopublication
+from nanopub.definitions import DUMMY_NAMESPACE, log
 from nanopub.namespaces import NPX
 from nanopub.nanopub_config import NanopubConfig
+from nanopub.nanopublication import Nanopublication
+from nanopub.profile import Profile
 
 
 class NanopubIntroduction(Nanopublication):
@@ -74,5 +74,5 @@ class NanopubIntroduction(Nanopublication):
         public_key_file = open(self.profile.public_key, "w")
         public_key_file.write(public_key_str)
         public_key_file.close()
-        log.info(f"Public/private RSA key pair has been generated")
+        log.info(f"Public/private RSA key pair has been generated for {self.profile.orcid_id}")
         return public_key_str

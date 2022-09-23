@@ -10,18 +10,17 @@ from typing import List, Tuple, Union
 
 import rdflib
 import requests
-from rdflib import ConjunctiveGraph
-from rdflib.namespace import DC, DCTERMS, RDF, RDFS, XSD
 
 from nanopub import namespaces
-from nanopub.definitions import DUMMY_NANOPUB_URI, log, MAX_NP_PER_INDEX, MAX_TRIPLES_PER_NANOPUB
+from nanopub.definitions import DUMMY_NANOPUB_URI, MAX_NP_PER_INDEX, MAX_TRIPLES_PER_NANOPUB, log
 from nanopub.java_wrapper import JavaWrapper
+from nanopub.nanopub_config import NanopubConfig
 from nanopub.nanopub_index import NanopubIndex
+from nanopub.nanopub_introduction import NanopubIntroduction
+from nanopub.nanopublication import Nanopublication
 from nanopub.profile import get_profile
 from nanopub.publication import Publication
-from nanopub.nanopublication import Nanopublication
-from nanopub.nanopub_config import NanopubConfig
-from nanopub.nanopub_introduction import NanopubIntroduction
+
 # from nanopub import NanopubConfig, Nanopublication, NanopubIndex, Profile
 
 NANOPUB_GRLC_URLS = [
@@ -80,14 +79,14 @@ class NanopubClient:
         )
 
 
-    ### CREATE AND PUBLISH NANOPUBS
+    # CREATE AND PUBLISH NANOPUBS
 
     def create_nanopub(
         self,
         assertion: rdflib.Graph = rdflib.Graph(),
         pubinfo: rdflib.Graph = rdflib.Graph(),
         provenance: rdflib.Graph = rdflib.Graph(),
-        nanopub_config: NanopubConfig=None,
+        nanopub_config: NanopubConfig = None,
     ) -> Nanopublication:
         if not nanopub_config:
             nanopub_config = self.nanopub_config
@@ -102,7 +101,7 @@ class NanopubClient:
         )
 
 
-    def sign(self, publication: Union[Publication,Nanopublication]):
+    def sign(self, publication: Union[Publication, Nanopublication]):
         """Sign a Publication object.
 
         Sign Publication object. It uses nanopub_java commandline tool to
@@ -139,7 +138,6 @@ class NanopubClient:
         return publication
 
 
-    # TODO: keep?
     def publish_signed(self, signed_path: str):
         """Publish a signed publication file.
 
@@ -149,7 +147,6 @@ class NanopubClient:
         Returns:
             dict of str: Publication info with: 'nanopub_uri': the URI of the published
             nanopublication, 'concept_uri': the URI of the introduced concept (if applicable)
-
         """
         nanopub_uri = self.java_wrapper.publish(signed_path)
 
@@ -159,7 +156,7 @@ class NanopubClient:
         return publication_info
 
 
-    def publish(self, publication: Union[Publication,Nanopublication]):
+    def publish(self, publication: Union[Publication, Nanopublication]):
         """Publish a Publication object.
 
         Publish Publication object to the nanopub server. It uses nanopub_java commandline tool to
@@ -310,7 +307,7 @@ class NanopubClient:
             nanopub_config = self.nanopub_config
         pub_list = []
         for i in range(0, len(np_list), MAX_NP_PER_INDEX):
-            np_chunk = np_list[i:i+MAX_NP_PER_INDEX]
+            np_chunk = np_list[i:i + MAX_NP_PER_INDEX]
             pub = NanopubIndex(
                 np_chunk,
                 title,
@@ -383,7 +380,7 @@ class NanopubClient:
 
 
 
-    ### FIND NANOPUBS
+    # FIND NANOPUBS
 
     def find_nanopubs_with_text(
         self, text: str, pubkey: str = None, filter_retracted: bool = True

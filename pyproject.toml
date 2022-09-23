@@ -83,7 +83,6 @@ path = "nanopub/_version.py"
 #   "bin/*",
 #   "lib/*",
 # ]
-
 # https://hatch.pypa.io/dev/config/build/#forced-inclusion
 # [tool.hatch.build.targets.wheel.force-include]
 # "lib" = "lib"
@@ -91,29 +90,17 @@ path = "nanopub/_version.py"
 # [tool.hatch.build.targets.wheel.shared-data]
 # "lib" = "lib"
 # "bin" = "bin"
-# shared-data = [
-#     "lib/nanopub-1.33-jar-with-dependencies.jar",
-#     'bin/nanopub-java',
-#     'bin/nanopub-java.bat'
-# ]
-
-# https://hatch.pypa.io/dev/plugins/builder/wheel/
-# [tool.hatch.build.targets.wheel]
-# shared-data = [
-#     "lib/nanopub-1.33-jar-with-dependencies.jar",
-#     'bin/nanopub-java',
-#     'bin/nanopub-java.bat'
-# ]
 # data_files=[
 #     ('lib', ['lib/nanopub-1.33-jar-with-dependencies.jar']),
 #     ('bin', ['bin/nanopub-java', 'bin/nanopub-java.bat'])
 # ],
 
+
 [tool.isort]
 line_length = 120
-profile = "black"
 skip = ["nanopub/__init__.py"]
-# known_third_party = ["nanopub"]
+# profile = "black"
+# known_third_party = ["nanopub", "trusty_uri"]
 
 
 [tool.black]
@@ -129,6 +116,7 @@ max-line-length = 100
 per-file-ignores = [
     '__init__.py:F401',
 ]
+# ignore = ["E203", "E501", "W503", "E303"]
 
 
 [tool.mypy]

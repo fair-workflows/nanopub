@@ -3,9 +3,9 @@ from pathlib import Path
 
 import pytest
 
-from tests.conftest import skip_if_nanopub_server_unavailable
 from nanopub.definitions import TEST_RESOURCES_FILEPATH
 from nanopub.java_wrapper import JavaWrapper
+from tests.conftest import skip_if_nanopub_server_unavailable
 
 NANOPUB_SAMPLE_SIGNED = TEST_RESOURCES_FILEPATH / 'nanopub_sample_signed.trig'
 NANOPUB_SAMPLE_UNSIGNED = TEST_RESOURCES_FILEPATH / 'nanopub_sample_unsigned.trig'

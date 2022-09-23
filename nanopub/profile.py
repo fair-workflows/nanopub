@@ -16,7 +16,6 @@ class ProfileError(RuntimeError):
     """
     Error to be raised if profile is not setup correctly.
     """
-    pass
 
 
 # TODO: from dataclasses import dataclass
