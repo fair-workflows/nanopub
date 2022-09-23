@@ -4,10 +4,11 @@
 
 from rdflib import Graph, Literal, Namespace, URIRef, ConjunctiveGraph, BNode
 from rdflib.namespace import DC, DCTERMS, PROV, RDF, RDFS, VOID, XSD, FOAF
-from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.primitives import serialization
+# from cryptography.hazmat.primitives.asymmetric import rsa
+# from cryptography.hazmat.primitives import serialization
+from Crypto.PublicKey import RSA
 
-from nanopub.definitions import log
+from nanopub.definitions import log, DUMMY_NAMESPACE
 from nanopub.profile import Profile
 from nanopub.nanopublication import Nanopublication
 from nanopub.namespaces import NPX
@@ -47,7 +48,8 @@ class NanopubIntroduction(Nanopublication):
             log.info("Generating private/public pair keys")
             public_key = self._generate_keys()
 
-        key_declaration = BNode('keyDeclaration')
+        # key_declaration = BNode('keyDeclaration')
+        key_declaration = DUMMY_NAMESPACE.keyDeclaration
         orcid_node = URIRef(self.profile.orcid_id)
 
         self.assertion.add((key_declaration, NPX.declaredBy, orcid_node))
@@ -57,26 +59,22 @@ class NanopubIntroduction(Nanopublication):
 
 
     def _generate_keys(self) -> str:
-        # Generate private/public RSA key pair
-        private_key = rsa.generate_private_key(
-            public_exponent=65537,
-            key_size=2048
-        )
+        """Generate private/public RSA key pair at the path specified in the profile.yml, to be used to sign nanopubs"""
+        key = RSA.generate(2048)
+        private_key_str = key.export_key('PEM', pkcs=8).decode('utf-8')
+        public_key_str = key.publickey().export_key().decode('utf-8')
 
-        unencrypted_pem_private_key = private_key.private_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PrivateFormat.TraditionalOpenSSL,
-            encryption_algorithm=serialization.NoEncryption()
-        )
-        pem_public_key = private_key.public_key().public_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PublicFormat.SubjectPublicKeyInfo
-        )
+        # Format private and public keys to remove header/footer and all newlines, as this is required by nanopub-java
+        private_key_str = private_key_str.replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "").replace("\n", "").strip()
+        public_key_str = public_key_str.replace("-----BEGIN PUBLIC KEY-----", "").replace("-----END PUBLIC KEY-----", "").replace("\n", "").strip()
+
         # Store key pair
         private_key_file = open(self.profile.private_key, "w")
-        private_key_file.write(unencrypted_pem_private_key.decode())
+        private_key_file.write(private_key_str)
         private_key_file.close()
+
         public_key_file = open(self.profile.public_key, "w")
-        public_key_file.write(pem_public_key.decode())
+        public_key_file.write(public_key_str)
         public_key_file.close()
-        return pem_public_key.decode()
+        log.info(f"Public/private RSA key pair has been generated")
+        return public_key_str

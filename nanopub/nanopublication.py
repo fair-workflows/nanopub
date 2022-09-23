@@ -98,7 +98,10 @@ class Nanopublication:
             self.config.add_pubinfo_generated_time,
             self.config.add_prov_generated_time
         )
-        self._handle_assertion_attributed_to(self.config.assertion_attributed_to)
+        assertion_attributed_to = self.config.assertion_attributed_to
+        if self.config.attribute_assertion_to_profile:
+            assertion_attributed_to = rdflib.URIRef(self.profile.orcid_id)
+        self._handle_assertion_attributed_to(assertion_attributed_to)
         self._handle_publication_attributed_to(
             self.config.attribute_publication_to_profile,
             self.config.publication_attributed_to
