@@ -10,6 +10,7 @@ from typing import List, Tuple, Union
 
 import rdflib
 import requests
+from rdflib import ConjunctiveGraph
 from rdflib.namespace import DC, DCTERMS, RDF, RDFS, XSD
 
 from nanopub import namespaces
@@ -113,22 +114,26 @@ class NanopubClient:
         Returns:
             dict of str: Publication info with: 'nanopub_uri': the URI of the signed
             nanopublication, 'concept_uri': the URI of the introduced concept (if applicable)
-
         """
+        if len(publication.rdf) > MAX_TRIPLES_PER_NANOPUB:
+            raise ValueError(f"Nanopublication contains {len(publication.rdf)} triples, which is more than the {MAX_TRIPLES_PER_NANOPUB} authorized")
         # Create a temporary dir for files created during serializing and signing
         tempdir = tempfile.mkdtemp()
 
         # Convert nanopub rdf to trig
         fname = "temp.trig"
         unsigned_fname = os.path.join(tempdir, fname)
-        if len(publication.rdf) > MAX_TRIPLES_PER_NANOPUB:
-            raise ValueError(f"Nanopublication contains {len(publication.rdf)} triples, which is more than the {MAX_TRIPLES_PER_NANOPUB} authorized")
         publication.rdf.serialize(destination=unsigned_fname, format="trig")
 
         # Sign the nanopub
         signed_file = self.java_wrapper.sign(unsigned_fname)
+
         publication.signed_file = signed_file
-        log.info(f"Signed to {signed_file}")
+        # Update the pub RDF to the signed one
+        publication.rdf = ConjunctiveGraph()
+        publication.rdf.parse(signed_file, format="trig")
+        publication.source_uri = publication.get_source_uri_from_graph
+        log.info(f"Signed {publication.source_uri} in {signed_file}")
         return publication
 
 

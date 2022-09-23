@@ -350,6 +350,10 @@ class Nanopublication:
     def rdf(self):
         return self._rdf
 
+    @rdf.setter
+    def rdf(self, value):
+        self._rdf = value
+
     # @property
     # def assertion(self):
     #     return self._assertion
@@ -408,8 +412,8 @@ class Nanopublication:
             raise ValueError("Nanopub introduces multiple concepts")
 
     @property
-    def _self_ref(self):
-        """Get the self reference (i.e. 'this') from the header.
+    def get_source_uri_from_graph(self):
+        """Get the source URI of the nanopublication from the header.
 
         This is usually something like:
         http://purl.org/np/RAnksi2yDP7jpe7F6BwWCpMOmzBEcUImkAKUeKEY_2Yus
@@ -425,7 +429,7 @@ class Nanopublication:
         if not self._source_uri:
             return None
         public_keys = list(
-            self.pubinfo.objects(self._self_ref + "#sig", NPX.hasPublicKey)
+            self.pubinfo.objects(self.get_source_uri_from_graph + "#sig", NPX.hasPublicKey)
         )
         if len(public_keys) > 0:
             public_key = str(public_keys[0])

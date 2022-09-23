@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import skip_if_nanopub_server_unavailable
+from tests.conftest import skip_if_nanopub_server_unavailable
 from nanopub.definitions import TEST_RESOURCES_FILEPATH
 from nanopub.java_wrapper import JavaWrapper
 

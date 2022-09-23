@@ -4,7 +4,7 @@ from unittest import mock
 import pytest
 import rdflib
 
-from conftest import skip_if_nanopub_server_unavailable
+from tests.conftest import skip_if_nanopub_server_unavailable
 from nanopub import NanopubClient, Publication, namespaces
 from nanopub.definitions import TEST_RESOURCES_FILEPATH
 
@@ -273,7 +273,7 @@ class TestNanopubClient:
             introduces_concept=test_concept,
         )
         pubinfo = client.publish(nanopub)
-        assert pubinfo.nanopub_uri == test_published_uri
+        assert pubinfo.source_uri == test_published_uri
         assert pubinfo.concept_uri == expected_concept_uri
 
     def test_assertion_rdf_not_mutated(self):
