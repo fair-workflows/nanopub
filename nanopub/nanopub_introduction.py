@@ -4,8 +4,6 @@
 
 from rdflib import Graph, Literal, Namespace, URIRef, ConjunctiveGraph, BNode
 from rdflib.namespace import DC, DCTERMS, PROV, RDF, RDFS, VOID, XSD, FOAF
-# from cryptography.hazmat.primitives.asymmetric import rsa
-# from cryptography.hazmat.primitives import serialization
 from Crypto.PublicKey import RSA
 
 from nanopub.definitions import log, DUMMY_NAMESPACE

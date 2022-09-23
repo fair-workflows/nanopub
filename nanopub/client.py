@@ -13,7 +13,7 @@ import requests
 from rdflib.namespace import DC, DCTERMS, RDF, RDFS, XSD
 
 from nanopub import namespaces
-from nanopub.definitions import DUMMY_NANOPUB_URI, log, MAX_TRIPLES_PER_NANOPUB
+from nanopub.definitions import DUMMY_NANOPUB_URI, log, MAX_NP_PER_INDEX, MAX_TRIPLES_PER_NANOPUB
 from nanopub.java_wrapper import JavaWrapper
 from nanopub.nanopub_index import NanopubIndex
 from nanopub.profile import get_profile
@@ -121,6 +121,8 @@ class NanopubClient:
         # Convert nanopub rdf to trig
         fname = "temp.trig"
         unsigned_fname = os.path.join(tempdir, fname)
+        if len(publication.rdf) > MAX_TRIPLES_PER_NANOPUB:
+            raise ValueError(f"Nanopublication contains {len(publication.rdf)} triples, which is more than the {MAX_TRIPLES_PER_NANOPUB} authorized")
         publication.rdf.serialize(destination=unsigned_fname, format="trig")
 
         # Sign the nanopub
@@ -300,8 +302,8 @@ class NanopubClient:
         if not nanopub_config:
             nanopub_config = self.nanopub_config
         pub_list = []
-        for i in range(0, len(np_list), MAX_TRIPLES_PER_NANOPUB):
-            np_chunk = np_list[i:i+MAX_TRIPLES_PER_NANOPUB]
+        for i in range(0, len(np_list), MAX_NP_PER_INDEX):
+            np_chunk = np_list[i:i+MAX_NP_PER_INDEX]
             pub = NanopubIndex(
                 np_chunk,
                 title,

@@ -62,7 +62,7 @@ class NanopubIndex(Nanopublication):
         for creator in creators:
             self.pubinfo.add((DUMMY_URI, PAV.createdBy, URIRef(creator)))
         # TODO: use current time if not provided
-        # datetime.datetime.now().astimezone().replace(microsecond=0).isoformat()
+        # datetime.datetime.now().astimezone().replace(microsecond=0).isoformat() ?
         self.pubinfo.add(
             (
                 DUMMY_URI,

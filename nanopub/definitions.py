@@ -14,6 +14,7 @@ DUMMY_NANOPUB_URI = "http://purl.org/nanopub/temp/mynanopub"
 DUMMY_NAMESPACE = Namespace(DUMMY_NANOPUB_URI + "#")
 DUMMY_URI = DUMMY_NAMESPACE[""]
 
+MAX_NP_PER_INDEX = 1100
 MAX_TRIPLES_PER_NANOPUB = 1200
 
 log = logging.getLogger()
