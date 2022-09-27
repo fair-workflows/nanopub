@@ -12,10 +12,16 @@ authors:
     affiliation: "Netherlands eScience Center"
     family-names: Richardson
     given-names: Robin
+    orcid: "https://orcid.org/0000-0002-9984-2720"
   -
     affiliation: "Netherlands eScience Center"
     family-names: Smits
     given-names: Djura
+  -
+    affiliation: "Maastricht University"
+    family-names: Emonet
+    given-names: Vincent
+    orcid: "https://orcid.org/0000-0002-1501-1082"
 cff-version: "1.0.3"
 keywords:
   - "semantic"
@@ -25,5 +31,5 @@ keywords:
 license: "Apache-2.0"
 message: "If you use this software, please cite it using these metadata."
 title: "nanopub: A python library for searching, publishing and modifying nanopublications"
-version: "1.2.10"
-date-released: "2021-09-01"
+version: "1.2.11"
+date-released: "2022-09-27"
