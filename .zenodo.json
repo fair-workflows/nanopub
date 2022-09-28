@@ -11,6 +11,10 @@
         {
             "affiliation": "Netherlands eScience Center",
             "name": "Smits, Djura"
+        },
+        {
+            "affiliation": "Maastricht University",
+            "name": "Emonet, Vincent"
         }
     ],
     "description": "The nanopub python library provides a client for searching, publishing and modifying nanopublications.",
