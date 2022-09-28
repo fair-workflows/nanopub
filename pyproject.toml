@@ -103,18 +103,18 @@ skip = ["nanopub/__init__.py"]
 # known_third_party = ["nanopub", "trusty_uri"]
 
 
-[tool.black]
-color = true
-line-length = 120
-target-version = ['py310']
-skip-string-normalization = true
+[tool.coverage.run]
+source = ["project"]
+branch = true
 
+[tool.coverage.report]
+omit = ["nanopub/templates/*"]
 
 [tool.flake8]
 max-complexity = 10
 max-line-length = 100
 per-file-ignores = [
-    '__init__.py:F401',
+    "__init__.py:F401",
 ]
 # ignore = ["E203", "E501", "W503", "E303"]
 
@@ -129,6 +129,12 @@ show_column_numbers = true
 warn_no_return = false
 warn_unused_ignores = true
 
+
+[tool.black]
+color = true
+line-length = 120
+target-version = ['py310']
+skip-string-normalization = true
 
 
 

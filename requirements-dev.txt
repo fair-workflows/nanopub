@@ -1,8 +1,0 @@
-coveralls
-flake8
-flaky
-pytest
-pytest-cov
-recommonmark
-sphinx
-sphinx_rtd_theme
