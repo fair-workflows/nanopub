@@ -27,7 +27,7 @@ setup(
     description='Python client for Nanopub',
     long_description=open("README.md", "r").read(),
     long_description_content_type='text/markdown',
-    author='Robin Richardson, Djura Smits, Sven van den Burg',
+    author='Robin Richardson, Djura Smits, Sven van den Burg, Vincent Emonet',
     author_email='r.richardson@esciencecenter.nl',
     url='https://github.com/fair-workflows/nanopub/',
     install_requires=open("requirements.txt", "r").readlines(),
