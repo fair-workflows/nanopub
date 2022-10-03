@@ -15,8 +15,8 @@ from nanopub import namespaces
 from nanopub.definitions import DUMMY_NANOPUB_URI, MAX_NP_PER_INDEX, MAX_TRIPLES_PER_NANOPUB, log
 from nanopub.java_wrapper import JavaWrapper
 from nanopub.nanopub_config import NanopubConfig
-from nanopub.nanopub_index import NanopubIndex
-from nanopub.nanopub_introduction import NanopubIntroduction
+from nanopub.templates.nanopub_index import NanopubIndex
+from nanopub.templates.nanopub_introduction import NanopubIntroduction
 from nanopub.nanopublication import Nanopublication
 from nanopub.profile import get_profile
 from nanopub.publication import Publication
@@ -126,6 +126,10 @@ class NanopubClient:
 
         # Sign the nanopub
         signed_file = self.java_wrapper.sign(unsigned_fname)
+        signed_g = self.java_wrapper.add_signature(publication.rdf, self.profile)
+        print("SIGNED BY PY STARTS")
+        print(signed_g.serialize(format="trig"))
+        print("SIGNED BY PY ENDS, the next one printed has been generated with java")
 
         publication.update_from_signed(signed_file)
 

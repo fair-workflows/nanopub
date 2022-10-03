@@ -62,6 +62,16 @@ class Profile:
                                f'Maybe your nanopub profile was not set up yet or not set up '
                                f'correctly. \n{PROFILE_INSTRUCTIONS_MESSAGE}')
 
+    def get_private_key(self) -> str:
+        """Returns the user's private key."""
+        try:
+            with open(self.private_key, 'r') as f:
+                return f.read()
+        except FileNotFoundError:
+            raise ProfileError(f'Public key file {self.public_key} for nanopub not found.\n'
+                               f'Maybe your nanopub profile was not set up yet or not set up '
+                               f'correctly. \n{PROFILE_INSTRUCTIONS_MESSAGE}')
+
 
 _load_profile = yatiml.load_function(Profile)
 

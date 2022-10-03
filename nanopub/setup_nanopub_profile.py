@@ -34,6 +34,9 @@ def validate_orcid_id(ctx, param, orcid_id: str):
                          'looks like: https://orcid.org/0000-0000-0000-0000')
 
 
+# TODO: nanopub sign my_np.trig
+# nanopub profile (check if profile set, if not start setup_profile)
+
 @click.command(help='Interactive CLI to create a nanopub user profile. '
                     'A local version of the profile will be stored in the user config dir '
                     '(by default HOMEDIR/.nanopub/). '

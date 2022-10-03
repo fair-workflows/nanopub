@@ -33,6 +33,7 @@ dependencies = [
     "click >=7.1.2",
     "yatiml",
     "pycryptodome >=3.15.0",
+    "trustyuri@git+https://github.com/trustyuri/trustyuri-python.git@master"
 ]
 
 
@@ -76,6 +77,9 @@ Source = "https://github.com/fair-workflows/nanopub"
 
 [tool.hatch.version]
 path = "nanopub/_version.py"
+
+[tool.hatch.metadata]
+allow-direct-references = true
 
 # https://hatch.pypa.io/dev/config/build/#file-selection
 # [tool.hatch.build]
@@ -151,6 +155,7 @@ features = [
 
 # hatch run test
 [tool.hatch.envs.default.scripts]
+run = "./scripts/run.sh"
 test = "./scripts/test.sh"
 docs = "./scripts/docs-build.sh"
 format = "./scripts/format.sh"
