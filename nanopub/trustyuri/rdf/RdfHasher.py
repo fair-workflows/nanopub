@@ -7,8 +7,8 @@ from functools import cmp_to_key
 from nanopub.trustyuri.rdf.RdfPreprocessor import preprocess
 
 
-def normalize_quads(quads, hashstr=None):
-    quads = preprocess(quads, hashstr=hashstr)
+def normalize_quads(quads, hashstr=None, tmp_np_uri=None):
+    quads = preprocess(quads, hashstr=hashstr, tmp_np_uri=tmp_np_uri)
     comp = StatementComparator(hashstr)
     quads = sorted(quads, key=cmp_to_key(lambda q1, q2: comp.compare(q1, q2)))
     s = ""
@@ -26,8 +26,8 @@ def normalize_quads(quads, hashstr=None):
     return s
 
 
-def make_hash(quads, hashstr=None):
-    s = normalize_quads(quads, hashstr)
+def make_hash(quads, hashstr=None, tmp_np_uri=None):
+    s = normalize_quads(quads, hashstr, tmp_np_uri)
 
     # Uncomment next line to see what goes into the hash:
     #print "-----\n" + s + "-----\n"

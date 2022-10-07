@@ -126,7 +126,10 @@ class NanopubClient:
 
         # Sign the nanopub
         signed_file = self.java_wrapper.sign(unsigned_fname)
+
+        print("ADD_SIGNATURE STARTS")
         signed_g = self.java_wrapper.add_signature(publication.rdf, self.profile)
+
         print("SIGNED BY PY STARTS")
         print(signed_g.serialize(format="trig"))
         print("SIGNED BY PY ENDS, the next one printed has been generated with java")
@@ -371,6 +374,11 @@ class NanopubClient:
         """
         publication = self.fetch(uri)
         their_public_key = publication.signed_with_public_key
+        print("KEYS")
+        print(their_public_key)
+        print(self.profile.get_public_key())
+        if their_public_key != self.profile.get_public_key():
+            print("python cant compare 2 strings")
         if (
             their_public_key is not None
             and their_public_key != self.profile.get_public_key()

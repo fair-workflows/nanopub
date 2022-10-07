@@ -56,7 +56,7 @@ class Profile:
         """Returns the user's public key."""
         try:
             with open(self.public_key, 'r') as f:
-                return f.read()
+                return f.read().strip()
         except FileNotFoundError:
             raise ProfileError(f'Public key file {self.public_key} for nanopub not found.\n'
                                f'Maybe your nanopub profile was not set up yet or not set up '

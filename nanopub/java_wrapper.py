@@ -5,7 +5,7 @@ from typing import Union
 
 import rdflib
 import requests
-from rdflib import ConjunctiveGraph, Literal
+from rdflib import ConjunctiveGraph, Literal, URIRef
 # from trustyuri.rdf.RdfHasher import make_hash
 from nanopub.trustyuri.rdf import RdfHasher, RdfUtils
 from Crypto.Signature import PKCS1_v1_5
@@ -13,7 +13,7 @@ from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
 from base64 import decodebytes, encodebytes
 
-from nanopub.definitions import ROOT_FILEPATH, DUMMY_NAMESPACE, DUMMY_URI
+from nanopub.definitions import ROOT_FILEPATH, DUMMY_NAMESPACE, DUMMY_URI, FINAL_NANOPUB_URI
 from nanopub.namespaces import NPX
 from nanopub.profile import PROFILE_INSTRUCTIONS_MESSAGE, Profile
 
@@ -70,6 +70,7 @@ class JavaWrapper:
         return self._get_signed_file(unsigned_file)
 
 
+
     def add_signature(self, g: ConjunctiveGraph, profile: Profile) -> ConjunctiveGraph:
         """Implementation in python of the process to sign with the private key"""
         # TODO: Add signature triples
@@ -94,7 +95,16 @@ class JavaWrapper:
         # Normalize RDF
         # print("NORMED RDF STARTS")
         quads = RdfUtils.get_quads(g)
-        normed_rdf = RdfHasher.normalize_quads(quads)
+
+        # TODO: the disgusting rdflib warnings "does not look like a valid URI, trying to serialize this will break." shows up here
+        normed_rdf = RdfHasher.normalize_quads(
+            quads,
+            tmp_np_uri=str(DUMMY_NAMESPACE)
+        )
+
+        # normed_rdf = normed_rdf + '\n'
+
+
         print("NORMED RDF STARTS")
         print(normed_rdf)
         print("NORMED RDF END")
@@ -116,6 +126,19 @@ class JavaWrapper:
             DUMMY_NAMESPACE["pubInfo"],
         ))
 
+        quads = RdfUtils.get_quads(g)
+        trusty_artefact = RdfHasher.make_hash(
+            quads,
+            tmp_np_uri=str(DUMMY_NAMESPACE)
+        )
+        print(trusty_artefact)
+
+        g = self.replace_trusty_in_graph(trusty_artefact, g)
+
+        print("TRUSTY REPLACE IN PYTHON START")
+        print(g.serialize(format="trig"))
+        print("TRUSTY REPLACE IN PYTHON END")
+
         return g
 
         # signed_g = ConjunctiveGraph()
@@ -134,6 +157,33 @@ class JavaWrapper:
     # 4. Publish to one of the np servers: https://monitor.petapico.org/
     # post.setEntity(new StringEntity(nanopubString, "UTF-8"));
     # post.setHeader("Content-Type", RDFFormat.TRIG.getDefaultMIMEType());
+
+
+    def replace_trusty_in_graph(self, trusty_artefact: str, graph: ConjunctiveGraph):
+        # replace_trusty_in_graph()
+        np_uri = FINAL_NANOPUB_URI + trusty_artefact
+        # np_namespace = np_uri + "#"
+        print("BASE NP URI:", np_uri)
+        ns_len = len(str(DUMMY_NAMESPACE))-1
+
+        for s, p, o, c in graph.quads():
+            g = c.identifier
+            new_s = s
+            new_o = o
+            new_g = g
+            if isinstance(s, URIRef) and str(s).startswith(str(DUMMY_NAMESPACE)) :
+                new_s = URIRef(np_uri + str(s)[ns_len:])
+            if isinstance(o, URIRef) and str(o).startswith(str(DUMMY_NAMESPACE)) :
+                new_o = URIRef(np_uri + str(o)[ns_len:])
+            if isinstance(g, URIRef) and str(g).startswith(str(DUMMY_NAMESPACE)) :
+                new_g = URIRef(np_uri + str(g)[ns_len:])
+                # print("REALLY STOP")
+                # print("STOP JOKE", str(g), str(new_g))
+            graph.remove((s, p, o, g))
+            graph.add((new_s, p, new_o, new_g))
+            # print(str(new_g))
+        return graph
+
 
     def publish(self, signed: str):
         """Publish.
