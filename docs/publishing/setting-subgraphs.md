@@ -1,5 +1,5 @@
 # Setting publication info and provenance
-Here we show how you can control the publication info and provenance parts 
+Here we show how you can control the publication info and provenance parts
 of the nanopublication.
 
 ## Specifying where the nanopublication is derived from
@@ -19,7 +19,7 @@ publication = Publication.from_assertion(
 Note that ```derived_from``` may also be passed a list of URIs.
 
 The provenance part of the publication will denote:
-```
+```turtle
 @prefix sub: <http://purl.org/nanopub/temp/mynanopub#> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .

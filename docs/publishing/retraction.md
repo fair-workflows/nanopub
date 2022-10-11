@@ -13,7 +13,7 @@ View the full retraction nanopublication [here](http://purl.org/np/RAv75Xhhz5jv-
 
 The assertion states that the researcher (denoted by the ORCID iD from your profile)
 retracts the provided nanopublication:
-```
+```turtle
 @prefix npx: <http://purl.org/nanopub/x/> .
 @prefix sub: <http://purl.org/np/RAv75Xhhz5jv--Nnu9RDqIGy2xHr74REGC4vtOSxrwX4c#> .
 
@@ -22,11 +22,11 @@ sub:assertion {
 }
 ```
 By default nanopublications that have a valid retraction do not show up in search results.
-A valid retraction is a retraction that is signed with the same public key as 
+A valid retraction is a retraction that is signed with the same public key as
 the nanopublication that it retracts.
 
 ## Retracting a nanopublication that is not yours
-By default we do not retract nanopublications that are not yours (i.e. signed with another public key). 
+By default we do not retract nanopublications that are not yours (i.e. signed with another public key).
 If you try to do this it will trigger an AssertionError:
 ```python
 >>> from nanopub import NanopubClient
@@ -61,7 +61,7 @@ client.retract(not_my_nanopub_uri, force=True)
 ```
 
 ## Find retractions of a given nanopublication
-You can find out whether a given publication is retracted 
+You can find out whether a given publication is retracted
 and what the nanopublications are that retract it using `NanopubClient.find_retractions_of`:
 ```python
 >>> from nanopub import NanopubClient

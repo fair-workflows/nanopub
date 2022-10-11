@@ -14,25 +14,31 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.7
+
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install .
-          pip install -r requirements-dev.txt
+          pip install ".[test,doc,dev]"
+
       - name: Lint with flake8
         run: |
           flake8 . --count --show-source --statistics
+
       - name: Test with pytest - No RSA key tests
         run: |
            pytest --no_rsa_key -m 'no_rsa_key'
+
       - name: Setup nanopub profile (including RSA keys)
         run: |
-           setup_nanopub_profile --orcid_id https://orcid.org/1234-1234-1234-1234 --no-publish --name test --newkeys
+           np setup --orcid_id https://orcid.org/1234-1234-1234-1234 --no-publish --name test --newkeys
+
       - name: Test with pytest
         run: |
           pytest --cov
+
       - name: Publish coverage to Coveralls
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
@@ -40,7 +46,17 @@ jobs:
         run: |
           coverage xml
           coveralls
+
       - name: Build Sphinx docs
         run: |
           cd docs
           make html
+
+      - name: Deploy docs with mkdocs
+        uses: mhausenblas/mkdocs-deploy-gh-pages@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # CUSTOM_DOMAIN: optionaldomain.com
+          CONFIG_FILE: mkdocs.yml
+          EXTRA_PACKAGES: build-base
+          REQUIREMENTS: docs/requirements.txt

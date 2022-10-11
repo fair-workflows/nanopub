@@ -24,7 +24,7 @@ View the resulting nanopublication [here](http://purl.org/np/RA47eJP2UBJCWuJ324c
 The generated RDF makes use of the Hypotheses and Claims Ontology ([HYCL](http://purl.org/petapico/o/hycl))
 
 This is the assertion part of the nanopublication, denoting the statement:
-```
+```turtle
 @prefix hycl: <http://purl.org/petapico/o/hycl#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix sub: <http://purl.org/np/RA47eJP2UBJCWuJ324c6Qw0OwtCb8wCrprwSk39am7xck#> .
@@ -37,7 +37,7 @@ sub:assertion {
 
 The provenance part of the nanopublication denotes that the ORCID iD from the profile claimed the
 statement:
-```
+```turtle
 @prefix hycl: <http://purl.org/petapico/o/hycl#> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
 @prefix sub: <http://purl.org/np/RA47eJP2UBJCWuJ324c6Qw0OwtCb8wCrprwSk39am7xck#> .
@@ -50,7 +50,7 @@ sub:provenance {
     <https://orcid.org/0000-0000-0000-0000> hycl:claims sub:mystatement .
 }
 ```
- 
+
 ## A simple recipe for publishing RDF triples
 You can use `Publication` objects to easily publish nanopublications with your assertion 
 (think of the assertion as the content of your nanopublication).
@@ -59,7 +59,7 @@ This is a 3-step recipe that works for most cases:
  1) Construct a desired assertion using [`rdflib`](https://rdflib.readthedocs.io/en/stable/).
  2) Make a `Publication` object using the assertion, making use of `Publication.from_assertion()`.
  3) Publish the `Publication` object using `NanopubClient.publish()`.
- 
+
 Here is a minimal example:
 ```python
 >>> import rdflib
@@ -84,7 +84,7 @@ Published to http://purl.org/np/RAfk_zBYDerxd6ipfv8fAcQHEzgZcVylMTEkiLlMzsgwQ
 View the resulting nanopublication [here](http://purl.org/np/RAfk_zBYDerxd6ipfv8fAcQHEzgZcVylMTEkiLlMzsgwQ).
 
 This is the resulting assertion part of the nanopublication:
-```
+```turtle
 @prefix sub: <http://purl.org/np/RAfk_zBYDerxd6ipfv8fAcQHEzgZcVylMTEkiLlMzsgwQ#> .
 
 sub:assertion {
@@ -93,7 +93,7 @@ sub:assertion {
 ```
 
 The library automatically adds relevant RDF triples for the provenance part of the nanopublication:
-```
+```turtle
 @prefix prov: <http://www.w3.org/ns/prov#> .
 @prefix sub: <http://purl.org/np/RAfk_zBYDerxd6ipfv8fAcQHEzgZcVylMTEkiLlMzsgwQ#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -103,7 +103,7 @@ sub:provenance {
 }
 ```
 as well as for the publication info part of the nanopublication:
-```
+```turtle
 @prefix npx: <http://purl.org/nanopub/x/> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
 @prefix sub: <http://purl.org/np/RAfk_zBYDerxd6ipfv8fAcQHEzgZcVylMTEkiLlMzsgwQ#> .

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "nanopub"
-description = "Python client for Nanopub"
+description = "Python client for Nanopublications"
 readme = "README.md"
 requires-python = ">=3.6"
 license = { file = "LICENSE" }
@@ -34,7 +34,7 @@ dependencies = [
     "click >=7.1.2",
     "yatiml",
     "pycryptodome >=3.15.0",
-    "trustyuri@git+https://github.com/trustyuri/trustyuri-python.git@master"
+    # "trustyuri@git+https://github.com/trustyuri/trustyuri-python.git@master"
 ]
 
 [project.scripts]
@@ -53,6 +53,12 @@ test = [
     "flaky",
 ]
 doc = [
+    "mkdocs >=1.1.2,<2.0.0",
+    "mkdocs-material >=8.1.4,<9.0.0",
+    "mkdocstrings[python]",
+    "mdx-include >=1.4.1,<2.0.0",
+    "mkdocs-markdownextradata-plugin >=0.1.7,<0.3.0",
+
     "recommonmark",
     "sphinx",
     "sphinx_rtd_theme",
@@ -81,8 +87,8 @@ Source = "https://github.com/fair-workflows/nanopub"
 [tool.hatch.version]
 path = "nanopub/_version.py"
 
-[tool.hatch.metadata]
-allow-direct-references = true
+# [tool.hatch.metadata]
+# allow-direct-references = true
 
 # https://hatch.pypa.io/dev/config/build/#file-selection
 # [tool.hatch.build]
@@ -160,7 +166,8 @@ features = [
 [tool.hatch.envs.default.scripts]
 run = "./scripts/run.sh"
 test = "./scripts/test.sh"
-docs = "./scripts/docs-build.sh"
+docs = "./scripts/docs-serve.sh"
+docs-sphinx = "./scripts/docs-sphinx.sh"
 format = "./scripts/format.sh"
 lint = "./scripts/lint.sh"
 

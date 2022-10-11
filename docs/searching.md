@@ -3,7 +3,7 @@ The `NanopubClient` provides methods for searching the nanopub server. It provid
 an (uncomplete) mapping to the [nanopub server grlc endpoint](http://grlc.nanopubs.lod.labs.vu.nl/api/local/local).
 
 ## Text search
-Search for all nanopublications containing some text using 
+Search for all nanopublications containing some text using
 `NanopubClient.find_nanopubs_with_text()`
 ```python
 from nanopub import NanopubClient
@@ -23,7 +23,7 @@ results = client.find_nanopubs_with_pattern(
 ```
 
 ## Search on introduced concept
-Search for any nanopublications that introduce a concept of the given type, that contain 
+Search for any nanopublications that introduce a concept of the given type, that contain
 text with the given search term.
 ```python
 from nanopub import NanopubClient
@@ -55,8 +55,8 @@ Example results (from `NanopubClient.find_nanopubs_with_text('fair')`):
 
 ## Returning retracted publications in search
 By default nanopublications that have a valid retraction do not show up in search results.
-A valid retraction is a retraction that is signed with the same public key as 
-the nanopublication that it retracts. 
+A valid retraction is a retraction that is signed with the same public key as
+the nanopublication that it retracts.
 You can toggle this behavior with the `filter_retracted` parameter,
 here is an example with `NanopubClient.find_nanopubs_with_text`:
 ```python
@@ -69,7 +69,7 @@ results = client.find_nanopubs_with_text('fair', filter_retracted=False)
 ## Filtering search results for a particular publication key
 You can filter search results to publications that are signed with
 a specific publication key (effectively filtering on publications from a single author).
-You use the `pubkey` argument for that. 
+You use the `pubkey` argument for that.
 Here is an example with `NanopubClient.find_nanopubs_with_text`:
 ```python
 from nanopub import NanopubClient, profile

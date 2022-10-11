@@ -11,7 +11,7 @@ means of communicating scientific claims and results. Read more about them at [h
 ## Different elements of a nanopublication
 _From [nanopub.org](http://nanopub.org/wordpress/?page_id=65) documentation (2020/12/02)_
 
-![Schematic representation of a nanopub](../img/nanopub.png "Schematic representation of a nanopub")
+![Schematic representation of a nanopub](../assets/nanopub.png "Schematic representation of a nanopub")
 
 As can be seen in this image, a nanopublication has three basic elements:
 

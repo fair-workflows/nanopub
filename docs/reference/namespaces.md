@@ -1,0 +1,3 @@
+# Namespaces
+
+::: nanopub.namespaces
