@@ -27,9 +27,9 @@ jobs:
       #   run: |
       #     flake8 . --count --show-source --statistics
 
-      - name: Test with pytest - No RSA key tests
-        run: |
-           pytest --no_rsa_key -m 'no_rsa_key'
+      # - name: Test with pytest - No RSA key tests
+      #   run: |
+      #      pytest --no_rsa_key -m 'no_rsa_key'
 
       - name: Setup nanopub profile (including RSA keys)
         run: |
@@ -60,3 +60,8 @@ jobs:
           CONFIG_FILE: mkdocs.yml
           EXTRA_PACKAGES: build-base
           REQUIREMENTS: docs/requirements.txt
+
+      # - name: Deploy docs with mkdocs gh-deploy
+      #   run: mkdocs gh-deploy
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
