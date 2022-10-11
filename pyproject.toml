@@ -18,6 +18,7 @@ keywords = [
     "Nanopublication",
     "RDF",
     "Linked Data",
+    "Publishing"
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
