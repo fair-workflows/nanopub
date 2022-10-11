@@ -5,23 +5,9 @@ Install using pip:
 ```
 pip install nanopub
 ```
-## Nanopub-java dependency
-The ```nanopub``` library currently uses the [nanopub-java](https://github.com/Nanopublication/nanopub-java)
-tool for signing and publishing new nanopublications. This is automatically installed by the library.
-
-### Java
-If you want to publish nanopublications you need to have the java runtime environment installed,
-this might already be installed on your system. You can check this for unix:
-```
-java --version
-```
-Or [follow these instructions for windows](http://kb.mit.edu/confluence/pages/viewpage.action?pageId=6750761)
-
-### Installing java
-If java is not installed [follow these instructions](https://www.java.com/en/download/help/index_installing.html)
 
 ## Setup for users new to python
-We recommend using [anaconda](https://www.anaconda.com/products/individual) 
+We recommend using [anaconda](https://www.anaconda.com/products/individual)
 to install python and manage python dependencies
 
 ## Setup your profile
@@ -31,7 +17,7 @@ fetch and search functionality without a profile). This allows the nanopub serve
 
 Run the following interactive command:
 ```
-setup_nanopub_profile
+np setup
 ```
 This will setup the following:
 
@@ -50,7 +36,7 @@ the ORCID iD to automatically add as author to the provenance of any nanopublica
 using this library.
 
 ### Introductory nanopublication
-We encourage you to make use of `setup_nanopub_profile`'s option 
+We encourage you to make use of `np setup`'s option
 to publish your profile to the nanopub servers. This links your ORCID iD
 to your RSA key, thereby making all your publications linkable to you.
 Here is an [example introductory nanopublicaiton](http://purl.org/np/RAy1CYBfBYFd_TFI8Z_jr3taf6fB9u-grqsKyLzTmMvQI).
