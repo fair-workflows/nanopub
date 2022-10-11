@@ -31,10 +31,10 @@ class JavaWrapper:
     """
 
     def __init__(
-            self,
-            # use_test_server: bool = False,
-            private_key: str = None
-        ):
+        self,
+        # use_test_server: bool = False,
+        private_key: str = None
+    ):
         """Construct JavaWrapper.
 
         Args:

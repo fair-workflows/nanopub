@@ -32,6 +32,7 @@ def validate_orcid_id(ctx, param, orcid_id: str):
         raise ValueError('Your ORCID iD is not valid, please provide a valid ORCID iD that '
                          'looks like: https://orcid.org/0000-0000-0000-0000')
 
+
 @click.group()
 def cli():
     """Nanopub Command Line Interface"""
@@ -53,9 +54,9 @@ def profile():
 # nanopub profile (check if profile set, if not start setup_profile)
 
 @cli.command(help='Interactive CLI to create a nanopub user profile. '
-                    'A local version of the profile will be stored in the user config dir '
-                    '(by default HOMEDIR/.nanopub/). '
-                    'The profile will also be published to the nanopub servers.')
+                  'A local version of the profile will be stored in the user config dir '
+                  '(by default HOMEDIR/.nanopub/). '
+                  'The profile will also be published to the nanopub servers.')
 @click.option('--keypair', nargs=2, type=Path,
               help='Your RSA public and private keys with which your nanopubs will be signed',
               default=None)

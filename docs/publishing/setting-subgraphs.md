@@ -44,7 +44,7 @@ publication = Publication.from_assertion(
 ```
 
 The provenance part of the publication will denote:
-```
+```turtle
 @prefix : <http://purl.org/nanopub/temp/mynanopub#> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
 

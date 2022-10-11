@@ -12,9 +12,11 @@ def addhash(quads, hashstr):
         o = q[3]
         if isinstance(q[3], URIRef):
             o = transform(q[3], hashstr)
-        newquads.append((c, s, p, o));
+        newquads.append((c, s, p, o))
     return newquads
 
+
 def transform(uri, hashstr):
-    if uri is None: return None
+    if uri is None:
+        return None
     return URIRef(re.sub(" ", hashstr, str(uri)))

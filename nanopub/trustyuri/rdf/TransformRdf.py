@@ -20,6 +20,7 @@ def transform(args):
         outdir = os.path.abspath(os.path.join(str(filename), os.pardir))
         RdfTransformer.transform_to_file(cg, baseuri, outdir, filename)
 
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.ERROR)
     args = sys.argv

@@ -50,8 +50,8 @@ NP_URI = DUMMY_NAMESPACE[""]
 
 class NanopubClient:
     """
-    Provides utility functions for searching, creating and publishing RDF graphs
-    as assertions in a nanopublication.
+    Provides utility functions for searching, creating and publishing RDF
+    graphs as assertions in a nanopublication.
 
     Args:
         use_test_server (bool): Toggle using the test nanopub server.
@@ -117,8 +117,8 @@ class NanopubClient:
     def sign(self, publication: Union[Publication, Nanopub]):
         """Sign a Publication object.
 
-        Sign Publication object. It uses nanopub_java commandline tool to
-        sign the nanopublication RDF with the RSA key in the profile and then publish.
+        Sign Publication object. It uses nanopub_java commandline tool to sign
+        the nanopublication RDF with the RSA key in the profile and then publish.
 
         Args:
             publication (Publication): Publication object to sign.

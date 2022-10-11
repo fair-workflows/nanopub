@@ -36,7 +36,6 @@ def test_validate_orcid_id():
             validate_orcid_id(ctx=None, param=None, orcid_id=orcid_id)
 
 
-
 # def test_provided_keypair_copied_to_nanopub_dir(tmp_path: Path):
 #     mock_homedir = tmp_path / 'home'
 #     mock_otherdir = tmp_path / 'other'
@@ -112,4 +111,3 @@ def test_validate_orcid_id():
 
 #         assert new_public_keyfile.exists()
 #         assert new_private_keyfile.exists()
-

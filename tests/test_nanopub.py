@@ -12,6 +12,7 @@ client = NanopubClient(
     nanopub_config=default_config
 )
 
+
 class TestNanopublication:
 
     def test_nanopub_sign_uri(self):

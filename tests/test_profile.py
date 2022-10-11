@@ -60,23 +60,19 @@ def test_load_profile():
 
 def test_fail_loading_incomplete_profile(tmpdir):
     test_file = Path(tmpdir / 'profile.yml')
-    profile_yaml = f"""orcid_id: https://orcid.org/0000-0000-0000-0000
+    profile_yaml = """orcid_id: https://orcid.org/0000-0000-0000-0000
 name: Python Tests"""
     with open(test_file, "w") as f:
         f.write(profile_yaml)
 
     with pytest.raises(ProfileError):
-            load_profile(test_file)
+        load_profile(test_file)
 
 
 def test_profile_file_not_found(tmpdir):
     test_file = Path(tmpdir / 'profile.yml')
     with pytest.raises(ProfileError):
         load_profile(test_file)
-
-
-
-
 
 
 # def test_store_profile(tmpdir):

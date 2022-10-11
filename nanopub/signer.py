@@ -23,10 +23,10 @@ class Signer:
     """
 
     def __init__(
-            self,
-            profile: Profile,
-            use_server: str = NANOPUB_SERVER_LIST[0],
-        ):
+        self,
+        profile: Profile,
+        use_server: str = NANOPUB_SERVER_LIST[0],
+    ):
         """Construct JavaWrapper.
 
         Args:

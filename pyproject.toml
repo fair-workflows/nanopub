@@ -108,12 +108,18 @@ branch = true
 omit = ["nanopub/templates/*"]
 
 [tool.flake8]
-max-complexity = 10
-max-line-length = 100
+max-complexity = 15
+max-line-length = 120
 per-file-ignores = [
     "__init__.py:F401",
 ]
-# ignore = ["E203", "E501", "W503", "E303"]
+ignore = [
+    "E501", # line too long
+    "E303", # too many blank lines
+    "E301", # expected 1 blank lines found 0
+    "W503", # line break before binary operator
+]
+# ignore = ["E203", "W503"]
 
 
 [tool.mypy]

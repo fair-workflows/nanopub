@@ -7,8 +7,9 @@ from nanopub.trustyuri.TrustyUriResource import TrustyUriResource
 
 try:
     from urllib2 import urlopen
-except:
+except Exception:
     from urllib.request import urlopen
+
 
 def check(args):
     filename = args[0]
@@ -18,13 +19,14 @@ def check(args):
     module = ModuleDirectory.get_module(module_id)
     try:
         content = codecs.open(filename, 'r', 'utf-8').read()
-    except:
+    except Exception:
         content = urlopen(filename).read()
     resource = TrustyUriResource(filename, content, tail)
     if module.has_correct_hash(resource):
-        print ("Correct hash: " + tail)
+        print("Correct hash: " + tail)
     else:
-        print ("*** INCORRECT HASH ***")
+        print("*** INCORRECT HASH ***")
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.ERROR)

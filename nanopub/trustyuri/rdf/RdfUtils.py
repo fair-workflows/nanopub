@@ -5,22 +5,6 @@ from rdflib.term import BNode, URIRef
 from rdflib.util import guess_format
 
 
-def get_trustyuri_str(baseuri, hashstr, suffix=None):
-    # s = expand_baseuri(baseuri) + hashstr
-    # try:
-    #     # TODO: fix the horrible rdflib warnings due to the space in the URIRef
-    #     return URIRef(re.sub(baseuri, f"http://purl.org/np/ {suffix}", str(resource)))
-    # except:
-    #     return URIRef(re.sub(baseuri.decode('utf-8'), " ", str(uri)))
-    if not suffix is None:
-        suffix = suffix.decode('utf-8')
-        if suffix.startswith("_"):
-            # Make two underscores, as one underscore is reserved for blank nodes
-            s = s + "#_" + suffix
-        else:
-            s = s + "#" + suffix
-    return s
-
 def get_trustyuri(resource, baseuri, hashstr, bnodemap):
     if resource is None:
         return None
@@ -43,39 +27,50 @@ def get_trustyuri(resource, baseuri, hashstr, bnodemap):
     else:
         return None
 
+
 def get_suffix(plainuri, baseuri):
     p = get_str(plainuri)
     b = get_str(baseuri)
-    if (p == b): return None
-    if (p.startswith(b)): return p[len(b):].decode('utf-8')
+    if (p == b):
+        return None
+    if (p.startswith(b)):
+        return p[len(b):].decode('utf-8')
     return None
 
+
 def normalize(uri, hashstr):
-    if hashstr is None: return get_str(uri)
+    if hashstr is None:
+        return get_str(uri)
     try:
         return re.sub(hashstr, " ", str(uri))
-    except:
+    except Exception:
         return re.sub(hashstr.decode('utf-8'), " ", str(uri))
+
 
 def get_bnode_number(bnode, bnodemap):
     i = get_str(bnode)
     if i not in bnodemap.keys():
-        n = len(bnodemap)+1
+        n = len(bnodemap) + 1
         bnodemap[i] = n
     return bnodemap[i]
 
+
 def expand_baseuri(baseuri):
     s = get_str(baseuri).decode('utf-8')
-    if re.match(r'.*[A-Za-z0-9\-_]', s): s = s + "."
+    if re.match(r'.*[A-Za-z0-9\-_]', s):
+        s = s + "."
     return s
+
 
 def get_quads(conjunctivegraph):
     quads = []
     for s, p, o, c in conjunctivegraph.quads((None, None, None)):
         g = c.identifier
-        if not isinstance(g, URIRef): g = None
+        if not isinstance(g, URIRef):
+            g = None
         quads.append((g, s, p, o))
     return quads
+
 
 def get_conjunctivegraph(quads):
     cg = ConjunctiveGraph()
@@ -85,8 +80,27 @@ def get_conjunctivegraph(quads):
     cg.addN([(s, p, o, Graph(store=cg.store, identifier=c)) for (c, s, p, o) in quads])
     return cg
 
+
 def get_format(filename):
     return guess_format(filename, {'xml': 'trix', 'ttl': 'turtle', 'nq': 'nquads', 'nt': 'nt', 'rdf': 'xml'})
 
+
 def get_str(s):
     return s.encode('utf-8')
+
+
+# def get_trustyuri_str(baseuri, hashstr, suffix=None):
+#     # s = expand_baseuri(baseuri) + hashstr
+#     # try:
+#     #     # TODO: fix the horrible rdflib warnings due to the space in the URIRef
+#     #     return URIRef(re.sub(baseuri, f"http://purl.org/np/ {suffix}", str(resource)))
+#     # except:
+#     #     return URIRef(re.sub(baseuri.decode('utf-8'), " ", str(uri)))
+#     if suffix is not None:
+#         suffix = suffix.decode('utf-8')
+#         if suffix.startswith("_"):
+#             # Make two underscores, as one underscore is reserved for blank nodes
+#             s = s + "#_" + suffix
+#         else:
+#             s = s + "#" + suffix
+#     return s

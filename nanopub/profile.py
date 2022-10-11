@@ -35,8 +35,8 @@ class Profile:
             self,
             orcid_id: str,
             name: str,
-            private_key: Union[Path,str],
-            public_key: Optional[Union[Path,str]] = None,
+            private_key: Union[Path, str],
+            public_key: Optional[Union[Path, str]] = None,
             introduction_nanopub_uri: Optional[str] = None
     ) -> None:
         """Create a Profile."""
@@ -144,7 +144,6 @@ def load_profile(profile_path: Union[Path, str] = DEFAULT_PROFILE_PATH) -> Profi
         msg = (f'{e}\nYour nanopub profile has not been set up yet, or is not set up correctly.\n'
                f'{PROFILE_INSTRUCTIONS_MESSAGE}')
         raise ProfileError(msg)
-
 
 
 # TODO: fix for new Profile class

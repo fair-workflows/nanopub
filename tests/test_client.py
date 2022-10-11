@@ -233,7 +233,8 @@ class TestNanopubClient:
              {'np': 'test_nanopub_uri',
               'description': '',
               'date': '01-01-2001'})
-         ])
+        ]
+    )
     def test_parse_search_result(self, test_input, expected):
         assert client._parse_search_result(test_input) == expected
 
