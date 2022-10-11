@@ -1,5 +1,7 @@
 import re
+
 from rdflib.term import Literal
+
 
 class StatementComparator:
     def __init__(self, hashstr=None):

@@ -1,5 +1,9 @@
-import sys, os, re
+import os
+import re
+import sys
+
 from nanopub.trustyuri.file import FileHasher
+
 
 def process(args):
     filename = args[0]

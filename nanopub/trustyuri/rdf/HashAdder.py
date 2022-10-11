@@ -1,5 +1,7 @@
-from rdflib.term import URIRef
 import re
+
+from rdflib.term import URIRef
+
 
 def addhash(quads, hashstr):
     newquads = []

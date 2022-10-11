@@ -1,6 +1,8 @@
-from nanopub.trustyuri.TrustyUriModule import TrustyUriModule
-from nanopub.trustyuri.rdf import RdfHasher, RdfUtils
 from rdflib.graph import ConjunctiveGraph
+
+from nanopub.trustyuri.rdf import RdfHasher, RdfUtils
+from nanopub.trustyuri.TrustyUriModule import TrustyUriModule
+
 
 class RdfModule(TrustyUriModule):
     def module_id(self):

@@ -1,5 +1,7 @@
 import hashlib
+
 from nanopub.trustyuri import TrustyUriUtils
+
 
 def make_hash(content):
     try:

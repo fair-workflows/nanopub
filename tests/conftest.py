@@ -4,7 +4,7 @@ import tempfile
 import pytest
 import requests
 
-from nanopub import load_profile, NanopubConfig
+from nanopub import NanopubConfig, load_profile
 from nanopub.client import NANOPUB_TEST_GRLC_URL
 from nanopub.definitions import TEST_RESOURCES_FILEPATH
 from tests.java_wrapper import JavaWrapper

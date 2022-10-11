@@ -1,7 +1,12 @@
-import sys, logging, re, time
-from . import CheckFile
+import logging
+import re
+import sys
+import time
+
 from nanopub.trustyuri.file import ProcessFile
 from nanopub.trustyuri.rdf import TransformRdf
+
+from . import CheckFile
 
 logging.basicConfig(level=logging.ERROR)
 

@@ -1,4 +1,6 @@
-import re, base64
+import base64
+import re
+
 
 def get_trustyuri_tail(s):
     if not re.search(r'(.*[^A-Za-z0-9\-_]|)[A-Za-z0-9\-_]{25,}(\.[A-Za-z0-9\-_]{0,20})?', s):

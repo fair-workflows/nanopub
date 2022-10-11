@@ -7,9 +7,9 @@ from typing import Tuple, Union
 import click
 import rdflib
 
-from nanopub import NanopubClient, Publication, namespaces, load_profile
-from nanopub.definitions import USER_CONFIG_DIR, DEFAULT_PROFILE_PATH
-from nanopub.profile import Profile, ProfileError, store_profile, generate_keys
+from nanopub import NanopubClient, Publication, load_profile, namespaces
+from nanopub.definitions import DEFAULT_PROFILE_PATH, USER_CONFIG_DIR
+from nanopub.profile import Profile, ProfileError, generate_keys, store_profile
 
 PRIVATE_KEY_FILE = 'id_rsa'
 PUBLIC_KEY_FILE = 'id_rsa.pub'
@@ -35,7 +35,6 @@ def validate_orcid_id(ctx, param, orcid_id: str):
 @click.group()
 def cli():
     """Nanopub Command Line Interface"""
-    pass
 
 
 @cli.command(help='Get the current profile')

@@ -93,32 +93,10 @@ Source = "https://github.com/fair-workflows/nanopub"
 [tool.hatch.version]
 path = "nanopub/_version.py"
 
-# [tool.hatch.metadata]
-# allow-direct-references = true
-
-# https://hatch.pypa.io/dev/config/build/#file-selection
-# [tool.hatch.build]
-# artifacts = [
-#   "bin/*",
-#   "lib/*",
-# ]
-# https://hatch.pypa.io/dev/config/build/#forced-inclusion
-# [tool.hatch.build.targets.wheel.force-include]
-# "lib" = "lib"
-# "bin" = "bin"
-# [tool.hatch.build.targets.wheel.shared-data]
-# "lib" = "lib"
-# "bin" = "bin"
-# data_files=[
-#     ('lib', ['lib/nanopub-1.33-jar-with-dependencies.jar']),
-#     ('bin', ['bin/nanopub-java', 'bin/nanopub-java.bat'])
-# ],
-
-
 [tool.isort]
 line_length = 120
 skip = ["nanopub/__init__.py"]
-# profile = "black"
+profile = "black"
 # known_third_party = ["nanopub", "trusty_uri"]
 
 
@@ -224,3 +202,26 @@ markers = [
 #   "if __name__ == .__main__.:",
 #   "if TYPE_CHECKING:",
 # ]
+
+
+
+# [tool.hatch.metadata]
+# allow-direct-references = true
+
+# https://hatch.pypa.io/dev/config/build/#file-selection
+# [tool.hatch.build]
+# artifacts = [
+#   "bin/*",
+#   "lib/*",
+# ]
+# https://hatch.pypa.io/dev/config/build/#forced-inclusion
+# [tool.hatch.build.targets.wheel.force-include]
+# "lib" = "lib"
+# "bin" = "bin"
+# [tool.hatch.build.targets.wheel.shared-data]
+# "lib" = "lib"
+# "bin" = "bin"
+# data_files=[
+#     ('lib', ['lib/nanopub-1.33-jar-with-dependencies.jar']),
+#     ('bin', ['bin/nanopub-java', 'bin/nanopub-java.bat'])
+# ],

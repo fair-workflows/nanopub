@@ -1,7 +1,10 @@
-import sys, logging, codecs
-from nanopub.trustyuri import TrustyUriUtils
-from nanopub.trustyuri import ModuleDirectory
+import codecs
+import logging
+import sys
+
+from nanopub.trustyuri import ModuleDirectory, TrustyUriUtils
 from nanopub.trustyuri.TrustyUriResource import TrustyUriResource
+
 try:
     from urllib2 import urlopen
 except:

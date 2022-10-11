@@ -1,12 +1,11 @@
-import os
-import tempfile
 
 from rdflib import BNode, Graph, Literal
 
-from nanopub import NanopubClient, Nanopub, namespaces, load_profile
+from nanopub import Nanopub, namespaces
 from nanopub.definitions import NANOPUB_TEST_SERVER
 from nanopub.signer import Signer
-from tests.conftest import profile_test, default_config, java_wrap
+from tests.conftest import default_config, java_wrap, profile_test
+
 # from tests.conftest import skip_if_nanopub_server_unavailable
 
 # client = NanopubClient(

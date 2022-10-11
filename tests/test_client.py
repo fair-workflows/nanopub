@@ -3,11 +3,11 @@ from unittest import mock
 
 import pytest
 import rdflib
-from rdflib import Graph, URIRef, Literal
+from rdflib import Graph, Literal, URIRef
 
 from nanopub import NanopubClient, Publication, namespaces
 from nanopub.definitions import TEST_RESOURCES_FILEPATH
-from tests.conftest import skip_if_nanopub_server_unavailable, profile_test, java_wrap, default_config
+from tests.conftest import default_config, java_wrap, profile_test, skip_if_nanopub_server_unavailable
 
 client = NanopubClient(
     use_test_server=True,

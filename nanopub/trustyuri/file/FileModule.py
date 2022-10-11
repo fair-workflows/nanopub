@@ -1,5 +1,6 @@
-from nanopub.trustyuri.TrustyUriModule import TrustyUriModule
 from nanopub.trustyuri.file import FileHasher
+from nanopub.trustyuri.TrustyUriModule import TrustyUriModule
+
 
 class FileModule(TrustyUriModule):
     def module_id(self):

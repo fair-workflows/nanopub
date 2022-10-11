@@ -1,7 +1,9 @@
-from rdflib.term import URIRef, BNode
 import re
+
 from rdflib.graph import ConjunctiveGraph, Graph
+from rdflib.term import BNode, URIRef
 from rdflib.util import guess_format
+
 
 def get_trustyuri_str(baseuri, hashstr, suffix=None):
     # s = expand_baseuri(baseuri) + hashstr

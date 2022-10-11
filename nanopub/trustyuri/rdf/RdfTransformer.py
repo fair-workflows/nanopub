@@ -1,5 +1,8 @@
-import re, os
-from nanopub.trustyuri.rdf import RdfPreprocessor, RdfUtils, RdfHasher, HashAdder
+import os
+import re
+
+from nanopub.trustyuri.rdf import HashAdder, RdfHasher, RdfPreprocessor, RdfUtils
+
 
 def transform_to_file(conjgraph, baseuri, outdir, filename):
     quads = RdfUtils.get_quads(conjgraph)

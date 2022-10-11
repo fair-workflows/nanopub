@@ -9,18 +9,25 @@ import warnings
 from typing import List, Tuple, Union
 
 import rdflib
-from rdflib import ConjunctiveGraph
 import requests
+from rdflib import ConjunctiveGraph
 
 from nanopub import namespaces
-from nanopub.definitions import DUMMY_NANOPUB_URI, MAX_NP_PER_INDEX, MAX_TRIPLES_PER_NANOPUB, log, NANOPUB_TEST_SERVER, NANOPUB_SERVER_LIST
-from nanopub.nanopub_config import NanopubConfig
-from nanopub.templates.nanopub_index import NanopubIndex
-from nanopub.templates.nanopub_introduction import NanopubIntroduction
+from nanopub.definitions import (
+    DUMMY_NANOPUB_URI,
+    MAX_NP_PER_INDEX,
+    MAX_TRIPLES_PER_NANOPUB,
+    NANOPUB_SERVER_LIST,
+    NANOPUB_TEST_SERVER,
+    log,
+)
 from nanopub.nanopub import Nanopub
-from nanopub.profile import load_profile, Profile
+from nanopub.nanopub_config import NanopubConfig
+from nanopub.profile import Profile, load_profile
 from nanopub.publication import Publication
 from nanopub.signer import Signer
+from nanopub.templates.nanopub_index import NanopubIndex
+from nanopub.templates.nanopub_introduction import NanopubIntroduction
 
 # from nanopub import NanopubConfig, Nanopublication, NanopubIndex, Profile
 

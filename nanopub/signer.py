@@ -1,22 +1,19 @@
-import shutil
-import subprocess
-from pathlib import Path
-from typing import Union
 
-import rdflib
-import requests
-from rdflib import ConjunctiveGraph, Literal, URIRef, BNode, Namespace
-from nanopub.nanopub import Nanopub
-# from trustyuri.rdf.RdfHasher import make_hash
-from nanopub.trustyuri.rdf import RdfHasher, RdfUtils
-from Crypto.Signature import PKCS1_v1_5
-from Crypto.Hash import SHA256
-from Crypto.PublicKey import RSA
 from base64 import decodebytes, encodebytes
 
-from nanopub.definitions import log, ROOT_FILEPATH, DUMMY_NAMESPACE, DUMMY_URI, FINAL_NANOPUB_URI, NANOPUB_SERVER_LIST
+import requests
+from Crypto.Hash import SHA256
+from Crypto.PublicKey import RSA
+from Crypto.Signature import PKCS1_v1_5
+from rdflib import BNode, ConjunctiveGraph, Literal, Namespace, URIRef
+
+from nanopub.definitions import DUMMY_NAMESPACE, DUMMY_URI, FINAL_NANOPUB_URI, NANOPUB_SERVER_LIST, log
 from nanopub.namespaces import NPX
-from nanopub.profile import PROFILE_INSTRUCTIONS_MESSAGE, Profile
+from nanopub.nanopub import Nanopub
+from nanopub.profile import Profile
+
+# from trustyuri.rdf.RdfHasher import make_hash
+from nanopub.trustyuri.rdf import RdfHasher, RdfUtils
 from nanopub.trustyuri.rdf.RdfPreprocessor import transform
 
 

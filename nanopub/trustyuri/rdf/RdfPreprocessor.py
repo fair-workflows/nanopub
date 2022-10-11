@@ -1,7 +1,8 @@
-import re
 
-from rdflib.term import URIRef, BNode
+from rdflib.term import BNode, URIRef
+
 from nanopub.trustyuri.rdf import RdfUtils
+
 
 def preprocess(quads, hashstr=None, baseuri=None):
     newquads = []

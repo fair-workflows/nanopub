@@ -1,12 +1,12 @@
 # from functools import lru_cache
+from base64 import decodebytes
 from pathlib import Path
 from typing import Optional, Union
 
 import yatiml
 from Crypto.PublicKey import RSA
-from base64 import decodebytes
 
-from nanopub.definitions import DEFAULT_PROFILE_PATH, log, USER_CONFIG_DIR
+from nanopub.definitions import DEFAULT_PROFILE_PATH, USER_CONFIG_DIR, log
 
 PROFILE_INSTRUCTIONS_MESSAGE = '''
     Follow these instructions to correctly setup your nanopub profile:

@@ -1,24 +1,19 @@
-import shutil
 import os
-import tempfile
 import subprocess
+import tempfile
+from base64 import decodebytes
 from pathlib import Path
-from typing import Union
 
 import rdflib
-import requests
-from rdflib import ConjunctiveGraph, Literal, URIRef
-from nanopub.nanopub import Nanopub
-# from trustyuri.rdf.RdfHasher import make_hash
-from nanopub.trustyuri.rdf import RdfHasher, RdfUtils
-from Crypto.Signature import PKCS1_v1_5
-from Crypto.Hash import SHA256
-from Crypto.PublicKey import RSA
-from base64 import decodebytes, encodebytes
 
-from nanopub.definitions import ROOT_FILEPATH, DUMMY_NAMESPACE, DUMMY_URI, FINAL_NANOPUB_URI
+# from trustyuri.rdf.RdfHasher import make_hash
+from Crypto.PublicKey import RSA
+from rdflib import ConjunctiveGraph
+
+from nanopub.definitions import ROOT_FILEPATH
 from nanopub.namespaces import NP
-from nanopub.profile import PROFILE_INSTRUCTIONS_MESSAGE, Profile
+from nanopub.nanopub import Nanopub
+from nanopub.profile import PROFILE_INSTRUCTIONS_MESSAGE
 
 # NANOPUB_JAVA_SCRIPT = ('nanopub-java' if shutil.which('nanopub-java')  # In case installed with pip
 #                        else ROOT_FILEPATH / 'bin' / 'nanopub-java')  # In case of local dev

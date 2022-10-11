@@ -6,10 +6,10 @@ from Crypto.PublicKey import RSA
 from rdflib import Literal, URIRef
 from rdflib.namespace import FOAF
 
-from nanopub.definitions import DUMMY_NAMESPACE, log, USER_CONFIG_DIR
+from nanopub.definitions import DUMMY_NAMESPACE, USER_CONFIG_DIR, log
 from nanopub.namespaces import NPX
-from nanopub.nanopub_config import NanopubConfig
 from nanopub.nanopub import Nanopub
+from nanopub.nanopub_config import NanopubConfig
 from nanopub.profile import Profile, generate_keys
 
 

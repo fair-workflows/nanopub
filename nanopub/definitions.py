@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 
-from rdflib import Namespace, URIRef
+from rdflib import Namespace
 
 ROOT_FILEPATH = Path(__file__).parent.parent
 TESTS_FILEPATH = ROOT_FILEPATH / "tests"

@@ -1,8 +1,12 @@
-import sys, logging
-from rdflib.graph import ConjunctiveGraph
-from nanopub.trustyuri.rdf import RdfUtils, RdfTransformer
-from rdflib.term import URIRef
+import logging
 import os
+import sys
+
+from rdflib.graph import ConjunctiveGraph
+from rdflib.term import URIRef
+
+from nanopub.trustyuri.rdf import RdfTransformer, RdfUtils
+
 
 def transform(args):
     filename = args[0]
