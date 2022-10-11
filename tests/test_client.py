@@ -7,11 +7,12 @@ from rdflib import Graph, URIRef, Literal
 
 from nanopub import NanopubClient, Publication, namespaces
 from nanopub.definitions import TEST_RESOURCES_FILEPATH
-from tests.conftest import skip_if_nanopub_server_unavailable, profile_test, java_wrap
+from tests.conftest import skip_if_nanopub_server_unavailable, profile_test, java_wrap, default_config
 
 client = NanopubClient(
     use_test_server=True,
-    profile=profile_test
+    profile=profile_test,
+    nanopub_config=default_config,
 )
 
 TEST_ASSERTION = (namespaces.AUTHOR.DrBob, namespaces.HYCL.claims, rdflib.Literal('This is a test'))
