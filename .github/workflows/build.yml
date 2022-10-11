@@ -25,13 +25,8 @@ jobs:
         run: |
           pip install ".[test,dev]"
 
-      # - name: Lint with flake8
-      #   run: |
-      #     flake8 . --count --show-source --statistics
-
-      # - name: Test with pytest - No RSA key tests
-      #   run: |
-      #      pytest --no_rsa_key -m 'no_rsa_key'
+      - name: Lint with flake8, isort and mypy
+        run: bash scripts/lint.sh
 
       - name: Setup nanopub profile (including RSA keys)
         run: |
@@ -48,6 +43,7 @@ jobs:
         run: |
           coverage xml
           coveralls
+
 
   build-docs:
     needs: [ tests ]

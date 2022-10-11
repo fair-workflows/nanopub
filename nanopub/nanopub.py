@@ -5,6 +5,7 @@ make handling RDF easier.
 """
 import warnings
 from datetime import datetime
+from typing import Optional
 
 import rdflib
 from rdflib import BNode, ConjunctiveGraph, Graph, URIRef
@@ -187,10 +188,10 @@ class Nanopub:
 
     def _validate_from_assertion_arguments(
         self,
-        introduces_concept: BNode,
         derived_from,
         assertion_attributed_to,
         attribute_assertion_to_profile: bool,
+        introduces_concept: Optional[BNode],
         # publication_attributed_to,
     ):
         """
@@ -453,9 +454,9 @@ class Nanopub:
     @property
     def is_test_publication(self) -> bool:
         if self._source_uri is None:
-            return None
+            return True
         else:
-            return "test" in self._source_uri
+            return False
 
 
     def __str__(self):

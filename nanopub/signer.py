@@ -109,9 +109,12 @@ class Signer:
         graph.bind("this", Namespace(np_uri))
         graph.bind("sub", Namespace(np_uri + "#"))
 
-        bnodemap = {}
+        bnodemap: dict = {}
         for s, p, o, c in graph.quads():
-            g = c.identifier
+            if c:
+                g = c.identifier
+            else:
+                raise Exception("Found a nquads without graph when replacing dummy URIs with trusty URIs. Something went wrong.")
             new_g = URIRef(transform(g, trusty_artefact, dummy_ns, bnodemap))
             new_s = URIRef(transform(s, trusty_artefact, dummy_ns, bnodemap))
             new_p = URIRef(transform(p, trusty_artefact, dummy_ns, bnodemap))

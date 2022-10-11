@@ -1,4 +1,5 @@
 from dataclasses import asdict, dataclass
+from typing import Optional
 
 
 @dataclass
@@ -11,10 +12,10 @@ class NanopubConfig:
     attribute_assertion_to_profile: bool = False
     attribute_publication_to_profile: bool = True
 
-    assertion_attributed_to: str = None
-    publication_attributed_to: str = None
+    assertion_attributed_to: Optional[str] = None
+    publication_attributed_to: Optional[str] = None
 
-    derived_from: str = None
+    derived_from: Optional[str] = None
 
 
     dict = asdict

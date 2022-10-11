@@ -138,10 +138,10 @@ def setup(orcid_id, publish, newkeys, name, keypair: Union[Tuple[Path, Path], No
         client = NanopubClient()
         result = client.publish(np)
 
-        profile.nanopub_uri = result.concept_uri
+        profile.introduction_nanopub_uri = result.concept_uri
 
         # Store profile nanopub uri
-        store_profile(profile)
+        store_profile(profile, USER_CONFIG_DIR)
 
 
 def _create_this_is_me_rdf(orcid_id: str, public_key: str, name: str

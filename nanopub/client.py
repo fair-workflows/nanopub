@@ -114,48 +114,36 @@ class NanopubClient:
         )
 
 
-    def sign(self, publication: Union[Publication, Nanopub]):
+    def sign(self, np: Nanopub) -> Nanopub:
         """Sign a Publication object.
 
         Sign Publication object. It uses nanopub_java commandline tool to sign
         the nanopublication RDF with the RSA key in the profile and then publish.
 
         Args:
-            publication (Publication): Publication object to sign.
+            np: Publication object to sign.
 
         Returns:
             dict of str: Publication info with: 'nanopub_uri': the URI of the signed
             nanopublication, 'concept_uri': the URI of the introduced concept (if applicable)
         """
-        if len(publication.rdf) > MAX_TRIPLES_PER_NANOPUB:
-            raise ValueError(f"Nanopublication contains {len(publication.rdf)} triples, which is more than the {MAX_TRIPLES_PER_NANOPUB} authorized")
+        if len(np.rdf) > MAX_TRIPLES_PER_NANOPUB:
+            raise ValueError(f"Nanopublication contains {len(np.rdf)} triples, which is more than the {MAX_TRIPLES_PER_NANOPUB} authorized")
         # Create a temporary dir for files created during serializing and signing
         tempdir = tempfile.mkdtemp()
-
         # Convert nanopub rdf to trig
         fname = "temp.trig"
         unsigned_fname = os.path.join(tempdir, fname)
-        publication.rdf.serialize(destination=unsigned_fname, format="trig")
+        np.rdf.serialize(destination=unsigned_fname, format="trig")
 
         # Sign the nanopub
-        # signed_file = self.java_wrapper.sign(unsigned_fname)
-        # print(signed_file)
-
-        signed_g = self.signer.add_signature(publication.rdf)
-
-        # publication.update_from_signed(signed_file)
-        publication.update_from_signed(signed_g)
-
-        # publication.signed_file = signed_file
-        # # Update the pub RDF to the signed one
-        # publication.rdf = ConjunctiveGraph()
-        # publication.rdf.parse(signed_file, format="trig")
-        # publication.source_uri = publication.get_source_uri_from_graph
-        log.info(f"Signed {publication.source_uri}")
-        return publication
+        signed_g = self.signer.add_signature(np.rdf)
+        np.update_from_signed(signed_g)
+        log.info(f"Signed {np.source_uri}")
+        return np
 
 
-    def publish_signed(self, signed_path: str):
+    def publish_signed(self, signed_path: str) -> Nanopub:
         """Publish a signed publication file.
 
         Args:
@@ -169,15 +157,11 @@ class NanopubClient:
         g.parse(signed_path, format='trig')
         np = Nanopub(rdf=g)
         np = self.sign(np)
-        # nanopub_uri = self.java_wrapper.publish(signed_path)
-
-        # publication_info = {"nanopub_uri": nanopub_uri}
         log.info(f"Published to {np.source_uri}")
-
         return np
 
 
-    def publish(self, publication: Union[Publication, Nanopub]):
+    def publish(self, np: Nanopub) -> Nanopub:
         """Publish a Publication object.
 
         Publish Publication object to the nanopub server. It uses nanopub_java commandline tool to
@@ -191,15 +175,15 @@ class NanopubClient:
             nanopublication, 'concept_uri': the URI of the introduced concept (if applicable)
 
         """
-        if not publication.source_uri:
-            publication = self.sign(publication)
+        if not np.source_uri:
+            np = self.sign(np)
 
-        publication = self.signer.publish(publication)
+        np = self.signer.publish(np)
         # publication.source_uri = self.java_wrapper.publish(publication.signed_file)
         # log.info(f"Nanopub published to {publication.source_uri}")
 
-        if publication.introduces_concept:
-            concept_uri = str(publication.introduces_concept)
+        if np.introduces_concept:
+            concept_uri = str(np.introduces_concept)
             # Replace the DUMMY_NANOPUB_URI with the actually published nanopub uri. This is
             # necessary if a blank node was passed as introduces_concept. In that case the
             # Nanopub.from_assertion method replaces the blank node with the base nanopub's URI
@@ -207,12 +191,11 @@ class NanopubClient:
             # blank node with name 'step' was passed as introduces_concept, the concept will be
             # published with a URI that looks like [published nanopub URI]#step.
             concept_uri = concept_uri.replace(
-                DUMMY_NANOPUB_URI, publication.source_uri
+                DUMMY_NANOPUB_URI, np.source_uri
             )
-            publication.concept_uri = concept_uri
+            np.concept_uri = concept_uri
             log.info(f"Published concept to {concept_uri}")
-
-        return publication
+        return np
 
 
     def claim(self, statement_text: str):
@@ -600,10 +583,12 @@ class NanopubClient:
             else:
                 r.raise_for_status()  # For non-502 errors we don't want to try other servers
                 return r, grlc_url
-
+        resp = ""
+        if r:
+            resp = f" Last response: {r.status_code}:{r.reason}"
         raise requests.HTTPError(
             f"Could not get response from any of the nanopub grlc "
-            f"endpoints, last response: {r.status_code}:{r.reason}"
+            f"endpoints.{resp}"
         )
 
     def _search(self, endpoint: str, params: dict):

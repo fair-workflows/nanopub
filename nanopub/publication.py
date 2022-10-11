@@ -251,12 +251,15 @@ class Publication:
         return cls(rdf=main_graph)
 
 
-    def update_from_signed(self, signed_filepath: str) -> None:
+    def update_from_signed(self, signed_g: str) -> None:
         """Update the pub RDF to the signed one"""
-        self._signed_file = signed_filepath
-        self._rdf = rdflib.ConjunctiveGraph()
-        self._rdf.parse(signed_filepath, format="trig")
+        # self._signed_file = signed_filepath
+        self._rdf = signed_g
         self._source_uri = self.get_source_uri_from_graph
+        self.head = rdflib.Graph(self._rdf.store, DUMMY_NAMESPACE.Head)
+        self.assertion = rdflib.Graph(self._rdf.store, DUMMY_NAMESPACE.assertion)
+        self.provenance = rdflib.Graph(self._rdf.store, DUMMY_NAMESPACE.provenance)
+        self.pubinfo = rdflib.Graph(self._rdf.store, DUMMY_NAMESPACE.pubInfo)
 
 
     @staticmethod

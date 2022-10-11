@@ -169,7 +169,7 @@ def store_profile(profile: Profile, folder: Path) -> Path:
         introduction_nanopub_uri=profile.introduction_nanopub_uri,
     )
     _dump_profile(pdump, folder / "profile.yml")
-    return str(folder / "profile.yml")
+    return folder / "profile.yml"
 
 
 def generate_keys(path: Path = USER_CONFIG_DIR) -> str:
