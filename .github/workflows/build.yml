@@ -6,22 +6,24 @@ name: Test and update docs
 on: [push, pull_request]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.7
 
-      - name: Display Python version
-        run: python -c "import sys; print(sys.version)"
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8, 3.9, '3.10']
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install ".[test,doc,dev]"
+          pip install ".[test,dev]"
 
       # - name: Lint with flake8
       #   run: |
@@ -47,12 +49,30 @@ jobs:
           coverage xml
           coveralls
 
+  build-docs:
+    needs: [ tests ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+
+      - name: Install dependencies
+        run: |
+          pip install ".[doc]"
+
       - name: Build Sphinx docs
         run: |
           cd docs
           make html
 
       - name: Deploy docs with mkdocs gh-deploy
-        run: mkdocs gh-deploy
+        run: |
+          git pull
+          mkdocs gh-deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
