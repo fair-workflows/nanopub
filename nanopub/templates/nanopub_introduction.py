@@ -6,14 +6,14 @@ from Crypto.PublicKey import RSA
 from rdflib import Literal, URIRef
 from rdflib.namespace import FOAF
 
-from nanopub.definitions import DUMMY_NAMESPACE, log
+from nanopub.definitions import DUMMY_NAMESPACE, log, USER_CONFIG_DIR
 from nanopub.namespaces import NPX
 from nanopub.nanopub_config import NanopubConfig
-from nanopub.nanopub import Nanopub
-from nanopub.profile import Profile
+from nanopub.nanopub import Nanopublication
+from nanopub.profile import Profile, generate_keys
 
 
-class NanopubIntroduction(Nanopub):
+class NanopubIntroduction(Nanopublication):
     """
     Publish a Nanopub introduction to introduce a key pair for an ORCID
 
@@ -28,8 +28,8 @@ class NanopubIntroduction(Nanopub):
 
     def __init__(
         self,
+        profile: Profile,
         public_key: str = None,
-        profile: Profile = None,
         config: NanopubConfig = NanopubConfig(
             add_prov_generated_time=False,
             add_pubinfo_generated_time=True,
@@ -44,7 +44,8 @@ class NanopubIntroduction(Nanopub):
 
         if not public_key:
             log.info("Generating private/public pair keys")
-            public_key = self._generate_keys()
+            public_key = generate_keys(USER_CONFIG_DIR)
+            # self._generate_keys()
 
         # key_declaration = BNode('keyDeclaration')
         key_declaration = DUMMY_NAMESPACE.keyDeclaration

@@ -6,7 +6,7 @@ import yatiml
 from Crypto.PublicKey import RSA
 from base64 import decodebytes
 
-from nanopub.definitions import DEFAULT_PROFILE_PATH, log
+from nanopub.definitions import DEFAULT_PROFILE_PATH, log, USER_CONFIG_DIR
 
 PROFILE_INSTRUCTIONS_MESSAGE = '''
     Follow these instructions to correctly setup your nanopub profile:
@@ -164,3 +164,27 @@ def store_profile(profile: Profile) -> Path:
     """
     _dump_profile(profile, DEFAULT_PROFILE_PATH)
     return DEFAULT_PROFILE_PATH
+
+
+def generate_keys(path: Path = USER_CONFIG_DIR) -> str:
+    """Generate private/public RSA key pair at the path specified in the profile.yml, to be used to sign nanopubs"""
+    key = RSA.generate(2048)
+    private_key_str = key.export_key('PEM', pkcs=8).decode('utf-8')
+    public_key_str = key.publickey().export_key().decode('utf-8')
+
+    # Format private and public keys to remove header/footer and all newlines, as this is required by nanopub-java
+    private_key_str = private_key_str.replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "").replace("\n", "").strip()
+    public_key_str = public_key_str.replace("-----BEGIN PUBLIC KEY-----", "").replace("-----END PUBLIC KEY-----", "").replace("\n", "").strip()
+    private_path = path / 'id_rsa'
+    public_path = path / 'id_rsa.pub'
+
+    # Store key pair
+    private_key_file = open(private_path, "w")
+    private_key_file.write(private_key_str)
+    private_key_file.close()
+
+    public_key_file = open(public_path, "w")
+    public_key_file.write(public_key_str)
+    public_key_file.close()
+    log.info(f"Public/private RSA key pair has been generated in {private_path} and {public_path}")
+    return public_key_str

@@ -9,8 +9,7 @@ import rdflib
 
 from nanopub import NanopubClient, Publication, namespaces, load_profile
 from nanopub.definitions import USER_CONFIG_DIR, DEFAULT_PROFILE_PATH
-from tests.java_wrapper import JavaWrapper
-from nanopub.profile import Profile, ProfileError, store_profile
+from nanopub.profile import Profile, ProfileError, store_profile, generate_keys
 
 PRIVATE_KEY_FILE = 'id_rsa'
 PUBLIC_KEY_FILE = 'id_rsa.pub'
@@ -109,7 +108,8 @@ def setup(orcid_id, publish, newkeys, name, keypair: Union[Tuple[Path, Path], No
                        f'If you want to create new ones then you must manually '
                        f'delete these keys.')
         else:
-            JavaWrapper().make_keys(path_name=DEFAULT_KEYS_PATH_PREFIX)
+            # JavaWrapper().make_keys(path_name=DEFAULT_KEYS_PATH_PREFIX)
+            generate_keys(DEFAULT_KEYS_PATH_PREFIX)
             click.echo(f'Created RSA keys. Your RSA keys are stored in {USER_CONFIG_DIR}')
     else:
         public_key_path, private_key = keypair
