@@ -4,8 +4,8 @@ from unittest.mock import patch
 import pytest
 import rdflib
 
-from nanopub import setup_nanopub_profile
-from nanopub.setup_nanopub_profile import validate_orcid_id
+from nanopub import __main__
+from nanopub.__main__ import validate_orcid_id
 
 MOCK_PUBLIC_KEY = 'this is not a real rsa public key'
 MOCK_PRIVATE_KEY = 'this is not a real rsa private key'
@@ -41,7 +41,7 @@ def test_provided_keypair_copied_to_nanopub_dir(tmp_path: Path):
             patch('nanopub.setup_nanopub_profile.DEFAULT_PRIVATE_KEY_PATH', new_private_keyfile), \
             patch('nanopub.profile.PROFILE_PATH', nanopub_path / 'profile.yml'), \
             patch('nanopub.setup_nanopub_profile.NanopubClient.publish') as mocked_client_publish:
-        setup_nanopub_profile.main(
+        __main__.cli(
             args=['--keypair', str(custom_public_key_path), str(custom_private_key_path),
                   '--name',  NAME,
                   '--orcid_id', TEST_ORCID_ID,
@@ -88,14 +88,14 @@ def test_no_keypair_provided(tmp_path: Path):
             nanopub_path / 'profile.yml'):
 
         # Call function directly, otherwise click's prompts get in the way
-        setup_nanopub_profile.main.callback(TEST_ORCID_ID, False, True, NAME, keypair=None)
+        __main__.cli.callback(TEST_ORCID_ID, False, True, NAME, keypair=None)
 
         assert new_public_keyfile.exists()
         assert new_private_keyfile.exists()
 
 
 def test_create_this_is_me_rdf():
-    rdf, _ = setup_nanopub_profile._create_this_is_me_rdf(TEST_ORCID_ID, 'public key', 'name')
+    rdf, _ = __main__._create_this_is_me_rdf(TEST_ORCID_ID, 'public key', 'name')
     assert (None, None, rdflib.URIRef(TEST_ORCID_ID)) in rdf
 
 

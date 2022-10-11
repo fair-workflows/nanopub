@@ -24,6 +24,7 @@ classifiers = [
     "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent"
 ]
+
 dynamic = ["version"]
 
 dependencies = [
@@ -36,6 +37,8 @@ dependencies = [
     "trustyuri@git+https://github.com/trustyuri/trustyuri-python.git@master"
 ]
 
+[project.scripts]
+np = "nanopub.__main__:cli"
 
 [project.optional-dependencies]
 test = [

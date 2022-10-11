@@ -7,10 +7,10 @@ from typing import Tuple, Union
 import click
 import rdflib
 
-from nanopub import NanopubClient, Publication, namespaces
-from nanopub.definitions import USER_CONFIG_DIR
-from nanopub.java_wrapper import JavaWrapper
-from nanopub.profile import Profile, store_profile
+from nanopub import NanopubClient, Publication, namespaces, load_profile
+from nanopub.definitions import USER_CONFIG_DIR, DEFAULT_PROFILE_PATH
+from tests.java_wrapper import JavaWrapper
+from nanopub.profile import Profile, ProfileError, store_profile
 
 PRIVATE_KEY_FILE = 'id_rsa'
 PUBLIC_KEY_FILE = 'id_rsa.pub'
@@ -33,11 +33,28 @@ def validate_orcid_id(ctx, param, orcid_id: str):
         raise ValueError('Your ORCID iD is not valid, please provide a valid ORCID iD that '
                          'looks like: https://orcid.org/0000-0000-0000-0000')
 
+@click.group()
+def cli():
+    """Nanopub Command Line Interface"""
+    pass
 
-# TODO: nanopub sign my_np.trig
+
+@cli.command(help='Get the current profile')
+def profile():
+    """Get the current user profile info."""
+    try:
+        p = load_profile(DEFAULT_PROFILE_PATH)
+        click.echo(f'    👤 Current profile in {DEFAULT_PROFILE_PATH}:')
+        click.echo(str(p))
+    except ProfileError:
+        click.echo(f"⚠️  No profile could be loaded from {DEFAULT_PROFILE_PATH}")
+        click.echo("ℹ️  Use 'np setup' to setup your nanopub profile locally with the interactive CLI")
+
+
+# TODO: np sign my_np.trig
 # nanopub profile (check if profile set, if not start setup_profile)
 
-@click.command(help='Interactive CLI to create a nanopub user profile. '
+@cli.command(help='Interactive CLI to create a nanopub user profile. '
                     'A local version of the profile will be stored in the user config dir '
                     '(by default HOMEDIR/.nanopub/). '
                     'The profile will also be published to the nanopub servers.')
@@ -57,7 +74,7 @@ def validate_orcid_id(ctx, param, orcid_id: str):
               prompt=('Would you like to publish your profile to the nanopub servers? '
                       'This links your ORCID iD to your RSA key, thereby making all your '
                       'publications linkable to you'))
-def main(orcid_id, publish, newkeys, name, keypair: Union[Tuple[Path, Path], None]):
+def setup(orcid_id, publish, newkeys, name, keypair: Union[Tuple[Path, Path], None]):
     """
     Interactive CLI to create a user profile.
 
@@ -158,4 +175,4 @@ def _check_erase_existing_keys():
 
 
 if __name__ == '__main__':
-    main()
+    cli()

@@ -85,6 +85,13 @@ class Profile:
         """Returns the user's private key."""
         return self.private_key
 
+    def __repr__(self):
+        return f"""ORCID: {self.orcid_id}
+Name: {self.name}
+Private key: {self.private_key}
+Public key: {self.public_key}
+Intro Nanopub URI: {self.introduction_nanopub_uri}
+"""
 
 class ProfileLoader(Profile):
     """A class to load a user profile from a local YAML file."""
