@@ -55,6 +55,7 @@ nav:
     - What are Nanopublications?: getting-started/what-are-nanopubs.md
     - Setup instructions: getting-started/setup.md
     - The nanopub test server: getting-started/test-server.md
+    - Development: development.md
 
   - Publishing:
     - Publish nanopublications: publishing/publish-nanopublications.md

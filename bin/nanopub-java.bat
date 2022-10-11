@@ -8,6 +8,8 @@
 @rem Set local scope for the variables with windows NT shell
 if "%OS%"=="Windows_NT" setlocal
 
+echo FOR THE TESTS TO WORK DOWNLOAD THE NANOPUB JAR AT https://github.com/Nanopublication/nanopub-java/releases/latest and place it in a lib/ folder to create in the root of the repository
+
 set DIRNAME=%~dp0
 if "%DIRNAME%" == "" set DIRNAME=.
 set APP_BASE_NAME=%~n0
