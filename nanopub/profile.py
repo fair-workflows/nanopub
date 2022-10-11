@@ -148,7 +148,7 @@ def load_profile(profile_path: Union[Path, str] = DEFAULT_PROFILE_PATH) -> Profi
 
 
 # TODO: fix for new Profile class
-def store_profile(profile: Profile) -> Path:
+def store_profile(profile: Profile, folder: Path) -> Path:
     """Stores the nanopub user profile.
 
     By default the profile is stored in `HOME_DIR/.nanopub/profile.yaml`.
@@ -162,8 +162,15 @@ def store_profile(profile: Profile) -> Path:
     Raises:
         yatiml.RecognitionError: If there is an error in the file.
     """
-    _dump_profile(profile, DEFAULT_PROFILE_PATH)
-    return DEFAULT_PROFILE_PATH
+    pdump = ProfileLoader(
+        name=profile.name,
+        orcid_id=profile.orcid_id,
+        private_key=folder / "id_rsa",
+        public_key=folder / "id_rsa.pub",
+        introduction_nanopub_uri=profile.introduction_nanopub_uri,
+    )
+    _dump_profile(pdump, folder / "profile.yml")
+    return str(folder / "profile.yml")
 
 
 def generate_keys(path: Path = USER_CONFIG_DIR) -> str:

@@ -87,7 +87,6 @@ def setup(orcid_id, publish, newkeys, name, keypair: Union[Tuple[Path, Path], No
             will be used.
     """
     click.echo('Setting up nanopub profile...')
-
     if not USER_CONFIG_DIR.exists():
         USER_CONFIG_DIR.mkdir()
 
@@ -109,7 +108,7 @@ def setup(orcid_id, publish, newkeys, name, keypair: Union[Tuple[Path, Path], No
                        f'delete these keys.')
         else:
             # JavaWrapper().make_keys(path_name=DEFAULT_KEYS_PATH_PREFIX)
-            generate_keys(DEFAULT_KEYS_PATH_PREFIX)
+            generate_keys(USER_CONFIG_DIR)
             click.echo(f'Created RSA keys. Your RSA keys are stored in {USER_CONFIG_DIR}')
     else:
         public_key_path, private_key = keypair
@@ -126,7 +125,8 @@ def setup(orcid_id, publish, newkeys, name, keypair: Union[Tuple[Path, Path], No
     public_key = DEFAULT_PUBLIC_KEY_PATH.read_text()
 
     profile = Profile(orcid_id, name, DEFAULT_PUBLIC_KEY_PATH, DEFAULT_PRIVATE_KEY_PATH)
-    store_profile(profile)
+    store_profile(profile, USER_CONFIG_DIR)
+
 
     # Declare the user to nanopub
     if publish:
