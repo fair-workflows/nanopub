@@ -3,7 +3,7 @@ import tempfile
 
 from rdflib import BNode, Graph, Literal, URIRef
 
-from nanopub import NanopubClient, NanopubConfig, namespaces, load_profile, Nanopublication
+from nanopub import NanopubClient, NanopubConfig, namespaces, load_profile, Nanopub
 from nanopub.definitions import TEST_RESOURCES_FILEPATH
 from tests.conftest import test_profile_path
 from tests.java_wrapper import JavaWrapper
@@ -41,7 +41,7 @@ class TestNanopublication:
         #     assertion=assertion,
         #     # introduces_concept=test_concept,
         # )
-        np = Nanopublication(
+        np = Nanopub(
             config=config,
             profile=profile,
             assertion=assertion
@@ -65,7 +65,7 @@ class TestNanopublication:
             BNode('test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
         ))
 
-        np = Nanopublication(
+        np = Nanopub(
             config=config,
             profile=profile,
             assertion=assertion
@@ -82,7 +82,7 @@ class TestNanopublication:
         assertion.add((
             URIRef('http://test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
         ))
-        np = Nanopublication(
+        np = Nanopub(
             config=config,
             profile=profile,
             assertion=assertion

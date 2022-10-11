@@ -16,7 +16,7 @@ from nanopub.nanopub_config import NanopubConfig
 from nanopub.profile import Profile
 
 
-class Nanopublication:
+class Nanopub:
     """
     Representation of the rdf that comprises a nanopublication
 

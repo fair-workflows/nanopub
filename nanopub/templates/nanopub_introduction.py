@@ -9,11 +9,11 @@ from rdflib.namespace import FOAF
 from nanopub.definitions import DUMMY_NAMESPACE, log
 from nanopub.namespaces import NPX
 from nanopub.nanopub_config import NanopubConfig
-from nanopub.nanopublication import Nanopublication
+from nanopub.nanopub import Nanopub
 from nanopub.profile import Profile
 
 
-class NanopubIntroduction(Nanopublication):
+class NanopubIntroduction(Nanopub):
     """
     Publish a Nanopub introduction to introduce a key pair for an ORCID
 

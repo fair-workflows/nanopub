@@ -3,6 +3,6 @@ from .nanopub_config import NanopubConfig
 from .client import NanopubClient
 from .publication import Publication, replace_in_rdf
 from .profile import Profile, load_profile
-from .nanopublication import Nanopublication
+from .nanopub import Nanopub
 from .templates.nanopub_index import NanopubIndex
 from .templates.nanopub_introduction import NanopubIntroduction

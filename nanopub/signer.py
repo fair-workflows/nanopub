@@ -6,7 +6,7 @@ from typing import Union
 import rdflib
 import requests
 from rdflib import ConjunctiveGraph, Literal, URIRef, BNode, Namespace
-from nanopub.nanopublication import Nanopublication
+from nanopub.nanopub import Nanopub
 # from trustyuri.rdf.RdfHasher import make_hash
 from nanopub.trustyuri.rdf import RdfHasher, RdfUtils
 from Crypto.Signature import PKCS1_v1_5
@@ -129,7 +129,7 @@ class Signer:
 
 
 
-    def publish(self, np: Nanopublication):
+    def publish(self, np: Nanopub):
         """Publish a nanopub.
 
         Publish the signed nanopub to the nanopub server we do a simple POST request.
@@ -144,7 +144,7 @@ class Signer:
 
 
 
-    def verify(self, np: Nanopublication) -> bool:
+    def verify(self, np: Nanopub) -> bool:
         # TODO: improve to better test the different components (signature, etc)
         g = np.rdf
         # signature_uri = URIRef(f"{np.source_uri}#sig")

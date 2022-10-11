@@ -8,7 +8,7 @@ from typing import Union
 import rdflib
 import requests
 from rdflib import ConjunctiveGraph, Literal, URIRef
-from nanopub.nanopublication import Nanopublication
+from nanopub.nanopub import Nanopub
 # from trustyuri.rdf.RdfHasher import make_hash
 from nanopub.trustyuri.rdf import RdfHasher, RdfUtils
 from Crypto.Signature import PKCS1_v1_5
@@ -80,7 +80,7 @@ class JavaWrapper:
             raise RuntimeError(f'Error in nanopub-java when running {command}: {stderr}')
 
 
-    def sign(self, np: Nanopublication) -> str:
+    def sign(self, np: Nanopub) -> str:
         tmp_dir = tempfile.mkdtemp()
         unsigned_file = os.path.join(tmp_dir, "unsigned.trig")
         with open(unsigned_file, "w") as f:

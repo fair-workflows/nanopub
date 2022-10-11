@@ -17,7 +17,7 @@ from nanopub.definitions import DUMMY_NANOPUB_URI, MAX_NP_PER_INDEX, MAX_TRIPLES
 from nanopub.nanopub_config import NanopubConfig
 from nanopub.templates.nanopub_index import NanopubIndex
 from nanopub.templates.nanopub_introduction import NanopubIntroduction
-from nanopub.nanopublication import Nanopublication
+from nanopub.nanopub import Nanopub
 from nanopub.profile import load_profile, Profile
 from nanopub.publication import Publication
 from nanopub.signer import Signer
@@ -92,12 +92,12 @@ class NanopubClient:
         pubinfo: rdflib.Graph = rdflib.Graph(),
         provenance: rdflib.Graph = rdflib.Graph(),
         nanopub_config: NanopubConfig = None,
-    ) -> Nanopublication:
+    ) -> Nanopub:
         if not nanopub_config:
             nanopub_config = self.nanopub_config
 
         # return Publication.from_assertion(
-        return Nanopublication(
+        return Nanopub(
             assertion=assertion,
             pubinfo=pubinfo,
             provenance=provenance,
@@ -106,7 +106,7 @@ class NanopubClient:
         )
 
 
-    def sign(self, publication: Union[Publication, Nanopublication]):
+    def sign(self, publication: Union[Publication, Nanopub]):
         """Sign a Publication object.
 
         Sign Publication object. It uses nanopub_java commandline tool to
@@ -159,7 +159,7 @@ class NanopubClient:
         """
         g = ConjunctiveGraph()
         g.parse(signed_path, format='trig')
-        np = Nanopublication(rdf=g)
+        np = Nanopub(rdf=g)
         np = self.sign(np)
         # nanopub_uri = self.java_wrapper.publish(signed_path)
 
@@ -169,7 +169,7 @@ class NanopubClient:
         return np
 
 
-    def publish(self, publication: Union[Publication, Nanopublication]):
+    def publish(self, publication: Union[Publication, Nanopub]):
         """Publish a Publication object.
 
         Publish Publication object to the nanopub server. It uses nanopub_java commandline tool to
@@ -304,7 +304,7 @@ class NanopubClient:
         nanopub_config: NanopubConfig = None,
         # pub_list: List[Nanopublication] = [],
         publish: bool = False,
-    ) -> List[Nanopublication]:
+    ) -> List[Nanopub]:
         """Create a Nanopub index.
 
         Publish a list of nanopub URIs in a Nanopub Index

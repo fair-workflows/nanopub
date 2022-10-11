@@ -10,11 +10,11 @@ from rdflib.namespace import DC, DCTERMS, RDF, RDFS, XSD
 from nanopub.definitions import DUMMY_NAMESPACE, DUMMY_URI
 from nanopub.namespaces import NPX, PAV
 from nanopub.nanopub_config import NanopubConfig
-from nanopub.nanopublication import Nanopublication
+from nanopub.nanopub import Nanopub
 from nanopub.profile import Profile
 
 
-class NanopubIndex(Nanopublication):
+class NanopubIndex(Nanopub):
     """
     Publish a list of nanopub URIs in a Nanopub Index
 
