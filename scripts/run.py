@@ -9,6 +9,7 @@ assertion.add((
 ))
 
 client = NanopubClient(
+    use_test_server=True
     # profile_path='tests/resources'
 )
 
@@ -26,4 +27,7 @@ np = client.create_nanopub(
 
 np = client.sign(np)
 
+resp = client.publish(np)
+
 print(np)
+print(resp)

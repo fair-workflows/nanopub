@@ -9,11 +9,11 @@ import warnings
 from typing import List, Tuple, Union
 
 import rdflib
+from rdflib import ConjunctiveGraph
 import requests
 
 from nanopub import namespaces
 from nanopub.definitions import DUMMY_NANOPUB_URI, MAX_NP_PER_INDEX, MAX_TRIPLES_PER_NANOPUB, log, NANOPUB_TEST_SERVER, NANOPUB_SERVER_LIST
-from nanopub.java_wrapper import JavaWrapper
 from nanopub.nanopub_config import NanopubConfig
 from nanopub.templates.nanopub_index import NanopubIndex
 from nanopub.templates.nanopub_introduction import NanopubIntroduction
@@ -157,12 +157,16 @@ class NanopubClient:
             dict of str: Publication info with: 'nanopub_uri': the URI of the published
             nanopublication, 'concept_uri': the URI of the introduced concept (if applicable)
         """
-        nanopub_uri = self.java_wrapper.publish(signed_path)
+        g = ConjunctiveGraph()
+        g.parse(signed_path, format='trig')
+        np = Nanopublication(rdf=g)
+        np = self.sign(np)
+        # nanopub_uri = self.java_wrapper.publish(signed_path)
 
-        publication_info = {"nanopub_uri": nanopub_uri}
-        log.info(f"Published to {nanopub_uri}")
+        # publication_info = {"nanopub_uri": nanopub_uri}
+        log.info(f"Published to {np.source_uri}")
 
-        return publication_info
+        return np
 
 
     def publish(self, publication: Union[Publication, Nanopublication]):
@@ -179,11 +183,12 @@ class NanopubClient:
             nanopublication, 'concept_uri': the URI of the introduced concept (if applicable)
 
         """
-        if not publication.signed_file:
+        if not publication.source_uri:
             publication = self.sign(publication)
 
-        publication.source_uri = self.java_wrapper.publish(publication.signed_file)
-        log.info(f"Nanopub published to {publication.source_uri}")
+        publication = self.signer.publish(publication)
+        # publication.source_uri = self.java_wrapper.publish(publication.signed_file)
+        # log.info(f"Nanopub published to {publication.source_uri}")
 
         if publication.introduces_concept:
             concept_uri = str(publication.introduces_concept)

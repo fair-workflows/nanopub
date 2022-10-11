@@ -131,10 +131,7 @@ def load_profile(profile_path: Union[Path, str] = DEFAULT_PROFILE_PATH) -> Profi
         yatiml.RecognitionError: If there is an error in the file.
     """
     try:
-        if profile_path:
-            return _load_profile(Path(profile_path))
-        else:
-            return _load_profile(DEFAULT_PROFILE_PATH)
+        return _load_profile(Path(profile_path))
     except (yatiml.RecognitionError, FileNotFoundError) as e:
         msg = (f'{e}\nYour nanopub profile has not been set up yet, or is not set up correctly.\n'
                f'{PROFILE_INSTRUCTIONS_MESSAGE}')

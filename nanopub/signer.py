@@ -137,11 +137,10 @@ class Signer:
         # headers = {'Content-Type': 'application/x-www-form-urlencoded'}
         headers = {'Content-Type': 'application/trig'}
         data = np.rdf.serialize(format="trig")
-
         r = requests.post(self.use_server, headers=headers, data=data)
         r.raise_for_status()
-        print(r.content)
-        return r.content
+        # if r.status_code == 201:
+        return np
 
 
 
