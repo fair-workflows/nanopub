@@ -40,6 +40,7 @@ class Nanopublication:
         pubinfo: Graph = Graph(),
         rdf: ConjunctiveGraph = None,
         source_uri: str = None,
+        dummy_ns: str = DUMMY_NAMESPACE,
         introduces_concept: BNode = None,
         config: NanopubConfig = NanopubConfig(),
         profile: Profile = None
@@ -143,7 +144,7 @@ class Nanopublication:
         Furthermore, the URI the nanopub is published to is not known ahead of time.
         """
         # Add default namespaces
-        g.bind("", DUMMY_NAMESPACE)
+        # g.bind("", DUMMY_NAMESPACE)
         g.bind("np", NP)
         g.bind("npx", NPX)
         g.bind("prov", PROV)
@@ -344,11 +345,12 @@ class Nanopublication:
             )
 
 
-    def update_from_signed(self, signed_filepath: str) -> None:
+    def update_from_signed(self, signed_g: ConjunctiveGraph) -> None:
         """Update the pub RDF to the signed one"""
-        self._signed_file = signed_filepath
-        self._rdf = ConjunctiveGraph()
-        self._rdf.parse(signed_filepath, format="trig")
+        # self._signed_file = signed_filepath
+        # self._rdf = ConjunctiveGraph()
+        # self._rdf.parse(signed_filepath, format="trig")
+        self._rdf = signed_g
         self._source_uri = self.get_source_uri_from_graph
         self.head = Graph(self._rdf.store, DUMMY_NAMESPACE.Head)
         self.assertion = Graph(self._rdf.store, DUMMY_NAMESPACE.assertion)

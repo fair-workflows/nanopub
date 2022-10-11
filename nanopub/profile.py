@@ -1,10 +1,12 @@
-from functools import lru_cache
+# from functools import lru_cache
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 import yatiml
+from Crypto.PublicKey import RSA
+from base64 import decodebytes
 
-from nanopub.definitions import PROFILE_PATH
+from nanopub.definitions import DEFAULT_PROFILE_PATH, log
 
 PROFILE_INSTRUCTIONS_MESSAGE = '''
     Follow these instructions to correctly setup your nanopub profile:
@@ -18,86 +20,106 @@ class ProfileError(RuntimeError):
     """
 
 
-# TODO: from dataclasses import dataclass
-# @dataclass
 class Profile:
     """Represents a user profile.
 
     Attributes:
         orcid_id: The user's ORCID
         name: The user's name
-        public_key: Path to the user's public key
-        private_key: Path to the user's private key
+        public_key: Path to the user's public key or string
+        private_key: Path to the user's private key or string
         introduction_nanopub_uri: URI of the user's profile nanopub
     """
 
-    # orcid_id: str
-    # name: str
-    # public_key: Path
-    # private_key: Path
-    # introduction_nanopub_uri: Optional[str] = None
-
-    # def __init__(self, path: str = str(PROFILE_PATH) ) -> None:
-
     def __init__(
             self,
-            orcid_id: str, name: str,
-            public_key: Path, private_key: Path,
+            orcid_id: str,
+            name: str,
+            private_key: Union[Path,str],
+            public_key: Optional[Union[Path,str]] = None,
             introduction_nanopub_uri: Optional[str] = None
     ) -> None:
         """Create a Profile."""
         self.orcid_id = orcid_id
         self.name = name
-        self.public_key = public_key
-        self.private_key = private_key
         self.introduction_nanopub_uri = introduction_nanopub_uri
 
+        if isinstance(private_key, Path):
+            try:
+                with open(private_key, 'r') as f:
+                    self.private_key = f.read().strip()
+            except FileNotFoundError:
+                raise ProfileError(
+                    f'Private key file {private_key} for nanopub not found.\n'
+                    f'Maybe your nanopub profile was not set up yet or not set up '
+                    f'correctly. \n{PROFILE_INSTRUCTIONS_MESSAGE}'
+                )
+        else:
+            self.private_key = private_key
+
+        if not public_key:
+            log.info('Public key not provided when loading the Nanopub profile, generating it from the provided private key')
+            key = RSA.importKey(decodebytes(self.private_key.encode()))
+            self.public_key = key.publickey().export_key().decode('utf-8')
+        else:
+            if isinstance(public_key, Path):
+                try:
+                    with open(public_key, 'r') as f:
+                        self.public_key = f.read().strip()
+                except FileNotFoundError:
+                    raise ProfileError(
+                        f'Private key file {public_key} for nanopub not found.\n'
+                        f'Maybe your nanopub profile was not set up yet or not set up '
+                        f'correctly. \n{PROFILE_INSTRUCTIONS_MESSAGE}'
+                    )
+            else:
+                self.public_key = public_key
+
+
+    # TODO: remove?
     def get_public_key(self) -> str:
         """Returns the user's public key."""
-        try:
-            with open(self.public_key, 'r') as f:
-                return f.read().strip()
-        except FileNotFoundError:
-            raise ProfileError(f'Public key file {self.public_key} for nanopub not found.\n'
-                               f'Maybe your nanopub profile was not set up yet or not set up '
-                               f'correctly. \n{PROFILE_INSTRUCTIONS_MESSAGE}')
+        return self.public_key
 
     def get_private_key(self) -> str:
         """Returns the user's private key."""
-        try:
-            with open(self.private_key, 'r') as f:
-                return f.read()
-        except FileNotFoundError:
-            raise ProfileError(f'Public key file {self.public_key} for nanopub not found.\n'
-                               f'Maybe your nanopub profile was not set up yet or not set up '
-                               f'correctly. \n{PROFILE_INSTRUCTIONS_MESSAGE}')
+        return self.private_key
 
 
-_load_profile = yatiml.load_function(Profile)
+class ProfileLoader(Profile):
+    """A class to load a user profile from a local YAML file."""
+    def __init__(
+            self,
+            orcid_id: str,
+            name: str,
+            private_key: Path,
+            public_key: Optional[Path],
+            introduction_nanopub_uri: Optional[str] = None
+    ) -> None:
+        """Create a Profile."""
+        super().__init__(
+            orcid_id=orcid_id,
+            name=name,
+            private_key=private_key,
+            public_key=public_key,
+            introduction_nanopub_uri=introduction_nanopub_uri,
+        )
 
 
-_dump_profile = yatiml.dump_function(Profile)
+_load_profile = yatiml.load_function(ProfileLoader)
 
 
+_dump_profile = yatiml.dump_function(ProfileLoader)
+
+
+# TODO: remove
 def get_orcid_id() -> str:
     """Returns the user's ORCID."""
-    return get_profile().orcid_id
+    return load_profile().orcid_id
 
 
-# TODO: remove, this should be in the Profile object
-# def get_public_key() -> str:
-#     """Returns the user's public key."""
-#     try:
-#         with open(get_profile().public_key, 'r') as f:
-#             return f.read()
-#     except FileNotFoundError:
-#         raise ProfileError(f'Public key file {get_profile().public_key} for nanopub not found.\n'
-#                            f'Maybe your nanopub profile was not set up yet or not set up '
-#                            f'correctly. \n{PROFILE_INSTRUCTIONS_MESSAGE}')
-
-
-@lru_cache()
-def get_profile(profile_path: str = None) -> Profile:
+# @lru_cache()
+def load_profile(profile_path: Union[Path, str] = DEFAULT_PROFILE_PATH) -> Profile:
     """Retrieve nanopub user profile.
 
     By default the profile is stored in `HOME_DIR/.nanopub/profile.yaml`.
@@ -112,13 +134,15 @@ def get_profile(profile_path: str = None) -> Profile:
         if profile_path:
             return _load_profile(Path(profile_path))
         else:
-            return _load_profile(PROFILE_PATH)
+            return _load_profile(DEFAULT_PROFILE_PATH)
     except (yatiml.RecognitionError, FileNotFoundError) as e:
         msg = (f'{e}\nYour nanopub profile has not been set up yet, or is not set up correctly.\n'
                f'{PROFILE_INSTRUCTIONS_MESSAGE}')
         raise ProfileError(msg)
 
 
+
+# TODO: fix for new Profile class
 def store_profile(profile: Profile) -> Path:
     """Stores the nanopub user profile.
 
@@ -133,5 +157,5 @@ def store_profile(profile: Profile) -> Path:
     Raises:
         yatiml.RecognitionError: If there is an error in the file.
     """
-    _dump_profile(profile, PROFILE_PATH)
-    return PROFILE_PATH
+    _dump_profile(profile, DEFAULT_PROFILE_PATH)
+    return DEFAULT_PROFILE_PATH

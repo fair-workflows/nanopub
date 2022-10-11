@@ -7,7 +7,9 @@ ROOT_FILEPATH = Path(__file__).parent.parent
 TESTS_FILEPATH = ROOT_FILEPATH / "tests"
 TEST_RESOURCES_FILEPATH = TESTS_FILEPATH / "resources"
 USER_CONFIG_DIR = Path.home() / ".nanopub"
-PROFILE_PATH = USER_CONFIG_DIR / "profile.yml"
+DEFAULT_PROFILE_PATH = USER_CONFIG_DIR / "profile.yml"
+
+NANOPUB_TEST_SERVER = 'http://test-server.nanopubs.lod.labs.vu.nl/'
 
 # Dummy URI when referring to a nanopub, will be replaced with published URI when publishing.
 # DUMMY_NANOPUB_URI = "http://purl.org/np/ARTIFACTCODE-PLACEHOLDER"

@@ -18,8 +18,9 @@ from nanopub.nanopub_config import NanopubConfig
 from nanopub.templates.nanopub_index import NanopubIndex
 from nanopub.templates.nanopub_introduction import NanopubIntroduction
 from nanopub.nanopublication import Nanopublication
-from nanopub.profile import get_profile
+from nanopub.profile import load_profile, Profile
 from nanopub.publication import Publication
+from nanopub.signer import Signer
 
 # from nanopub import NanopubConfig, Nanopublication, NanopubIndex, Profile
 
@@ -47,14 +48,12 @@ class NanopubClient:
 
     Args:
         use_test_server (bool): Toggle using the test nanopub server.
-
     """
 
     def __init__(
         self,
         use_test_server=False,
-        profile_path: str = None,
-        sign_explicit_private_key: bool = False,
+        profile: Profile = None,
         nanopub_config: NanopubConfig = NanopubConfig()
     ):
         self.use_test_server = use_test_server
@@ -63,19 +62,21 @@ class NanopubClient:
         else:
             self.grlc_urls = NANOPUB_GRLC_URLS
 
-        self.profile = get_profile(profile_path)
-        self.sign_explicit_private_key = sign_explicit_private_key
+        if not profile:
+            self.profile = load_profile()
+        else:
+            self.profile = profile
 
         self.nanopub_config = nanopub_config
-        # print(self.nanopub_config)
 
-        sign_with_key = None
-        if sign_explicit_private_key:
-            sign_with_key = self.profile.private_key
-
+        # TODO: Legacy java wrapper to move to tests
         self.java_wrapper = JavaWrapper(
             use_test_server=use_test_server,
-            explicit_private_key=sign_with_key
+            explicit_private_key=self.profile.private_key
+        )
+        self.signer = Signer(
+            profile=self.profile,
+            use_test_server=use_test_server,
         )
 
 
@@ -126,22 +127,22 @@ class NanopubClient:
 
         # Sign the nanopub
         signed_file = self.java_wrapper.sign(unsigned_fname)
+        print(signed_file)
 
-        print("ADD_SIGNATURE STARTS")
-        signed_g = self.java_wrapper.add_signature(publication.rdf, self.profile)
-
-        print("SIGNED BY PY STARTS")
+        signed_g = self.signer.add_signature(publication.rdf)
+        # print("SIGNED BY PY STARTS")
         print(signed_g.serialize(format="trig"))
-        print("SIGNED BY PY ENDS, the next one printed has been generated with java")
+        # print("SIGNED BY PY ENDS, the next one printed has been generated with java")
 
-        publication.update_from_signed(signed_file)
+        # publication.update_from_signed(signed_file)
+        publication.update_from_signed(signed_g)
 
         # publication.signed_file = signed_file
         # # Update the pub RDF to the signed one
         # publication.rdf = ConjunctiveGraph()
         # publication.rdf.parse(signed_file, format="trig")
         # publication.source_uri = publication.get_source_uri_from_graph
-        log.info(f"Signed {publication.source_uri} in {signed_file}")
+        log.info(f"Signed {publication.source_uri}")
         return publication
 
 
@@ -392,7 +393,7 @@ class NanopubClient:
 
 
 
-    # FIND NANOPUBS
+    # FIND AND FETCH NANOPUBS
 
     def find_nanopubs_with_text(
         self, text: str, pubkey: str = None, filter_retracted: bool = True

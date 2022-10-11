@@ -1,0 +1,28 @@
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ns1: <http://> .
+@prefix orcid: <https://orcid.org/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix sub: <http://purl.org/nanopub/temp/mynanopub#> .
+
+# mvn clean target
+# java -jar target/nanopub-1.42-SNAPSHOT-jar-with-dependencies.jar sign scripts/test.trig
+
+sub:assertion {
+    ns1:s ns1:p ns1:o .
+}
+
+sub:pubInfo {
+    sub: prov:wasAttributedTo orcid:0000-0000-0000-0000 .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo orcid:0000-0000-0000-0000 .
+}
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubInfo .
+}

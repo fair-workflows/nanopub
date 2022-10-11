@@ -1,14 +1,14 @@
 import hashlib
 from nanopub.trustyuri import TrustyUriUtils
 from nanopub.trustyuri.rdf.StatementComparator import StatementComparator
-from rdflib.term import URIRef
+from rdflib.term import URIRef, Literal
 import re
 from functools import cmp_to_key
 from nanopub.trustyuri.rdf.RdfPreprocessor import preprocess
 
 
-def normalize_quads(quads, hashstr=None, tmp_np_uri=None):
-    quads = preprocess(quads, hashstr=hashstr, tmp_np_uri=tmp_np_uri)
+def normalize_quads(quads, hashstr=None, baseuri=None):
+    quads = preprocess(quads, hashstr=hashstr, baseuri=baseuri)
     comp = StatementComparator(hashstr)
     quads = sorted(quads, key=cmp_to_key(lambda q1, q2: comp.compare(q1, q2)))
     s = ""
@@ -26,8 +26,8 @@ def normalize_quads(quads, hashstr=None, tmp_np_uri=None):
     return s
 
 
-def make_hash(quads, hashstr=None, tmp_np_uri=None):
-    s = normalize_quads(quads, hashstr, tmp_np_uri)
+def make_hash(quads, hashstr=None, baseuri=None):
+    s = normalize_quads(quads, hashstr, baseuri)
 
     # Uncomment next line to see what goes into the hash:
     #print "-----\n" + s + "-----\n"
@@ -36,15 +36,15 @@ def make_hash(quads, hashstr=None, tmp_np_uri=None):
 def value_to_string(value):
     if value is None:
         return "\n"
-    elif isinstance(value, URIRef):
-        return value + "\n"
-    else:
+    elif isinstance(value, Literal):
         if not value.language is None:
             # TODO: proper canonicalization of language tags
             return "@" + value.language.lower() + " " + escape(value) + "\n"
         if not value.datatype is None:
             return "^" + value.datatype + " " + escape(value) + "\n"
         return "^http://www.w3.org/2001/XMLSchema#string " + escape(value) + "\n"
+    else:
+        return str(value) + "\n"
 
 def escape(s):
     return re.sub(r'\n', r'\\n', re.sub(r'\\', r'\\\\', s))

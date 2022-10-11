@@ -1,4 +1,6 @@
 import shutil
+import os
+import tempfile
 import subprocess
 from pathlib import Path
 from typing import Union
@@ -40,7 +42,20 @@ class JavaWrapper:
             use_test_server: Toggle using the test nanopub server.
         """
         self.use_test_server = use_test_server
-        self.explicit_private_key = explicit_private_key
+        if explicit_private_key:
+            # Work around to put keys in files (needed for nanopub-java)
+            keys_dir = tempfile.mkdtemp()
+            private_key_path = os.path.join(keys_dir, "id_rsa")
+            with open(private_key_path, "w") as f:
+                f.write(explicit_private_key + '\n')
+            self.explicit_private_key = str(private_key_path)
+
+            public_key_path = os.path.join(keys_dir, "id_rsa.pub")
+            key = RSA.importKey(decodebytes(explicit_private_key.encode()))
+            public_key = key.publickey().export_key().decode('utf-8').replace("-----BEGIN PUBLIC KEY-----\n", "").replace("-----END PUBLIC KEY-----", "")
+            with open(public_key_path, "w") as f:
+                f.write(public_key)
+        # print(self.explicit_private_key)
 
     @staticmethod
     def _run_command(command):
@@ -69,120 +84,6 @@ class JavaWrapper:
         self._run_command(f'{NANOPUB_JAVA_SCRIPT} sign {unsigned_file} {args}')
         return self._get_signed_file(unsigned_file)
 
-
-
-    def add_signature(self, g: ConjunctiveGraph, profile: Profile) -> ConjunctiveGraph:
-        """Implementation in python of the process to sign with the private key"""
-        # TODO: Add signature triples
-        g.add((
-            DUMMY_NAMESPACE["sig"],
-            NPX["hasPublicKey"],
-            Literal(profile.get_public_key()),
-            DUMMY_NAMESPACE["pubInfo"],
-        ))
-        g.add((
-            DUMMY_NAMESPACE["sig"],
-            NPX["hasAlgorithm"],
-            Literal("RSA"),
-            DUMMY_NAMESPACE["pubInfo"],
-        ))
-        g.add((
-            DUMMY_NAMESPACE["sig"],
-            NPX["hasSignatureTarget"],
-            DUMMY_URI,
-            DUMMY_NAMESPACE["pubInfo"],
-        ))
-        # Normalize RDF
-        # print("NORMED RDF STARTS")
-        quads = RdfUtils.get_quads(g)
-
-        # TODO: the disgusting rdflib warnings "does not look like a valid URI, trying to serialize this will break." shows up here
-        normed_rdf = RdfHasher.normalize_quads(
-            quads,
-            tmp_np_uri=str(DUMMY_NAMESPACE)
-        )
-
-        # normed_rdf = normed_rdf + '\n'
-
-
-        print("NORMED RDF STARTS")
-        print(normed_rdf)
-        print("NORMED RDF END")
-
-        # Signature signature = Signature.getInstance("SHA256withRSA");
-        # https://stackoverflow.com/questions/55036059/a-java-server-use-sha256withrsa-to-sign-message-but-python-can-not-verify
-        private_key = RSA.importKey(decodebytes(profile.get_private_key().encode()))
-        signer = PKCS1_v1_5.new(private_key)
-        signature_b = signer.sign(SHA256.new(normed_rdf.encode()))
-        signature = encodebytes(signature_b).decode().replace("\n", "")
-        print("SIGNATURE STARTS")
-        print(signature)
-        print("SIGNATURE ENDS")
-
-        g.add((
-            DUMMY_NAMESPACE["sig"],
-            NPX["hasSignature"],
-            Literal(signature),
-            DUMMY_NAMESPACE["pubInfo"],
-        ))
-
-        quads = RdfUtils.get_quads(g)
-        trusty_artefact = RdfHasher.make_hash(
-            quads,
-            tmp_np_uri=str(DUMMY_NAMESPACE)
-        )
-        print(trusty_artefact)
-
-        g = self.replace_trusty_in_graph(trusty_artefact, g)
-
-        print("TRUSTY REPLACE IN PYTHON START")
-        print(g.serialize(format="trig"))
-        print("TRUSTY REPLACE IN PYTHON END")
-
-        return g
-
-        # signed_g = ConjunctiveGraph()
-        # signed_g.parse()
-        # args = ''
-        # if self.explicit_private_key:
-        #     args = f'-k {self.explicit_private_key}'
-        # self._run_command(f'{NANOPUB_JAVA_SCRIPT} sign {unsigned_file} {args}')
-        # return self._get_signed_file(unsigned_file)
-
-    # Implement sign/publish in python:
-    # 1. Use trusty-uri lib to get the trusty URI
-    # 2. Replace the temp nanopub URIs in the graph by the generated trusty URI
-    # 3. Add signature in pubInfo (how to generate it?)
-    # In java SignatureUtils > createSignedNanopub
-    # 4. Publish to one of the np servers: https://monitor.petapico.org/
-    # post.setEntity(new StringEntity(nanopubString, "UTF-8"));
-    # post.setHeader("Content-Type", RDFFormat.TRIG.getDefaultMIMEType());
-
-
-    def replace_trusty_in_graph(self, trusty_artefact: str, graph: ConjunctiveGraph):
-        # replace_trusty_in_graph()
-        np_uri = FINAL_NANOPUB_URI + trusty_artefact
-        # np_namespace = np_uri + "#"
-        print("BASE NP URI:", np_uri)
-        ns_len = len(str(DUMMY_NAMESPACE))-1
-
-        for s, p, o, c in graph.quads():
-            g = c.identifier
-            new_s = s
-            new_o = o
-            new_g = g
-            if isinstance(s, URIRef) and str(s).startswith(str(DUMMY_NAMESPACE)) :
-                new_s = URIRef(np_uri + str(s)[ns_len:])
-            if isinstance(o, URIRef) and str(o).startswith(str(DUMMY_NAMESPACE)) :
-                new_o = URIRef(np_uri + str(o)[ns_len:])
-            if isinstance(g, URIRef) and str(g).startswith(str(DUMMY_NAMESPACE)) :
-                new_g = URIRef(np_uri + str(g)[ns_len:])
-                # print("REALLY STOP")
-                # print("STOP JOKE", str(g), str(new_g))
-            graph.remove((s, p, o, g))
-            graph.add((new_s, p, new_o, new_g))
-            # print(str(new_g))
-        return graph
 
 
     def publish(self, signed: str):

@@ -4,7 +4,12 @@ from rdflib.graph import ConjunctiveGraph, Graph
 from rdflib.util import guess_format
 
 def get_trustyuri_str(baseuri, hashstr, suffix=None):
-    s = expand_baseuri(baseuri) + hashstr
+    # s = expand_baseuri(baseuri) + hashstr
+    # try:
+    #     # TODO: fix the horrible rdflib warnings due to the space in the URIRef
+    #     return URIRef(re.sub(baseuri, f"http://purl.org/np/ {suffix}", str(resource)))
+    # except:
+    #     return URIRef(re.sub(baseuri.decode('utf-8'), " ", str(uri)))
     if not suffix is None:
         suffix = suffix.decode('utf-8')
         if suffix.startswith("_"):
@@ -21,10 +26,18 @@ def get_trustyuri(resource, baseuri, hashstr, bnodemap):
         suffix = get_suffix(resource, baseuri)
         if suffix is None and not get_str(resource) == get_str(baseuri):
             return resource
-        return URIRef(get_trustyuri_str(baseuri, hashstr, suffix))
+        if suffix is None or suffix == "":
+            return str(f"http://purl.org/np/{hashstr}")
+        return str(f"http://purl.org/np/{hashstr}#{suffix}")
+        # return str(re.sub(baseuri, f"http://purl.org/np/{hashstr}{suffix}", str(resource)))
+        # return str(get_trustyuri_str(resource, baseuri, hashstr, suffix))
+        # return URIRef(get_trustyuri_str(baseuri, hashstr, suffix))
     if isinstance(resource, BNode):
         n = get_bnode_number(resource, bnodemap)
-        return URIRef(expand_baseuri(baseuri) + hashstr + "#_" + str(n))
+        # np_uri = str(re.sub(baseuri, f"http://purl.org/np/{hashstr}", str(resource)))
+        np_uri = str(f"http://purl.org/np/{hashstr}")
+        return str(np_uri + "#_" + str(n))
+        # return URIRef(expand_baseuri(baseuri) + hashstr + "#_" + str(n))
     else:
         return None
 
@@ -32,7 +45,7 @@ def get_suffix(plainuri, baseuri):
     p = get_str(plainuri)
     b = get_str(baseuri)
     if (p == b): return None
-    if (p.startswith(b)): return p[len(b):]
+    if (p.startswith(b)): return p[len(b):].decode('utf-8')
     return None
 
 def normalize(uri, hashstr):

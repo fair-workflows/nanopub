@@ -16,7 +16,8 @@ sub:Head {
 
 sub:assertion {
   this: npx:includesElement <http://purl.org/np/RA1o-WSjHkm56DZuzziAYoUmuF-muVtPdlQKvsCT4yaPA>,
-      <http://purl.org/np/RA1q1I6-EtcuWMVsCZECCASXoiWt61VMOgDJ9JSCP4UGU>, <http://purl.org/np/RA4m_1AFmib-aDjLwgKLfIuxKEqa0pHh5H4cyc8_czWx0>,
+      <http://purl.org/np/RA1q1I6-EtcuWMVsCZECCASXoiWt61VMOgDJ9JSCP4UGU>,
+      <http://purl.org/np/RA4m_1AFmib-aDjLwgKLfIuxKEqa0pHh5H4cyc8_czWx0>,
       <http://purl.org/np/RA58xJdnse4hTrX8IdNqgPYLTW_kHdIeB14qiTtmwFvCo>, <http://purl.org/np/RA7HMrJxgphlwIVFoQOjKGGSAYrFIxZyoau9lTJvub38A>,
       <http://purl.org/np/RA9dUlTqvAT0LumWwa6UX_Cztck2J6w55L91HdvMjjppc>, <http://purl.org/np/RA9nG0iq5jiyVIQz30GbxLWbxnFEUFqLe5_IA5yJEW7Qo>,
       <http://purl.org/np/RAAhmGwEay7buLOKE4OQ1erwlBK9TYuAcJq1eW6yfBOO8>, <http://purl.org/np/RAB8B41GzXHUN3VzlWFwQRh_q7WSugLI7jZkNFWAe1Kxs>,

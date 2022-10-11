@@ -188,7 +188,7 @@ class Publication:
                                                pubinfo_rdf)
 
         if not nanopub_profile:
-            nanopub_profile = profile.get_profile()
+            nanopub_profile = profile.load_profile()
 
         if attribute_assertion_to_profile:
             assertion_attributed_to = rdflib.URIRef(nanopub_profile.orcid_id)

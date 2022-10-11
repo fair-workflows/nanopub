@@ -1,78 +1,60 @@
 import os
 import tempfile
 
-from rdflib import BNode, Graph, Literal, URIRef
+from rdflib import BNode, Graph, Literal
 
-from nanopub import NanopubClient, NanopubConfig, namespaces, load_profile, Nanopublication
+from nanopub import NanopubClient, NanopubConfig, namespaces
 from nanopub.definitions import TEST_RESOURCES_FILEPATH
 from tests.conftest import test_profile_path
 # from tests.conftest import skip_if_nanopub_server_unavailable
 
-profile = load_profile(test_profile_path)
-config = NanopubConfig(
-    add_prov_generated_time=False,
-    add_pubinfo_generated_time=False,
-    attribute_assertion_to_profile=True,
-    attribute_publication_to_profile=True,
-    assertion_attributed_to=None,
-    publication_attributed_to=None,
-    derived_from=None
-)
+
 client = NanopubClient(
     use_test_server=True,
-    profile=profile,
-    nanopub_config=config
+    profile_path=test_profile_path,
+    # sign_explicit_private_key=True,
+    nanopub_config=NanopubConfig(
+        add_prov_generated_time=False,
+        add_pubinfo_generated_time=False,
+        attribute_assertion_to_profile=True,
+        attribute_publication_to_profile=True,
+        assertion_attributed_to=None,
+        publication_attributed_to=None,
+        derived_from=None
+    )
 )
 
+# TEST_ASSERTION = (namespaces.AUTHOR.DrBob, namespaces.HYCL.claims, rdflib.Literal('This is a test'))
+# PUBKEY = 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCC686zsZaQWthNDSZO6unvhtSkXSLT8iSY/UUwD/' \
+#          '7T9tabrEvFt/9UPsCsg/A4HG6xeuPtL5mVziVnzbxqi9myQOY62LBja85pYLWaZPUYakP' \
+#          'HyVm9A0bRC2PUYZde+METkZ6eoqLXP26Qo5b6avPcmNnKkr5OQb7KXaeX2K2zQQIDAQAB'
+# NANOPUB_SAMPLE_SIGNED = str(TEST_RESOURCES_FILEPATH / 'nanopub_sample_signed.trig')
 
-class TestNanopublication:
 
-    def test_nanopub_sign_uri(self):
-        expected_np_uri = "http://purl.org/np/RANn9T0QMUldZhm6dlUHtOCvwALxE3UTJeVZ0M9qGT-qk"
+class TestSigner:
+
+
+    def test_nanopub_sign(self):
+        expected_np_uri = "http://purl.org/np/RAmdN3ynXoyMki1Ab9j9O4KWnX2hj7ETw3PdKtOMkpvhY"
+
         assertion = Graph()
         assertion.add((
-            URIRef('http://test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
+            BNode('test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
         ))
 
-        # np = client.create_nanopub(
-        #     assertion=assertion,
-        #     # introduces_concept=test_concept,
-        # )
-        np = Nanopublication(
-            config=config,
-            profile=profile,
-            assertion=assertion
+        # test_concept = rdflib.term.BNode('test')
+        # test_published_uri = 'http://www.example.com/my-nanopub'
+        # expected_concept_uri = 'http://www.example.com/my-nanopub#test'
+        # client.java_wrapper.publish = mock.MagicMock(return_value=test_published_uri)
+
+        np = client.create_nanopub(
+            assertion=assertion,
+            # introduces_concept=test_concept,
         )
         np = client.sign(np)
         print(np.rdf.serialize(format="trig"))
         print(np.source_uri)
-        print(expected_np_uri)
-        assert np.source_uri == expected_np_uri + '#'
-
-
-    # def test_nanopub_sign_bnode(self):
-    #     expected_np_uri = "http://purl.org/np/RAmdN3ynXoyMki1Ab9j9O4KWnX2hj7ETw3PdKtOMkpvhY"
-
-    #     assertion = Graph()
-    #     assertion.add((
-    #         BNode('test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
-    #     ))
-
-    #     # np = client.create_nanopub(
-    #     #     assertion=assertion,
-    #     #     # introduces_concept=test_concept,
-    #     # )
-    #     np = Nanopublication(
-    #         config=config,
-    #         profile=profile,
-    #         assertion=assertion
-    #     )
-    #     np = client.sign(np)
-    #     # print(np.rdf.serialize(format="trig"))
-    #     print(np.source_uri)
-    #     print(expected_np_uri)
-    #     # print(np.source_uri)
-    #     # assert np.source_uri == expected_np_uri
+        assert np.source_uri == expected_np_uri
 
 
 

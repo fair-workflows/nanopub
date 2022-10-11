@@ -1,8 +1,12 @@
-from nanopub import NanopubClient, NanopubConfig
-from rdflib import Graph, URIRef
+from rdflib import Graph, URIRef, Literal
+
+from nanopub import NanopubClient, NanopubConfig, namespaces
 
 assertion = Graph()
-assertion.add(( URIRef("http://s"), URIRef("http://p"), URIRef("http://o")))
+# assertion.add(( URIRef("http://s"), URIRef("http://p"), URIRef("http://o")))
+assertion.add((
+    URIRef('http://test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
+))
 
 client = NanopubClient(
     # profile_path='tests/resources'

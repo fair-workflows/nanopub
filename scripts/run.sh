@@ -2,4 +2,6 @@
 
 set -e
 
+clear
+
 python scripts/run.py
