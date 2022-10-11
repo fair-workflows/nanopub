@@ -57,6 +57,7 @@ class NanopubClient:
         profile: Profile = None,
         nanopub_config: NanopubConfig = NanopubConfig()
     ):
+        self.use_test_server = use_test_server
         if use_test_server:
             self.grlc_urls = [NANOPUB_TEST_GRLC_URL]
             self.use_server = NANOPUB_TEST_SERVER

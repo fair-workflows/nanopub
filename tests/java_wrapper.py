@@ -23,6 +23,7 @@ from nanopub.profile import PROFILE_INSTRUCTIONS_MESSAGE, Profile
 # NANOPUB_JAVA_SCRIPT = ('nanopub-java' if shutil.which('nanopub-java')  # In case installed with pip
 #                        else ROOT_FILEPATH / 'bin' / 'nanopub-java')  # In case of local dev
 
+# Only used in dev or tests when the repo is cloned
 NANOPUB_JAVA_SCRIPT = (ROOT_FILEPATH / 'bin' / 'nanopub-java')
 
 NANOPUB_TEST_SERVER = 'http://test-server.nanopubs.lod.labs.vu.nl/'

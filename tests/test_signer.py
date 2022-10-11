@@ -3,15 +3,15 @@ import tempfile
 
 from rdflib import BNode, Graph, Literal
 
-from nanopub import NanopubClient, NanopubConfig, namespaces
+from nanopub import NanopubClient, NanopubConfig, namespaces, load_profile
 from nanopub.definitions import TEST_RESOURCES_FILEPATH
 from tests.conftest import test_profile_path
 # from tests.conftest import skip_if_nanopub_server_unavailable
 
-
+profile = load_profile(test_profile_path)
 client = NanopubClient(
     use_test_server=True,
-    profile_path=test_profile_path,
+    profile=profile,
     # sign_explicit_private_key=True,
     nanopub_config=NanopubConfig(
         add_prov_generated_time=False,
