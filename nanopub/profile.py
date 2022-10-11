@@ -168,6 +168,9 @@ def store_profile(profile: Profile) -> Path:
 
 def generate_keys(path: Path = USER_CONFIG_DIR) -> str:
     """Generate private/public RSA key pair at the path specified in the profile.yml, to be used to sign nanopubs"""
+    if not path.exists():
+        path.mkdir()
+
     key = RSA.generate(2048)
     private_key_str = key.export_key('PEM', pkcs=8).decode('utf-8')
     public_key_str = key.publickey().export_key().decode('utf-8')
@@ -175,8 +178,8 @@ def generate_keys(path: Path = USER_CONFIG_DIR) -> str:
     # Format private and public keys to remove header/footer and all newlines, as this is required by nanopub-java
     private_key_str = private_key_str.replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "").replace("\n", "").strip()
     public_key_str = public_key_str.replace("-----BEGIN PUBLIC KEY-----", "").replace("-----END PUBLIC KEY-----", "").replace("\n", "").strip()
-    private_path = path / 'id_rsa'
-    public_path = path / 'id_rsa.pub'
+    private_path = path / "id_rsa"
+    public_path = path / "id_rsa.pub"
 
     # Store key pair
     private_key_file = open(private_path, "w")
