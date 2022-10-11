@@ -47,33 +47,28 @@ class TestNanopublication:
         print(np.rdf.serialize(format="trig"))
         print(np.source_uri)
         print(expected_np_uri)
-        assert np.source_uri == expected_np_uri + '#'
+        assert np.source_uri == expected_np_uri
 
 
-    # def test_nanopub_sign_bnode(self):
-    #     expected_np_uri = "http://purl.org/np/RAmdN3ynXoyMki1Ab9j9O4KWnX2hj7ETw3PdKtOMkpvhY"
+    def test_nanopub_sign_bnode(self):
+        expected_np_uri = "http://purl.org/np/RAmdN3ynXoyMki1Ab9j9O4KWnX2hj7ETw3PdKtOMkpvhY"
 
-    #     assertion = Graph()
-    #     assertion.add((
-    #         BNode('test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
-    #     ))
+        assertion = Graph()
+        assertion.add((
+            BNode('test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
+        ))
 
-    #     # np = client.create_nanopub(
-    #     #     assertion=assertion,
-    #     #     # introduces_concept=test_concept,
-    #     # )
-    #     np = Nanopublication(
-    #         config=config,
-    #         profile=profile,
-    #         assertion=assertion
-    #     )
-    #     np = client.sign(np)
-    #     # print(np.rdf.serialize(format="trig"))
-    #     print(np.source_uri)
-    #     print(expected_np_uri)
-    #     # print(np.source_uri)
-    #     # assert np.source_uri == expected_np_uri
-
+        # np = client.create_nanopub(
+        #     assertion=assertion,
+        #     # introduces_concept=test_concept,
+        # )
+        np = Nanopublication(
+            config=config,
+            profile=profile,
+            assertion=assertion
+        )
+        np = client.sign(np)
+        assert np.source_uri == expected_np_uri
 
 
 
