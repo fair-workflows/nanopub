@@ -44,9 +44,9 @@ class TestNanopublication:
             assertion=assertion
         )
         np = client.sign(np)
-        print(np.rdf.serialize(format="trig"))
-        print(np.source_uri)
-        print(expected_np_uri)
+        # print(np.rdf.serialize(format="trig"))
+        # print(np.source_uri)
+        # print(expected_np_uri)
         assert np.source_uri == expected_np_uri
 
 
@@ -58,16 +58,13 @@ class TestNanopublication:
             BNode('test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
         ))
 
-        # np = client.create_nanopub(
-        #     assertion=assertion,
-        #     # introduces_concept=test_concept,
-        # )
         np = Nanopublication(
             config=config,
             profile=profile,
             assertion=assertion
         )
         np = client.sign(np)
+        # print(np.rdf.serialize(format='trig'))
         assert np.source_uri == expected_np_uri
 
 

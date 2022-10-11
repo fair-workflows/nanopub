@@ -12,7 +12,7 @@ import rdflib
 import requests
 
 from nanopub import namespaces
-from nanopub.definitions import DUMMY_NANOPUB_URI, MAX_NP_PER_INDEX, MAX_TRIPLES_PER_NANOPUB, log
+from nanopub.definitions import DUMMY_NANOPUB_URI, MAX_NP_PER_INDEX, MAX_TRIPLES_PER_NANOPUB, log, NANOPUB_TEST_SERVER, NANOPUB_SERVER_LIST
 from nanopub.java_wrapper import JavaWrapper
 from nanopub.nanopub_config import NanopubConfig
 from nanopub.templates.nanopub_index import NanopubIndex
@@ -53,14 +53,18 @@ class NanopubClient:
     def __init__(
         self,
         use_test_server=False,
+        use_server=NANOPUB_SERVER_LIST[0],
         profile: Profile = None,
         nanopub_config: NanopubConfig = NanopubConfig()
     ):
-        self.use_test_server = use_test_server
         if use_test_server:
             self.grlc_urls = [NANOPUB_TEST_GRLC_URL]
+            self.use_server = NANOPUB_TEST_SERVER
         else:
             self.grlc_urls = NANOPUB_GRLC_URLS
+            self.use_server = use_server
+            if use_server not in NANOPUB_SERVER_LIST:
+                log.warn(f"{use_server} is not in our list of nanopub servers. {', '.join(NANOPUB_SERVER_LIST)}\nMake sure you are using an existing Nanopub server.")
 
         if not profile:
             self.profile = load_profile()
@@ -70,13 +74,13 @@ class NanopubClient:
         self.nanopub_config = nanopub_config
 
         # TODO: Legacy java wrapper to move to tests
-        self.java_wrapper = JavaWrapper(
-            use_test_server=use_test_server,
-            explicit_private_key=self.profile.private_key
-        )
+        # self.java_wrapper = JavaWrapper(
+        #     use_test_server=use_test_server,
+        #     explicit_private_key=self.profile.private_key
+        # )
         self.signer = Signer(
             profile=self.profile,
-            use_test_server=use_test_server,
+            use_server=self.use_server,
         )
 
 
@@ -126,13 +130,10 @@ class NanopubClient:
         publication.rdf.serialize(destination=unsigned_fname, format="trig")
 
         # Sign the nanopub
-        signed_file = self.java_wrapper.sign(unsigned_fname)
-        print(signed_file)
+        # signed_file = self.java_wrapper.sign(unsigned_fname)
+        # print(signed_file)
 
         signed_g = self.signer.add_signature(publication.rdf)
-        # print("SIGNED BY PY STARTS")
-        print(signed_g.serialize(format="trig"))
-        # print("SIGNED BY PY ENDS, the next one printed has been generated with java")
 
         # publication.update_from_signed(signed_file)
         publication.update_from_signed(signed_g)

@@ -6,6 +6,7 @@ from typing import Union
 import rdflib
 import requests
 from rdflib import ConjunctiveGraph, Literal, URIRef, BNode, Namespace
+from nanopub.nanopublication import Nanopublication
 # from trustyuri.rdf.RdfHasher import make_hash
 from nanopub.trustyuri.rdf import RdfHasher, RdfUtils
 from Crypto.Signature import PKCS1_v1_5
@@ -13,7 +14,7 @@ from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
 from base64 import decodebytes, encodebytes
 
-from nanopub.definitions import ROOT_FILEPATH, DUMMY_NAMESPACE, DUMMY_URI, FINAL_NANOPUB_URI
+from nanopub.definitions import log, ROOT_FILEPATH, DUMMY_NAMESPACE, DUMMY_URI, FINAL_NANOPUB_URI, NANOPUB_SERVER_LIST
 from nanopub.namespaces import NPX
 from nanopub.profile import PROFILE_INSTRUCTIONS_MESSAGE, Profile
 from nanopub.trustyuri.rdf.RdfPreprocessor import transform
@@ -27,14 +28,14 @@ class Signer:
     def __init__(
             self,
             profile: Profile,
-            use_test_server: bool = False,
+            use_server: str = NANOPUB_SERVER_LIST[0],
         ):
         """Construct JavaWrapper.
 
         Args:
             use_test_server: Toggle using the test nanopub server.
         """
-        self.use_test_server = use_test_server
+        self.use_server = use_server
         self.profile = profile
         # self.explicit_private_key = explicit_private_key
 
@@ -81,7 +82,7 @@ class Signer:
         signer = PKCS1_v1_5.new(private_key)
         signature_b = signer.sign(SHA256.new(normed_rdf.encode()))
         signature = encodebytes(signature_b).decode().replace("\n", "")
-        print(f"Nanopub signature: {signature}")
+        log.debug(f"Nanopub signature: {signature}")
 
         g.add((
             DUMMY_NAMESPACE["sig"],
@@ -96,25 +97,13 @@ class Signer:
             baseuri=str(DUMMY_NAMESPACE),
             hashstr=" "
         )
-        print(f"Trusty artefact: {trusty_artefact}")
+        log.debug(f"Trusty artefact: {trusty_artefact}")
 
         g = self.replace_trusty_in_graph(trusty_artefact, str(DUMMY_NAMESPACE), g)
-
         # print("TRUSTY REPLACE IN PYTHON START")
         # print(g.serialize(format="trig"))
         # print("TRUSTY REPLACE IN PYTHON END")
-
         return g
-
-
-    # Implement sign/publish in python:
-    # 1. Use trusty-uri lib to get the trusty URI
-    # 2. Replace the temp nanopub URIs in the graph by the generated trusty URI
-    # 3. Add signature in pubInfo (how to generate it?)
-    # In java SignatureUtils > createSignedNanopub
-    # 4. Publish to one of the np servers: https://monitor.petapico.org/
-    # post.setEntity(new StringEntity(nanopubString, "UTF-8"));
-    # post.setHeader("Content-Type", RDFFormat.TRIG.getDefaultMIMEType());
 
 
     def replace_trusty_in_graph(self, trusty_artefact: str, dummy_ns: str, graph: ConjunctiveGraph):
@@ -139,22 +128,50 @@ class Signer:
         return graph
 
 
-    # def publish(self, signed: str):
-    #     """Publish.
 
-    #     Publish the signed nanopub to the nanopub server. Publishing to the real server depends
-    #     on nanopub-java, for the test server we do a simple POST request.
-    #     TODO: Use nanopub-java for publishing to test once it supports it.
-    #     """
-    #     args = ''
-    #     if self.explicit_private_key:
-    #         args = f'-k {self.explicit_private_key}'
+    def publish(self, np: Nanopublication):
+        """Publish a nanopub.
 
-    #     if self.use_test_server:
-    #         headers = {'content-type': 'application/x-www-form-urlencoded'}
-    #         with open(signed, 'rb') as data:
-    #             r = requests.post(NANOPUB_TEST_SERVER, headers=headers, data=data)
-    #         r.raise_for_status()
-    #     else:
-    #         self._run_command(f'{NANOPUB_JAVA_SCRIPT} publish {signed} {args}')
-    #     return self.extract_nanopub_url(signed)
+        Publish the signed nanopub to the nanopub server we do a simple POST request.
+        """
+        # headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+        headers = {'Content-Type': 'application/trig'}
+        data = np.rdf.serialize(format="trig")
+
+        r = requests.post(self.use_server, headers=headers, data=data)
+        r.raise_for_status()
+        print(r.content)
+        return r.content
+
+
+
+    def verify(self, np: Nanopublication) -> bool:
+        # TODO: improve to better test the different components (signature, etc)
+        g = np.rdf
+        # signature_uri = URIRef(f"{np.source_uri}#sig")
+        # for s, p, o in g.triples((signature_uri, NPX.hasSignature, None)):
+        #     signature = str(o)
+        # g.remove((signature_uri, NPX.hasSignature, None))
+
+        quads = RdfUtils.get_quads(g)
+        trusty_artefact = RdfHasher.make_hash(
+            quads,
+            baseuri=str(DUMMY_NAMESPACE),
+            hashstr=" "
+        )
+        expected_uri = f"http://purl.org/np/{trusty_artefact}"
+        if expected_uri != np.source_uri:
+            print(f"The Trusty artefact of the nanopub {np.source_uri} is not valid. It should be {trusty_artefact}")
+            return False
+        else:
+            return True
+
+
+# Implement sign/publish in python:
+# 1. Use trusty-uri lib to get the trusty URI
+# 2. Replace the temp nanopub URIs in the graph by the generated trusty URI
+# 3. Add signature in pubInfo (how to generate it?)
+# In java SignatureUtils > createSignedNanopub
+# 4. Publish to one of the np servers: https://monitor.petapico.org/
+# post.setEntity(new StringEntity(nanopubString, "UTF-8"));
+# post.setHeader("Content-Type", RDFFormat.TRIG.getDefaultMIMEType());

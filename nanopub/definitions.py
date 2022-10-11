@@ -10,6 +10,17 @@ USER_CONFIG_DIR = Path.home() / ".nanopub"
 DEFAULT_PROFILE_PATH = USER_CONFIG_DIR / "profile.yml"
 
 NANOPUB_TEST_SERVER = 'http://test-server.nanopubs.lod.labs.vu.nl/'
+# https://monitor.petapico.org/.csv
+NANOPUB_SERVER_LIST = [
+    'http://app.tkuhn.eculture.labs.vu.nl/nanopub-server-1/',
+    'http://app.tkuhn.eculture.labs.vu.nl/nanopub-server-2/',
+    'http://app.tkuhn.eculture.labs.vu.nl/nanopub-server-3/',
+    'http://app.tkuhn.eculture.labs.vu.nl/nanopub-server-4/',
+    'http://server.nanopubs.lod.labs.vu.nl/',
+    'http://server.np.dumontierlab.com/',
+    "https://np.petapico.org/",
+]
+
 
 # Dummy URI when referring to a nanopub, will be replaced with published URI when publishing.
 # DUMMY_NANOPUB_URI = "http://purl.org/np/ARTIFACTCODE-PLACEHOLDER"
