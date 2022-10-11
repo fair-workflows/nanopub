@@ -5,28 +5,14 @@ from rdflib import BNode, Graph, Literal, URIRef
 
 from nanopub import NanopubClient, NanopubConfig, namespaces, load_profile, Nanopub
 from nanopub.definitions import TEST_RESOURCES_FILEPATH
-from tests.conftest import test_profile_path
-from tests.java_wrapper import JavaWrapper
+from tests.conftest import profile_test, default_config, java_wrap
 # from tests.conftest import skip_if_nanopub_server_unavailable
 
-profile = load_profile(test_profile_path)
-config = NanopubConfig(
-    add_prov_generated_time=False,
-    add_pubinfo_generated_time=False,
-    attribute_assertion_to_profile=True,
-    attribute_publication_to_profile=True,
-    assertion_attributed_to=None,
-    publication_attributed_to=None,
-    derived_from=None
-)
 client = NanopubClient(
     use_test_server=True,
-    profile=profile,
-    nanopub_config=config
+    profile=profile_test,
+    nanopub_config=default_config
 )
-
-java_wrap = JavaWrapper(private_key=profile.private_key)
-
 
 class TestNanopublication:
 
@@ -37,22 +23,15 @@ class TestNanopublication:
             URIRef('http://test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
         ))
 
-        # np = client.create_nanopub(
-        #     assertion=assertion,
-        #     # introduces_concept=test_concept,
-        # )
         np = Nanopub(
-            config=config,
-            profile=profile,
+            config=default_config,
+            profile=profile_test,
             assertion=assertion
         )
         java_np = java_wrap.sign(np)
 
         np = client.sign(np)
 
-        # print(np.rdf.serialize(format="trig"))
-        # print(np.source_uri)
-        # print(expected_np_uri)
         assert np.source_uri == expected_np_uri
         assert np.source_uri == java_np
 
@@ -66,8 +45,8 @@ class TestNanopublication:
         ))
 
         np = Nanopub(
-            config=config,
-            profile=profile,
+            config=default_config,
+            profile=profile_test,
             assertion=assertion
         )
         np = client.sign(np)
@@ -83,8 +62,8 @@ class TestNanopublication:
             URIRef('http://test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
         ))
         np = Nanopub(
-            config=config,
-            profile=profile,
+            config=default_config,
+            profile=profile_test,
             assertion=assertion
         )
         np = client.publish(np)

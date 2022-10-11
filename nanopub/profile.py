@@ -93,8 +93,9 @@ Public key: {self.public_key}
 Intro Nanopub URI: {self.introduction_nanopub_uri}
 """
 
+
 class ProfileLoader(Profile):
-    """A class to load a user profile from a local YAML file."""
+    """A class to load a user profile from a local YAML file, only used for YAtiML."""
     def __init__(
             self,
             orcid_id: str,

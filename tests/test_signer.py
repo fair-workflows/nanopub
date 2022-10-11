@@ -3,25 +3,20 @@ import tempfile
 
 from rdflib import BNode, Graph, Literal
 
-from nanopub import NanopubClient, NanopubConfig, namespaces, load_profile
-from nanopub.definitions import TEST_RESOURCES_FILEPATH
-from tests.conftest import test_profile_path
+from nanopub import NanopubClient, Nanopub, namespaces, load_profile
+from nanopub.definitions import NANOPUB_TEST_SERVER
+from nanopub.signer import Signer
+from tests.conftest import profile_test, default_config, java_wrap
 # from tests.conftest import skip_if_nanopub_server_unavailable
 
-profile = load_profile(test_profile_path)
-client = NanopubClient(
-    use_test_server=True,
-    profile=profile,
-    # sign_explicit_private_key=True,
-    nanopub_config=NanopubConfig(
-        add_prov_generated_time=False,
-        add_pubinfo_generated_time=False,
-        attribute_assertion_to_profile=True,
-        attribute_publication_to_profile=True,
-        assertion_attributed_to=None,
-        publication_attributed_to=None,
-        derived_from=None
-    )
+# client = NanopubClient(
+#     use_test_server=True,
+#     profile=profile_test,
+#     nanopub_config=default_config
+# )
+signer = Signer(
+    profile=profile_test,
+    use_server=NANOPUB_TEST_SERVER,
 )
 
 # TEST_ASSERTION = (namespaces.AUTHOR.DrBob, namespaces.HYCL.claims, rdflib.Literal('This is a test'))
@@ -47,15 +42,24 @@ class TestSigner:
         # expected_concept_uri = 'http://www.example.com/my-nanopub#test'
         # client.java_wrapper.publish = mock.MagicMock(return_value=test_published_uri)
 
-        np = client.create_nanopub(
-            assertion=assertion,
-            # introduces_concept=test_concept,
-        )
-        np = client.sign(np)
-        print(np.rdf.serialize(format="trig"))
-        print(np.source_uri)
-        assert np.source_uri == expected_np_uri
+        # np = client.create_nanopub(
+        #     assertion=assertion,
+        #     # introduces_concept=test_concept,
+        # )
 
+        np = Nanopub(
+            config=default_config,
+            profile=profile_test,
+            assertion=assertion
+        )
+        java_np = java_wrap.sign(np)
+
+        signed_g = signer.add_signature(np.rdf)
+        np.update_from_signed(signed_g)
+
+        # print(np.rdf.serialize(format="trig"))
+        assert np.source_uri == expected_np_uri
+        assert np.source_uri == java_np
 
 
 

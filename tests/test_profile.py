@@ -4,7 +4,7 @@ from unittest import mock
 
 import pytest
 
-from tests.conftest import test_profile_path
+from tests.conftest import profile_test_path
 from nanopub.profile import Profile, load_profile, ProfileError
 from nanopub.definitions import TEST_RESOURCES_FILEPATH
 
@@ -48,7 +48,7 @@ def test_instantiate_profile_str():
 
 
 def test_load_profile():
-    p = load_profile(test_profile_path)
+    p = load_profile(profile_test_path)
 
     assert p.orcid_id == 'https://orcid.org/0000-0000-0000-0000'
     assert p.name == 'Python Tests'

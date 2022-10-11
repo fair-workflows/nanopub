@@ -3,13 +3,15 @@ from unittest import mock
 
 import pytest
 import rdflib
+from rdflib import Graph, URIRef, Literal
 
 from nanopub import NanopubClient, Publication, namespaces
 from nanopub.definitions import TEST_RESOURCES_FILEPATH
-from tests.conftest import skip_if_nanopub_server_unavailable
+from tests.conftest import skip_if_nanopub_server_unavailable, profile_test, java_wrap
 
 client = NanopubClient(
-    use_test_server=True
+    use_test_server=True,
+    profile=profile_test
 )
 
 TEST_ASSERTION = (namespaces.AUTHOR.DrBob, namespaces.HYCL.claims, rdflib.Literal('This is a test'))
@@ -50,7 +52,7 @@ class TestNanopubClient:
         Check that Nanopub text search is returning results for a few common search terms on the
         production nanopub server
         """
-        prod_client = NanopubClient()
+        prod_client = NanopubClient(profile=profile_test)
         searches = ['test', 'US']
         for search in searches:
             results = list(prod_client.find_nanopubs_with_text(search))
@@ -156,7 +158,7 @@ class TestNanopubClient:
         publication = Publication(rdf=test_rdf, source_uri='http://test-server/example')
         assert publication.is_test_publication
         # Production server client
-        client = NanopubClient(use_test_server=False)
+        client = NanopubClient(profile=profile_test, use_test_server=False)
         client.find_nanopubs_with_pattern = mock.MagicMock()
         # Because we try searching the prod server with a test publication this should trigger a
         # warning.
@@ -169,7 +171,7 @@ class TestNanopubClient:
         publication = Publication(rdf=test_rdf, source_uri='http://a-real-server/example')
         assert not publication.is_test_publication
         # Production server client
-        client = NanopubClient(use_test_server=True)
+        client = NanopubClient(profile=profile_test, use_test_server=True)
         client.find_nanopubs_with_pattern = mock.MagicMock()
         # Because we try searching the prod server with a test publication this should trigger a
         # warning.
@@ -255,8 +257,35 @@ class TestNanopubClient:
             assert np.provenance is not None
             assert len(np.__str__()) > 0
 
+
+    def test_nanopub_sign(self):
+        expected_np_uri = "http://purl.org/np/RANn9T0QMUldZhm6dlUHtOCvwALxE3UTJeVZ0M9qGT-qk"
+        assertion = Graph()
+        assertion.add((
+            URIRef('http://test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
+        ))
+        np = client.create_nanopub(assertion=assertion)
+        java_np = java_wrap.sign(np)
+        np = client.sign(np)
+
+        assert np.source_uri == expected_np_uri
+        assert np.source_uri == java_np
+
+    def test_nanopub_publish(self):
+        expected_np_uri = "http://purl.org/np/RANn9T0QMUldZhm6dlUHtOCvwALxE3UTJeVZ0M9qGT-qk"
+        assertion = Graph()
+        assertion.add((
+            URIRef('http://test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
+        ))
+        np = client.create_nanopub(assertion=assertion)
+        java_np = java_wrap.sign(np)
+        np = client.publish(np)
+
+        assert np.source_uri == expected_np_uri
+        assert np.source_uri == java_np
+
     # def test_nanopub_claim(self):
-    #     client = NanopubClient()
+    #     client = NanopubClient(profile=profile_test)
     #     client.java_wrapper.publish = mock.MagicMock()
     #     client.claim(statement_text='Some controversial statement')
 
@@ -264,7 +293,7 @@ class TestNanopubClient:
     #     test_concept = rdflib.term.BNode('test')
     #     test_published_uri = 'http://www.example.com/my-nanopub'
     #     expected_concept_uri = 'http://www.example.com/my-nanopub#test'
-    #     client = NanopubClient()
+    #     client = NanopubClient(profile=profile_test)
     #     client.java_wrapper.publish = mock.MagicMock(return_value=test_published_uri)
     #     assertion_rdf = rdflib.Graph()
     #     assertion_rdf.add(
@@ -288,23 +317,23 @@ class TestNanopubClient:
     #     rdf.add((rdflib.BNode('dontchangeme'), rdflib.RDF.type, rdflib.FOAF.Person))
     #     publication = Publication.from_assertion(assertion_rdf=rdf)
 
-    #     client = NanopubClient()
+    #     client = NanopubClient(profile=profile_test)
     #     client.java_wrapper.publish = mock.MagicMock()
     #     client.publish(publication)
 
     #     assert (rdflib.BNode('dontchangeme'), rdflib.RDF.type, rdflib.FOAF.Person) in rdf
 
     # def test_retract_with_force(self):
-    #     client = NanopubClient()
+    #     client = NanopubClient(profile=profile_test)
     #     client.java_wrapper.publish = mock.MagicMock()
     #     client.retract('http://www.example.com/my-nanopub', force=True)
 
-    # TODO: Not sure how to use mocks in this case (we want to get rid of the static get_public_key)
+    # # TODO: Not sure how to use mocks in this case (we want to get rid of the static get_public_key)
     # @mock.patch('nanopub.client.profile.get_public_key')
     # def test_retract_without_force(self, mock_get_public_key):
     #     test_uri = 'http://www.example.com/my-nanopub'
     #     test_public_key = 'test key'
-    #     client = NanopubClient()
+    #     client = NanopubClient(profile=profile_test)
     #     client.java_wrapper.publish = mock.MagicMock()
 
     #     # Return a mocked to-be-retracted publication object that is signed with public key
@@ -313,7 +342,7 @@ class TestNanopubClient:
     #     mock_publication.signed_with_public_key = test_public_key
     #     client.fetch = mock.MagicMock(return_value=mock_publication)
 
-    #     client = NanopubClient()
+    #     client = NanopubClient(profile=profile_test)
     #     # Retract should be successful when public keys match
     #     mock_get_public_key.return_value = test_public_key
     #     client.retract(test_uri)

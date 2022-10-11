@@ -4,8 +4,10 @@ import tempfile
 import pytest
 import requests
 
+from nanopub import load_profile, NanopubConfig
 from nanopub.client import NANOPUB_TEST_GRLC_URL
 from nanopub.definitions import TEST_RESOURCES_FILEPATH
+from tests.java_wrapper import JavaWrapper
 
 
 def pytest_addoption(parser):
@@ -25,12 +27,26 @@ skip_if_nanopub_server_unavailable = (
 
 
 # Create a temporary profile.yml file for testing
-test_profile_path = os.path.join(tempfile.mkdtemp(), "profile.yml")
+profile_test_path = os.path.join(tempfile.mkdtemp(), "profile.yml")
 profile_yaml = f"""orcid_id: https://orcid.org/0000-0000-0000-0000
 name: Python Tests
 public_key: {os.path.join(TEST_RESOURCES_FILEPATH, "id_rsa.pub")}
 private_key: {os.path.join(TEST_RESOURCES_FILEPATH, "id_rsa")}
 introduction_nanopub_uri:
 """
-with open(test_profile_path, "w") as f:
+with open(profile_test_path, "w") as f:
     f.write(profile_yaml)
+
+profile_test = load_profile(profile_test_path)
+
+default_config = NanopubConfig(
+    add_prov_generated_time=False,
+    add_pubinfo_generated_time=False,
+    attribute_assertion_to_profile=True,
+    attribute_publication_to_profile=True,
+    assertion_attributed_to=None,
+    publication_attributed_to=None,
+    derived_from=None
+)
+
+java_wrap = JavaWrapper(private_key=profile_test.private_key)
