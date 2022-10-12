@@ -50,12 +50,14 @@ client.claim('All cats are gray')
 my_assertion = Graph()
 my_assertion.add( (URIRef('www.example.org/timbernerslee'), RDF.type, FOAF.Person) )
 
-# 2. Make a Publication object with this assertion
-publication = Publication.from_assertion(assertion_rdf=my_assertion)
+
+
+# 2. Make a Nanopub object with this assertion
+np = client.create_nanopub(assertion=my_assertion)
 
 # 3. Publish the Publication object. The URI at which it is published is returned.
-publication_info = client.publish(publication)
-print(publication_info)
+np = client.publish(np)
+print(np)
 ```
 
 

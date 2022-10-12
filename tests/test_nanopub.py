@@ -4,8 +4,6 @@ from rdflib import BNode, Graph, Literal, URIRef
 from nanopub import Nanopub, NanopubClient, namespaces
 from tests.conftest import default_config, java_wrap, profile_test
 
-# from tests.conftest import skip_if_nanopub_server_unavailable
-
 client = NanopubClient(
     use_test_server=True,
     profile=profile_test,

@@ -264,18 +264,18 @@ class TestNanopubClient:
             assert len(np.__str__()) > 0
 
 
-    def test_nanopub_sign(self):
-        expected_np_uri = "http://purl.org/np/RANn9T0QMUldZhm6dlUHtOCvwALxE3UTJeVZ0M9qGT-qk"
-        assertion = Graph()
-        assertion.add((
-            URIRef('http://test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
-        ))
-        np = client.create_nanopub(assertion=assertion)
-        java_np = java_wrap.sign(np)
-        np = client.sign(np)
+    # def test_nanopub_sign(self):
+    #     expected_np_uri = "http://purl.org/np/RANn9T0QMUldZhm6dlUHtOCvwALxE3UTJeVZ0M9qGT-qk"
+    #     assertion = Graph()
+    #     assertion.add((
+    #         URIRef('http://test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
+    #     ))
+    #     np = client.create_nanopub(assertion=assertion)
+    #     java_np = java_wrap.sign(np)
+    #     np = client.sign(np)
 
-        assert np.source_uri == expected_np_uri
-        assert np.source_uri == java_np
+    #     assert np.source_uri == expected_np_uri
+    #     assert np.source_uri == java_np
 
     def test_nanopub_publish(self):
         expected_np_uri = "http://purl.org/np/RANn9T0QMUldZhm6dlUHtOCvwALxE3UTJeVZ0M9qGT-qk"

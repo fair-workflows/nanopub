@@ -107,6 +107,8 @@ To install the project for development you can either use [`venv`](https://docs.
 
 Tests are automatically run by a GitHub Actions workflow when new code is pushed to the GitHub repository.
 
+The tests use the [```nanopub-java```](https://github.com/Nanopublication/nanopub-java) tool for validating the signing process implemented in python produces similar nanopublications. This is automatically installed by the library.
+
 === "venv"
 
 	Run the tests locally:

@@ -17,12 +17,13 @@ function download-nanopub-jar {
 }
 
 WORKINGDIR=`pwd`
-LIBDIR=$WORKINGDIR/lib
+LIBDIR="$WORKINGDIR/lib"
 
 NANOPUBJAR=$(find $LIBDIR -maxdepth 1 -name "nanopub-*-jar-with-dependencies.jar" 2>/dev/null | sort -n | tail -1)
 
 if [ -z "$NANOPUBJAR" ]; then
   download-nanopub-jar
+  NANOPUBJAR=$(find $LIBDIR -maxdepth 1 -name "nanopub-*-jar-with-dependencies.jar" 2>/dev/null | sort -n | tail -1)
 fi
 
 if [ ! -z "$NANOPUBJAR" ]; then
