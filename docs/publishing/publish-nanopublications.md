@@ -1,15 +1,12 @@
-# Using the new Nanopublication object
-The `nanopub` library provides an intuitive API that makes publishing nanopublications much easier.
-The rationale is that you often do not want to worry about the details of composing
-the RDF that is often the same in each nanopublication. Instead you should focus on the
-content of your nanopublication: the assertion.
+# Publishing nanopublications
+
+The `nanopub` library provides an intuitive API that makes publishing nanopublications much easier. The rationale is that you often do not want to worry about the details of composing the RDF that is often the same in each nanopublication. Instead you should focus on the content of your nanopublication: the assertion.
 
 ## Prerequisits for publishing
 Before you can publish you should [setup your profile](../getting-started/setup)
 
 ## A simple recipe for publishing RDF triples
-You can use `Publication` objects to easily publish nanopublications with your assertion
-(think of the assertion as the content of your nanopublication).
+You can use `Publication` objects to easily publish nanopublications with your assertion (think of the assertion as the content of your nanopublication).
 
 This is a 3-step recipe that works for most cases:
   1) Instantiate a `NanopubClient`
@@ -19,7 +16,7 @@ This is a 3-step recipe that works for most cases:
 
 Here is an example:
 ```python
-import rdflib
+from rdflib import Graph
 from nanopub import NanopubClient, NanopubConfig
 
 # Create the client (we use use_test_server=True to point to the test server)
@@ -38,7 +35,7 @@ client = NanopubClient(
 )
 
 # 1. construct a desired assertion (a graph of RDF triples) using rdflib
-my_assertion = rdflib.Graph()
+my_assertion = Graph()
 my_assertion.add((
     rdflib.URIRef('www.example.org/timbernerslee'),
     rdflib.RDF.type,
@@ -49,8 +46,8 @@ my_assertion.add((
 np = client.create_nanopub(assertion=my_assertion)
 
 # 3. Publish the Publication object.
-publication_info = client.publish(np)
-Published to http://purl.org/np/RAfk_zBYDerxd6ipfv8fAcQHEzgZcVylMTEkiLlMzsgwQ
+np = client.publish(np)
+# Published to http://purl.org/np/RAfk_zBYDerxd6ipfv8fAcQHEzgZcVylMTEkiLlMzsgwQ
 ```
 View the resulting nanopublication [here](http://purl.org/np/RAfk_zBYDerxd6ipfv8fAcQHEzgZcVylMTEkiLlMzsgwQ).
 

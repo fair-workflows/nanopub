@@ -1,4 +1,4 @@
-site_name: Nanopub
+site_name: nanopub
 site_description: Python client for Nanopublications
 site_author: Robin Richardson, Sven van der Burg, Vincent Emonet
 site_url: https://fair-workflows.github.io/nanopub
@@ -47,15 +47,13 @@ theme:
     - toc.follow
 
 
-# https://fontawesome.com/icons/
-# https://squidfunk.github.io/mkdocs-material/reference/icons-emojis/
 nav:
   - Getting started:
     - Getting started: index.md
     - What are Nanopublications?: getting-started/what-are-nanopubs.md
     - Setup instructions: getting-started/setup.md
     - The nanopub test server: getting-started/test-server.md
-    - Development: development.md
+    - Development: getting-started/development.md
 
   - Publishing:
     - Publish nanopublications: publishing/publish-nanopublications.md
@@ -65,20 +63,22 @@ nav:
     # - Legacy Publication object: publishing/publishing-nanopublications.md
 
   - Searching:
-    - Searching: searching.md
-    - Fetching: fetching.md
+    - Searching: searching/searching.md
+    - Fetching: searching/fetching.md
 
   - API Reference:
     - Client: reference/client.md
     - Nanopub: reference/nanopub.md
+    - Config: reference/config.md
+    - Profile: reference/profile.md
     - Namespaces: reference/namespaces.md
 
   - "<span>Issues&nbsp;&nbsp;<i class='fa-solid fa-arrow-up-right-from-square'></i></span>": https://github.com/fair-workflows/nanopub/issues" target="_blank
-
+# https://fontawesome.com/icons/
+# https://squidfunk.github.io/mkdocs-material/reference/icons-emojis/
 
 
 plugins:
-# - admonition
 - search
 - autorefs
 - mkdocstrings:

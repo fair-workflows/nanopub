@@ -7,7 +7,7 @@ from typing import Tuple, Union
 import click
 import rdflib
 
-from nanopub import NanopubClient, Publication, load_profile, namespaces
+from nanopub import Nanopub, NanopubClient, NanopubConfig, load_profile, namespaces
 from nanopub.definitions import DEFAULT_PROFILE_PATH, USER_CONFIG_DIR
 from nanopub.profile import Profile, ProfileError, generate_keys, store_profile
 
@@ -131,9 +131,14 @@ def setup(orcid_id, publish, newkeys, name, keypair: Union[Tuple[Path, Path], No
     # Declare the user to nanopub
     if publish:
         assertion, concept = _create_this_is_me_rdf(orcid_id, public_key, name)
-        np = Publication.from_assertion(assertion, introduces_concept=concept,
-                                        assertion_attributed_to=orcid_id,
-                                        nanopub_profile=profile)
+        np = Nanopub(
+            assertion=assertion,
+            config=NanopubConfig(
+                assertion_attributed_to=orcid_id,
+            ),
+            introduces_concept=concept,
+            profile=profile,
+        )
 
         client = NanopubClient()
         result = client.publish(np)

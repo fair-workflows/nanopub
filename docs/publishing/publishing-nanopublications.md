@@ -1,7 +1,7 @@
 # Publishing nanopublications
-The `nanopub` library provides an intuitive API that makes publishing nanopublications much easier. 
-The rationale is that you often do not want to worry about the details of composing 
-the RDF that is often the same in each nanopublication. Instead you should focus on the 
+The `nanopub` library provides an intuitive API that makes publishing nanopublications much easier.
+The rationale is that you often do not want to worry about the details of composing
+the RDF that is often the same in each nanopublication. Instead you should focus on the
 content of your nanopublication: the assertion.
 
 ## Prerequisits for publishing
@@ -10,13 +10,13 @@ Before you can publish you should [setup your profile](../getting-started/setup)
 ## Quickly publishing nanopublications using `claim`
 You can quickly publish a nanopublicaiton with a single simple statement using the `claim` method:
 ```python
->>> from nanopub import NanopubClient
+from nanopub import NanopubClient
 
->>> # Create the client (we use use_test_server=True to point to the test server)
->>> client = NanopubClient(use_test_server=True)
+# Create the client (we use use_test_server=True to point to the test server)
+client = NanopubClient(use_test_server=True)
 
->>> # Publish a simple statement to the server
->>> client.claim('All cats are gray')
+# Publish a simple statement to the server
+client.claim('All cats are gray')
 Published to http://purl.org/np/RA47eJP2UBJCWuJ324c6Qw0OwtCb8wCrprwSk39am7xck
 ```
 View the resulting nanopublication [here](http://purl.org/np/RA47eJP2UBJCWuJ324c6Qw0OwtCb8wCrprwSk39am7xck).
@@ -52,7 +52,7 @@ sub:provenance {
 ```
 
 ## A simple recipe for publishing RDF triples
-You can use `Publication` objects to easily publish nanopublications with your assertion 
+You can use `Publication` objects to easily publish nanopublications with your assertion
 (think of the assertion as the content of your nanopublication).
 
 This is a 3-step recipe that works for most cases:
@@ -62,23 +62,23 @@ This is a 3-step recipe that works for most cases:
 
 Here is a minimal example:
 ```python
->>> import rdflib
->>> from nanopub import NanopubClient, Publication
->>> 
->>> # Create the client (we use use_test_server=True to point to the test server)
->>> client = NanopubClient(use_test_server=True)
->>> 
->>> # 1. construct a desired assertion (a graph of RDF triples) using rdflib
->>> my_assertion = rdflib.Graph()
->>> my_assertion.add((rdflib.URIRef('www.example.org/timbernerslee'),
->>>                   rdflib.RDF.type,
->>>                   rdflib.FOAF.Person))
->>> 
->>> # 2. Make a Publication object with this assertion
->>> publication = Publication.from_assertion(assertion_rdf=my_assertion)
->>> 
->>> # 3. Publish the Publication object.
->>> publication_info = client.publish(publication)
+import rdflib
+from nanopub import NanopubClient, Publication
+
+# Create the client (we use use_test_server=True to point to the test server)
+client = NanopubClient(use_test_server=True)
+
+# 1. construct a desired assertion (a graph of RDF triples) using rdflib
+my_assertion = rdflib.Graph()
+my_assertion.add((rdflib.URIRef('www.example.org/timbernerslee'),
+                  rdflib.RDF.type,
+                  rdflib.FOAF.Person))
+
+# 2. Make a Publication object with this assertion
+publication = Publication.from_assertion(assertion_rdf=my_assertion)
+
+# 3. Publish the Publication object.
+publication_info = client.publish(publication)
 Published to http://purl.org/np/RAfk_zBYDerxd6ipfv8fAcQHEzgZcVylMTEkiLlMzsgwQ
 ```
 View the resulting nanopublication [here](http://purl.org/np/RAfk_zBYDerxd6ipfv8fAcQHEzgZcVylMTEkiLlMzsgwQ).

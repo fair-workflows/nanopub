@@ -7,10 +7,10 @@ from typing import List
 from rdflib import Literal, URIRef
 from rdflib.namespace import DC, DCTERMS, RDF, RDFS, XSD
 
+from nanopub.config import NanopubConfig
 from nanopub.definitions import DUMMY_NAMESPACE, DUMMY_URI
 from nanopub.namespaces import NPX, PAV
 from nanopub.nanopub import Nanopub
-from nanopub.nanopub_config import NanopubConfig
 from nanopub.profile import Profile
 
 

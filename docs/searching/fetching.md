@@ -1,7 +1,5 @@
 # Fetching nanopublications
-You can fetch nanopublications from the nanopub server using
-`NanopubClient.fetch()`. The resulting object is a `Publication`
-object that you can use to inspect the nanopublication.
+You can fetch nanopublications from the nanopub server using `NanopubClient.fetch()`. The resulting object is a `Nanopub` object that you can use to inspect the nanopublication.
 ```python
 from nanopub import NanopubClient
 

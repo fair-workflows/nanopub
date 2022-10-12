@@ -149,13 +149,13 @@ features = [
   "doc",
   "dev",
 ]
-# post-install-commands = [
-#   "pre-commit install",
-# ]
+post-install-commands = [
+  "pre-commit install",
+]
 
 # hatch run test
 [tool.hatch.envs.default.scripts]
-run = "./scripts/run.sh"
+dev = "./scripts/dev.sh"
 test = "./scripts/test.sh"
 docs = "./scripts/docs-serve.sh"
 docs-sphinx = "./scripts/docs-sphinx.sh"

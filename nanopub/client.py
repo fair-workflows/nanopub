@@ -13,6 +13,7 @@ import requests
 from rdflib import ConjunctiveGraph
 
 from nanopub import namespaces
+from nanopub.config import NanopubConfig
 from nanopub.definitions import (
     DUMMY_NANOPUB_URI,
     MAX_NP_PER_INDEX,
@@ -22,14 +23,10 @@ from nanopub.definitions import (
     log,
 )
 from nanopub.nanopub import Nanopub
-from nanopub.nanopub_config import NanopubConfig
 from nanopub.profile import Profile, load_profile
-from nanopub.publication import Publication
 from nanopub.signer import Signer
 from nanopub.templates.nanopub_index import NanopubIndex
 from nanopub.templates.nanopub_introduction import NanopubIntroduction
-
-# from nanopub import NanopubConfig, Nanopublication, NanopubIndex, Profile
 
 NANOPUB_GRLC_URLS = [
     "http://grlc.nanopubs.lod.labs.vu.nl/api/local/local/",
@@ -55,6 +52,9 @@ class NanopubClient:
 
     Args:
         use_test_server (bool): Toggle using the test nanopub server.
+        use_server (str): Provide the URL of a nanopub server to use
+        profile (Profile): Nanopub profile of the user
+        nanopub_config (NanopubConfig): Config for the nanopubs created with this client
     """
 
     def __init__(
@@ -103,8 +103,6 @@ class NanopubClient:
     ) -> Nanopub:
         if not nanopub_config:
             nanopub_config = self.nanopub_config
-
-        # return Publication.from_assertion(
         return Nanopub(
             assertion=assertion,
             pubinfo=pubinfo,
@@ -222,11 +220,13 @@ class NanopubClient:
         provenance_rdf = rdflib.Graph()
         orcid_id_uri = rdflib.URIRef(self.profile.orcid_id)
         provenance_rdf.add((orcid_id_uri, namespaces.HYCL.claims, this_statement))
-        publication = Publication.from_assertion(
-            assertion_rdf=assertion_rdf,
-            attribute_assertion_to_profile=True,
-            provenance_rdf=provenance_rdf,
-            nanopub_profile=self.profile,
+        publication = Nanopub(
+            assertion=assertion_rdf,
+            provenance=provenance_rdf,
+            config=NanopubConfig(
+                attribute_assertion_to_profile=True,
+            ),
+            profile=self.profile,
         )
         return self.publish(publication)
 
@@ -254,10 +254,12 @@ class NanopubClient:
         assertion_rdf.add(
             (rdflib.URIRef(orcid_id), namespaces.NPX.retracts, rdflib.URIRef(uri))
         )
-        publication = Publication.from_assertion(
-            assertion_rdf=assertion_rdf,
-            attribute_assertion_to_profile=True,
-            nanopub_profile=self.profile,
+        publication = Nanopub(
+            assertion=assertion_rdf,
+            config=NanopubConfig(
+                attribute_assertion_to_profile=True,
+            ),
+            profile=self.profile,
         )
         return self.publish(publication)
 
@@ -265,7 +267,7 @@ class NanopubClient:
     def create_nanopub_intro(
         self,
         public_key: str = None,
-        # nanopub_config: NanopubConfig = None,
+        # nanopub_config: Config = None,
     ) -> NanopubIntroduction:
         """Create a Nanopub Introduction to bind a public/private key pair to an ORCID.
 
@@ -506,7 +508,7 @@ class NanopubClient:
         yield from self._search(endpoint=endpoint, params=params)
 
     def find_retractions_of(
-        self, source: Union[str, Publication], valid_only=True
+        self, source: Union[str, Nanopub], valid_only=True
     ) -> List[str]:
         """Find retractions of given URI
 
@@ -521,7 +523,7 @@ class NanopubClient:
             List of uris that retract the given URI
         """
 
-        if isinstance(source, Publication):
+        if isinstance(source, Nanopub):
             if source.is_test_publication and not self.use_test_server:
                 warnings.warn(
                     "You are trying to find retractions on the production server, "
@@ -553,6 +555,7 @@ class NanopubClient:
             filter_retracted=False,
         )
         return [result["np"] for result in results]
+
 
     @staticmethod
     def _query_grlc(params: dict, endpoint: str, grlc_url: str) -> requests.Response:
@@ -666,10 +669,10 @@ class NanopubClient:
         Download the nanopublication at the specified URI.
 
         Args:
-            uri (str): The URI of the nanopublication to fetch.
+            uri: The URI of the nanopublication to fetch.
 
         Returns:
-            Publication: a Publication object representing the nanopublication.
+            Nanopub: a Nanopub object representing the nanopublication.
         """
         r = requests.get(uri + "." + NANOPUB_FETCH_FORMAT)
         if not r.ok and self.use_test_server:
@@ -681,4 +684,4 @@ class NanopubClient:
 
         nanopub_rdf = rdflib.ConjunctiveGraph()
         nanopub_rdf.parse(data=r.text, format=NANOPUB_FETCH_FORMAT)
-        return Publication(rdf=nanopub_rdf, source_uri=uri)
+        return Nanopub(rdf=nanopub_rdf, source_uri=uri)

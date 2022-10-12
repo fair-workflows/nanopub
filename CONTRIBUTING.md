@@ -33,10 +33,11 @@ The sections below outline the steps in each case.
 1. install the dependencies required to run `nanopub` in development:
 
     ```bash
-    pip install -r requirements.txt
-    pip install -r requirements-dev.txt
+    pip install -e ".[dev,test,doc]"
     ```
-
+    
+    > Visit the [development](https://fair-workflows.github.io/nanopub/getting-started/development/) page on the documentation website for more details on the development workflow.
+    
 1. make sure the existing tests still work by running ``pytest``. Note that any pull requests to the nanopub repository on github will automatically trigger running of the test suite;
 1. check that the code is in accordance with the PEP8 style guide, by running ``flake8 . --count --show-source --statistics``,
 configuration is in `tox.ini`.
@@ -46,7 +47,3 @@ configuration is in `tox.ini`.
 1. create the pull request, e.g. following the instructions [here](https://help.github.com/articles/creating-a-pull-request/).
 
 In case you feel like you've made a valuable contribution, but you don't know how to write or run tests for it, or how to generate the documentation: don't let this discourage you from making the pull request; we can help you! Just go ahead and submit the pull request, but keep in mind that you might be asked to append additional commits to your pull request.
-
-## You want to update the nanopub-java dependency
-Run `bin/nanopub-java --download` and move the generated 
-nanopub-*-jar-with-dependencies.jar file to `nanopub/lib/` folder.

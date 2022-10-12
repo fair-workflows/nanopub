@@ -5,15 +5,15 @@ make handling RDF easier.
 """
 import warnings
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Union
 
 import rdflib
 from rdflib import BNode, ConjunctiveGraph, Graph, URIRef
 from rdflib.namespace import DC, DCTERMS, FOAF, PROV, RDF, XSD
 
+from nanopub.config import NanopubConfig
 from nanopub.definitions import DUMMY_NAMESPACE
 from nanopub.namespaces import HYCL, NP, NPX, NTEMPLATE, ORCID, PAV
-from nanopub.nanopub_config import NanopubConfig
 from nanopub.profile import Profile
 
 
@@ -26,11 +26,12 @@ class Nanopub:
         assertion (rdflib.Graph): The part of the graph describing the assertion.
         pubinfo (rdflib.Graph): The part of the graph describing the publication information.
         provenance (rdflib.Graph): The part of the graph describing the provenance.
-        source_uri (str): The URI of the nanopublication that this Publication represents (if
-            applicable)
-        introduces_concept: The concept that is introduced by this Publication.
+        source_uri (str): The URI of the nanopublication that this Publication represents (if applicable)
+        introduces_concept (rdflib.BNode): The concept that is introduced by this Publication.
         signed_with_public_key: The public key that this Publication is signed with.
         is_test_publication: Whether this is a test publication
+        profile (Profile): Nanopub profile of the user
+        config (NanopubConfig): Config for the nanopub
     """
 
     def __init__(
@@ -41,7 +42,6 @@ class Nanopub:
         pubinfo: Graph = Graph(),
         rdf: ConjunctiveGraph = None,
         source_uri: str = None,
-        dummy_ns: str = DUMMY_NAMESPACE,
         introduces_concept: BNode = None,
         config: NanopubConfig = NanopubConfig(),
         profile: Profile = None
@@ -128,7 +128,7 @@ class Nanopub:
         #             f"but not found. Graphs found: {list(self._graphs.keys())}."
         #         )
 
-    def _preformat_graph(self, g: Graph) -> Graph:
+    def _preformat_graph(self, g: ConjunctiveGraph) -> ConjunctiveGraph:
         """Replace blank nodes and add a few default namespaces
 
         Replace any blank nodes in the supplied RDF with a corresponding uri in the
@@ -156,12 +156,11 @@ class Nanopub:
         g.bind("orcid", ORCID)
         g.bind("ntemplate", NTEMPLATE)
         g.bind("foaf", FOAF)
-
         self._replace_blank_nodes(g)
         return g
 
 
-    def _replace_blank_nodes(self, rdf):
+    def _replace_blank_nodes(self, rdf: ConjunctiveGraph) -> None:
         """Replace blank nodes.
 
         Replace any blank nodes in the supplied RDF with a corresponding uri in the
@@ -188,12 +187,12 @@ class Nanopub:
 
     def _validate_from_assertion_arguments(
         self,
-        derived_from,
-        assertion_attributed_to,
+        derived_from: Optional[str],
+        assertion_attributed_to: Optional[str],
         attribute_assertion_to_profile: bool,
         introduces_concept: Optional[BNode],
         # publication_attributed_to,
-    ):
+    ) -> None:
         """
         Validate arguments for `from_assertion` method.
         """
@@ -265,8 +264,8 @@ class Nanopub:
 
 
     def _handle_generated_at_time(
-        self, add_pubinfo_generated_time, add_prov_generated_time
-    ):
+        self, add_pubinfo_generated_time: bool, add_prov_generated_time: bool
+    ) -> None:
         """Handler for `from_assertion` method."""
         creationtime = rdflib.Literal(datetime.now(), datatype=XSD.dateTime)
         if add_pubinfo_generated_time:
@@ -283,7 +282,7 @@ class Nanopub:
             )
 
 
-    def _handle_assertion_attributed_to(self, assertion_attributed_to):
+    def _handle_assertion_attributed_to(self, assertion_attributed_to: Optional[str]) -> None:
         """Handler for `from_assertion` method."""
         if assertion_attributed_to:
             assertion_attributed_to = URIRef(assertion_attributed_to)
@@ -298,9 +297,9 @@ class Nanopub:
 
     def _handle_publication_attributed_to(
         self,
-        attribute_publication_to_profile,
-        publication_attributed_to,
-    ):
+        attribute_publication_to_profile: bool,
+        publication_attributed_to: Optional[str],
+    ) -> None:
         """Handler for `from_assertion` method."""
         if attribute_publication_to_profile:
             if not self._profile:
@@ -318,7 +317,7 @@ class Nanopub:
             )
 
 
-    def _handle_derived_from(self, derived_from):
+    def _handle_derived_from(self, derived_from: Optional[str]):
         """Handler for `from_assertion` method."""
         if derived_from:
             if isinstance(derived_from, list):
@@ -337,7 +336,7 @@ class Nanopub:
                 )
 
 
-    def _handle_introduces_concept(self, introduces_concept):
+    def _handle_introduces_concept(self, introduces_concept: Union[BNode, URIRef]):
         """Handler for `from_assertion` method."""
         if introduces_concept:
             introduces_concept = DUMMY_NAMESPACE[str(introduces_concept)]
@@ -360,7 +359,7 @@ class Nanopub:
 
 
     @property
-    def rdf(self):
+    def rdf(self) -> ConjunctiveGraph:
         return self._rdf
 
     # @property
@@ -434,11 +433,11 @@ class Nanopub:
         )[0])
 
     @property
-    def signed_with_public_key(self):
+    def signed_with_public_key(self) -> Optional[str]:
         if not self._source_uri:
             return None
         public_keys = list(
-            self.pubinfo.objects(self.get_source_uri_from_graph + "#sig", NPX.hasPublicKey)
+            self._rdf.objects(URIRef(self.get_source_uri_from_graph + "#sig"), NPX.hasPublicKey)
         )
         if len(public_keys) > 0:
             public_key = str(public_keys[0])
@@ -459,7 +458,7 @@ class Nanopub:
             return False
 
 
-    def __str__(self):
+    def __str__(self) -> str:
         s = f"Original source URI = {self._source_uri}\n"
         s += self._rdf.serialize(format="trig")
         return s

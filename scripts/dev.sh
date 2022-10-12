@@ -3,5 +3,4 @@
 set -e
 
 clear
-
-python scripts/run.py
+python scripts/dev.py

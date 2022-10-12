@@ -25,14 +25,14 @@
    :hidden:
    :caption: Searching
 
-   searching
+   searching/searching
 
 .. toctree::
    :maxdepth: 1
    :hidden:
    :caption: Fetching
 
-   fetching
+   searching/fetching
 
 .. toctree::
    :maxdepth: 1
