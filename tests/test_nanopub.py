@@ -1,4 +1,3 @@
-
 from rdflib import BNode, Graph, Literal, URIRef
 
 from nanopub import Nanopub, NanopubClient, namespaces
@@ -23,6 +22,7 @@ class TestNanopublication:
         np = Nanopub(
             config=default_config,
             profile=profile_test,
+            # client=client,
             assertion=assertion
         )
         java_np = java_wrap.sign(np)

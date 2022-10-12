@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """This module includes a client for the nanopub server.
 """
 
@@ -25,8 +24,7 @@ from nanopub.definitions import (
 from nanopub.nanopub import Nanopub
 from nanopub.profile import Profile, load_profile
 from nanopub.signer import Signer
-from nanopub.templates.nanopub_index import NanopubIndex
-from nanopub.templates.nanopub_introduction import NanopubIntroduction
+from nanopub.templates import NanopubClaim, NanopubIndex, NanopubIntroduction, NanopubRetract
 
 NANOPUB_GRLC_URLS = [
     "http://grlc.nanopubs.lod.labs.vu.nl/api/local/local/",
@@ -112,7 +110,7 @@ class NanopubClient:
         )
 
 
-    def sign(self, np: Nanopub) -> Nanopub:
+    def sign(self, np: Nanopub):
         """Sign a Publication object.
 
         Sign Publication object. It uses nanopub_java commandline tool to sign
@@ -159,7 +157,7 @@ class NanopubClient:
         return np
 
 
-    def publish(self, np: Nanopub) -> Nanopub:
+    def publish(self, np: Nanopub):
         """Publish a Publication object.
 
         Publish Publication object to the nanopub server. It uses nanopub_java commandline tool to
@@ -196,7 +194,7 @@ class NanopubClient:
         return np
 
 
-    def claim(self, statement_text: str):
+    def claim(self, statement_text: str) -> Nanopub:
         """Quickly claim a statement.
 
         Constructs statement triples around the provided text following the Hypotheses and Claims
@@ -210,28 +208,15 @@ class NanopubClient:
             nanopublication, 'concept_uri': the URI of the introduced concept (if applicable)
 
         """
-        assertion_rdf = rdflib.Graph()
-        this_statement = rdflib.term.BNode("mystatement")
-        assertion_rdf.add((this_statement, rdflib.RDF.type, namespaces.HYCL.Statement))
-        assertion_rdf.add(
-            (this_statement, rdflib.RDFS.label, rdflib.Literal(statement_text))
-        )
-
-        provenance_rdf = rdflib.Graph()
-        orcid_id_uri = rdflib.URIRef(self.profile.orcid_id)
-        provenance_rdf.add((orcid_id_uri, namespaces.HYCL.claims, this_statement))
-        publication = Nanopub(
-            assertion=assertion_rdf,
-            provenance=provenance_rdf,
-            config=NanopubConfig(
-                attribute_assertion_to_profile=True,
-            ),
+        np = NanopubClaim(
+            claim=statement_text,
             profile=self.profile,
+            # config=nanopub_config,
         )
-        return self.publish(publication)
+        return self.publish(np)
 
 
-    def retract(self, uri: str, force=False):
+    def retract(self, uri: str, force=False) -> Nanopub:
         """Retract a nanopublication.
 
         Publish a retraction nanpublication that declares retraction of the nanopublication that
@@ -247,21 +232,13 @@ class NanopubClient:
             dict of str: Publication info with: 'nanopub_uri': the URI of the published
             nanopublication, 'concept_uri': the URI of the introduced concept (if applicable)
         """
-        if not force:
-            self._check_public_keys_match(uri)
-        assertion_rdf = rdflib.Graph()
-        orcid_id = self.profile.orcid_id
-        assertion_rdf.add(
-            (rdflib.URIRef(orcid_id), namespaces.NPX.retracts, rdflib.URIRef(uri))
-        )
-        publication = Nanopub(
-            assertion=assertion_rdf,
-            config=NanopubConfig(
-                attribute_assertion_to_profile=True,
-            ),
+        np = NanopubRetract(
+            uri=uri,
+            force=force,
             profile=self.profile,
+            # config=nanopub_config,
         )
-        return self.publish(publication)
+        return self.publish(np)
 
 
     def create_nanopub_intro(
@@ -662,6 +639,7 @@ class NanopubClient:
             parsed["label"] = result["label"]["value"]
         parsed["date"] = result["date"]["value"]
         return parsed
+
 
     def fetch(self, uri: str):
         """Fetch nanopublication

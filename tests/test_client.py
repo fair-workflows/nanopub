@@ -2,8 +2,7 @@ import warnings
 from unittest import mock
 
 import pytest
-import rdflib
-from rdflib import Graph, Literal, URIRef
+from rdflib import FOAF, RDF, ConjunctiveGraph, Graph, Literal, URIRef
 
 from nanopub import Nanopub, NanopubClient, namespaces
 from nanopub.definitions import TEST_RESOURCES_FILEPATH
@@ -15,7 +14,7 @@ client = NanopubClient(
     nanopub_config=default_config,
 )
 
-TEST_ASSERTION = (namespaces.AUTHOR.DrBob, namespaces.HYCL.claims, rdflib.Literal('This is a test'))
+TEST_ASSERTION = (namespaces.AUTHOR.DrBob, namespaces.HYCL.claims, Literal('This is a test'))
 PUBKEY = 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCC686zsZaQWthNDSZO6unvhtSkXSLT8iSY/UUwD/' \
          '7T9tabrEvFt/9UPsCsg/A4HG6xeuPtL5mVziVnzbxqi9myQOY62LBja85pYLWaZPUYakP' \
          'HyVm9A0bRC2PUYZde+METkZ6eoqLXP26Qo5b6avPcmNnKkr5OQb7KXaeX2K2zQQIDAQAB'
@@ -80,7 +79,7 @@ class TestNanopubClient:
             Check that Nanopub pattern search is returning results
         """
         searches = [
-            ('', rdflib.RDF.type, rdflib.FOAF.Person),
+            ('', RDF.type, FOAF.Person),
             ('http://purl.org/np/RA8ui7ddvV25m1qdyxR4lC8q8-G0yb3SN8AC0Bu5q8Yeg', '', '')
         ]
 
@@ -152,7 +151,7 @@ class TestNanopubClient:
         assert len(all_results) > len(filtered_results)
 
     def test_find_retractions_of_publication_raise_warning(self):
-        test_rdf = rdflib.ConjunctiveGraph()
+        test_rdf = ConjunctiveGraph()
         test_rdf.parse(NANOPUB_SAMPLE_SIGNED, format='trig')
 
         # # A test publication
@@ -200,7 +199,6 @@ class TestNanopubClient:
         uri = 'http://purl.org/np/RAnksi2yDP7jpe7F6BwWCpMOmzBEcUImkAKUeKEY_2Yus'
         # uri = 'http://purl.org/np/RAXUwamR3TGmJAPAJHiamh4sGCmYmzLG9jj-02HR0Ok0U'
         results = client.find_retractions_of(uri, valid_only=True)
-        print(results)
         expected_uri = 'http://purl.org/np/RAYhe0XddJhBsJvVt0h_aq16p6f94ymc2wS-q2BAgnPVY'
         assert expected_uri in results
         # This is a nanopublication that is signed with a different public key than the nanopub
@@ -264,18 +262,18 @@ class TestNanopubClient:
             assert len(np.__str__()) > 0
 
 
-    # def test_nanopub_sign(self):
-    #     expected_np_uri = "http://purl.org/np/RANn9T0QMUldZhm6dlUHtOCvwALxE3UTJeVZ0M9qGT-qk"
-    #     assertion = Graph()
-    #     assertion.add((
-    #         URIRef('http://test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
-    #     ))
-    #     np = client.create_nanopub(assertion=assertion)
-    #     java_np = java_wrap.sign(np)
-    #     np = client.sign(np)
+    def test_nanopub_sign(self):
+        expected_np_uri = "http://purl.org/np/RANn9T0QMUldZhm6dlUHtOCvwALxE3UTJeVZ0M9qGT-qk"
+        assertion = Graph()
+        assertion.add((
+            URIRef('http://test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
+        ))
+        np = client.create_nanopub(assertion=assertion)
+        java_np = java_wrap.sign(np)
+        np = client.sign(np)
 
-    #     assert np.source_uri == expected_np_uri
-    #     assert np.source_uri == java_np
+        assert np.source_uri == expected_np_uri
+        assert np.source_uri == java_np
 
     def test_nanopub_publish(self):
         expected_np_uri = "http://purl.org/np/RANn9T0QMUldZhm6dlUHtOCvwALxE3UTJeVZ0M9qGT-qk"
@@ -290,10 +288,16 @@ class TestNanopubClient:
         assert np.source_uri == expected_np_uri
         assert np.source_uri == java_np
 
-    # def test_nanopub_claim(self):
-    #     client = NanopubClient(profile=profile_test)
-    #     client.java_wrapper.publish = mock.MagicMock()
-    #     client.claim(statement_text='Some controversial statement')
+    def test_nanopub_claim(self):
+        client = NanopubClient(profile=profile_test, use_test_server=True)
+        np = client.claim(statement_text='Some controversial statement')
+        assert np.source_uri is not None
+
+    def test_nanopub_retract(self):
+        client = NanopubClient(profile=profile_test, use_test_server=True)
+        np = client.retract(uri='http://purl.org/np/RAnksi2yDP7jpe7F6BwWCpMOmzBEcUImkAKUeKEY_2Yus', force=True)
+        assert np.source_uri is not None
+
 
     # def test_nanopub_publish(self):
     #     test_concept = rdflib.term.BNode('test')
@@ -320,14 +324,14 @@ class TestNanopubClient:
     #     a BNode.
     #     """
     #     rdf = rdflib.Graph()
-    #     rdf.add((rdflib.BNode('dontchangeme'), rdflib.RDF.type, rdflib.FOAF.Person))
+    #     rdf.add((BNode('dontchangeme'), RDF.type, FOAF.Person))
     #     publication = Publication.from_assertion(assertion_rdf=rdf)
 
     #     client = NanopubClient(profile=profile_test)
     #     client.java_wrapper.publish = mock.MagicMock()
     #     client.publish(publication)
 
-    #     assert (rdflib.BNode('dontchangeme'), rdflib.RDF.type, rdflib.FOAF.Person) in rdf
+    #     assert (BNode('dontchangeme'), RDF.type, FOAF.Person) in rdf
 
     # def test_retract_with_force(self):
     #     client = NanopubClient(profile=profile_test)

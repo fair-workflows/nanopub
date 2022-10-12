@@ -164,21 +164,6 @@ lint = "./scripts/lint.sh"
 
 
 
-[tool.hatch.envs.test]
-features = [
-  "test",
-]
-
-[tool.hatch.envs.test.scripts]
-all = "./scripts/test.sh"
-# cov = "pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=nanopub --cov=tests"
-# no-cov = "cov --no-cov"
-
-
-[[tool.hatch.envs.test.matrix]]
-python = ["36", "37", "38", "39", "310", "311"]
-
-
 [tool.pytest.ini_options]
 markers = [
     "no_rsa_key: mark a test as a test only run when there is no nanopub RSA key setup.",
@@ -211,7 +196,7 @@ markers = [
 # ]
 
 
-
+# To use dependencies directly from GitHub URLs:
 # [tool.hatch.metadata]
 # allow-direct-references = true
 
