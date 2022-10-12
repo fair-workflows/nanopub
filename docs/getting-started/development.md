@@ -17,25 +17,25 @@ To install the project for development you can either use [`venv`](https://docs.
 === "venv"
 
     Create the virtual environment in the project folder :
-    
+
     ```bash
     python3 -m venv .venv
     ```
-    
+
     Activate the virtual environment:
-    
+
     ```bash
     source .venv/bin/activate
     ```
-    
+
     Install all dependencies required for development:
-    
+
     ```bash
     pip install -e ".[dev,doc,test]"
     ```
-    
+
     Install `pre-commit` to enable automated formatting and linting of the code at each commit:
-    
+
     ```bash
     pre-commit install
     ```
@@ -43,15 +43,15 @@ To install the project for development you can either use [`venv`](https://docs.
 === "hatch"
 
     Install [Hatch](https://hatch.pypa.io), this will automatically handle virtual environments and make sure all dependencies are installed when you run a script in the project:
-    
+
     ```bash
     pip install hatch
     ```
-    
+
     ??? note "Optionally you can improve `hatch` terminal completion"
-    
+
         See the [official documentation](https://hatch.pypa.io/latest/cli/about/#tab-completion) for more details. For ZSH you can run these commands:
-    
+
         ```bash
         _HATCH_COMPLETE=zsh_source hatch > ~/.hatch-complete.zsh
         echo ". ~/.hatch-complete.zsh" >> ~/.zshrc
@@ -63,19 +63,19 @@ To install the project for development you can either use [`venv`](https://docs.
 === "venv"
 
     Try to sign a nanopublication with the code defined in `scripts/run.py` to test your changes:
-    
+
     ```bash
     ./scripts/dev.sh
     ```
-    
+
     The code will be automatically formatted when you commit your changes using `pre-commit`. But you can also run the script to format the code yourself:
-    
+
     ```bash
     ./scripts/format.sh
     ```
-    
+
     Or check the code for errors:
-    
+
     ```bash
     ./scripts/lint.sh
     ```
@@ -83,19 +83,19 @@ To install the project for development you can either use [`venv`](https://docs.
 === "hatch"
 
     Try to sign a nanopublication with the code defined in `scripts/run.py` to test your changes:
-    
+
     ```bash
     hatch run dev
     ```
-    
+
     The code will be automatically formatted when you commit your changes using `pre-commit`. But you can also run the script to format the code yourself:
-    
+
     ```bash
     hatch run format
     ```
-    
+
     Or check the code for errors:
-    
+
     ```bash
     hatch run lint
     ```
@@ -107,18 +107,18 @@ To install the project for development you can either use [`venv`](https://docs.
 
 Tests are automatically run by a GitHub Actions workflow when new code is pushed to the GitHub repository.
 
-The tests use the [```nanopub-java```](https://github.com/Nanopublication/nanopub-java) tool for validating the signing process implemented in python produces similar nanopublications. This is automatically installed by the library.
+The tests use the [```nanopub-java```](https://github.com/Nanopublication/nanopub-java) tool for validating the signing process implemented in python produces similar nanopublications. This is automatically installed by the library, just make sure `java` is available where you run the tests.
 
 === "venv"
 
 	Run the tests locally:
-	
+
 	```bash
 	./scripts/test.sh
 	```
-	
+
 	You can also run the only a specific file:
-	
+
 	```bash
 	./scripts/test.sh tests/test_nanopub.py
 	```
@@ -126,7 +126,7 @@ The tests use the [```nanopub-java```](https://github.com/Nanopublication/nanopu
 === "hatch"
 
 	Run the tests locally:
-	
+
 	```bash
 	hatch run test
 	```
