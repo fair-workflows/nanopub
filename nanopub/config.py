@@ -1,6 +1,9 @@
 from dataclasses import asdict, dataclass
 from typing import Optional
 
+from nanopub.definitions import NANOPUB_SERVER_LIST
+from nanopub.profile import Profile
+
 
 @dataclass
 class NanopubConfig:
@@ -15,6 +18,11 @@ class NanopubConfig:
         publication_attributed_to: Optional str
         derived_from: Optional str
     """
+
+    profile: Optional[Profile] = None
+
+    use_test_server: bool = False
+    use_server: str = NANOPUB_SERVER_LIST[0]
 
     add_prov_generated_time: bool = False
     add_pubinfo_generated_time: bool = False

@@ -6,7 +6,6 @@ from rdflib import RDF, RDFS, BNode, Literal, URIRef
 from nanopub.config import NanopubConfig
 from nanopub.namespaces import HYCL
 from nanopub.nanopub import Nanopub
-from nanopub.profile import Profile
 
 
 class NanopubClaim(Nanopub):
@@ -22,15 +21,12 @@ class NanopubClaim(Nanopub):
     def __init__(
         self,
         claim: str,
-        profile: Profile,
-        config: NanopubConfig = NanopubConfig(
-            add_prov_generated_time=True,
-            add_pubinfo_generated_time=True,
-            attribute_publication_to_profile=True,
-        ),
+        config: NanopubConfig,
     ) -> None:
+        config.add_prov_generated_time = True
+        config.add_pubinfo_generated_time = True
+        config.attribute_publication_to_profile = True
         super().__init__(
-            profile=profile,
             config=config,
         )
 

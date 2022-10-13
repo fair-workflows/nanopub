@@ -1,12 +1,8 @@
-"""This module includes a client for the nanopub server.
-"""
-
 from rdflib import URIRef
 
 from nanopub.config import NanopubConfig
 from nanopub.namespaces import NPX
 from nanopub.nanopub import Nanopub
-from nanopub.profile import Profile
 
 
 class NanopubRetract(Nanopub):
@@ -24,18 +20,15 @@ class NanopubRetract(Nanopub):
 
     def __init__(
         self,
+        config: NanopubConfig,
         uri: str,
-        profile: Profile,
         force: bool = False,
-        config: NanopubConfig = NanopubConfig(
-            add_prov_generated_time=True,
-            add_pubinfo_generated_time=True,
-            attribute_publication_to_profile=True,
-            attribute_assertion_to_profile=True,
-        ),
     ) -> None:
+        config.add_prov_generated_time = True
+        config.add_pubinfo_generated_time = True
+        config.attribute_publication_to_profile = True
+        config.attribute_assertion_to_profile = True
         super().__init__(
-            profile=profile,
             config=config,
         )
 
@@ -58,12 +51,12 @@ class NanopubRetract(Nanopub):
         their_public_key = publication.signed_with_public_key
         print("KEYS")
         print(their_public_key)
-        print(self.profile.get_public_key())
-        if their_public_key != self.profile.get_public_key():
+        print(self.config.profile.public_key)
+        if their_public_key != self.config.profile.public_key:
             print("python cant compare 2 strings")
         if (
             their_public_key is not None
-            and their_public_key != self.profile.get_public_key()
+            and their_public_key != self.config.profile.public_key
         ):
             raise AssertionError(
                 "The public key in your profile does not match the public key"

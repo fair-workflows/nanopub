@@ -7,7 +7,7 @@ from typing import Tuple, Union
 import click
 import rdflib
 
-from nanopub import Nanopub, NanopubClient, NanopubConfig, load_profile, namespaces
+from nanopub import Nanopub, NanopubConfig, load_profile, namespaces
 from nanopub.definitions import DEFAULT_PROFILE_PATH, USER_CONFIG_DIR
 from nanopub.profile import Profile, ProfileError, generate_keys, store_profile
 
@@ -135,15 +135,16 @@ def setup(orcid_id, publish, newkeys, name, keypair: Union[Tuple[Path, Path], No
             assertion=assertion,
             config=NanopubConfig(
                 assertion_attributed_to=orcid_id,
+                profile=profile
             ),
             introduces_concept=concept,
-            profile=profile,
         )
 
-        client = NanopubClient()
-        result = client.publish(np)
+        # client = NanopubClient()
+        # result = client.publish(np)
+        np.publish()
 
-        profile.introduction_nanopub_uri = result.concept_uri
+        profile.introduction_nanopub_uri = np.concept_uri
 
         # Store profile nanopub uri
         store_profile(profile, USER_CONFIG_DIR)
@@ -173,10 +174,10 @@ def _rsa_keys_exist():
     return DEFAULT_PRIVATE_KEY_PATH.exists() or DEFAULT_PUBLIC_KEY_PATH.exists()
 
 
-def _check_erase_existing_keys():
-    return click.confirm('It seems you already have RSA keys for nanopub. '
-                         'Would you like to replace them?',
-                         default=False)
+# def _check_erase_existing_keys():
+#     return click.confirm('It seems you already have RSA keys for nanopub. '
+#                          'Would you like to replace them?',
+#                          default=False)
 
 
 if __name__ == '__main__':

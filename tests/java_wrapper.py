@@ -102,8 +102,8 @@ class JavaWrapper:
 
 
     def _get_signed_file(self, unsigned_file: str):
-        unsigned_file = Path(unsigned_file)
-        return str(unsigned_file.parent / f'signed.{unsigned_file.name}')
+        unsigned_path = Path(unsigned_file)
+        return str(unsigned_path.parent / f'signed.{unsigned_path.name}')
 
 
 

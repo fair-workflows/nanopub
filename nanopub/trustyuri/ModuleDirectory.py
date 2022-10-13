@@ -1,7 +1,7 @@
 from nanopub.trustyuri.file.FileModule import FileModule
 from nanopub.trustyuri.rdf.RdfModule import RdfModule
 
-modules = {}
+modules: dict = {}
 
 
 def add_module(module):

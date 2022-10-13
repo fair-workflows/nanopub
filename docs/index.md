@@ -33,28 +33,33 @@ This will add and store RSA keys to sign your nanopublications, publish a nanopu
 ### Publishing nanopublications
 
 ```python
-from rdflib import Graph, URIRef, RDF, FOAF
-from nanopub import NanopubClient
+from rdflib import Graph
+from nanopub import Nanopub, NanopubConfig, load_profile
 
-# Create the client (we use use_test_server=True to point to the test server)
-client = NanopubClient(use_test_server=True)
+# Create the config (we use use_test_server=True to point to the test server)
+np_config = NanopubConfig(
+    profile=load_profile(),
+    use_test_server=True,
+    add_prov_generated_time=True,
+    attribute_publication_to_profile=True,
+)
 
-# Either quickly publish a statement to the server
-client.claim('All cats are gray')
-
-# Or: 1. construct a desired assertion (a graph of RDF triples) using rdflib
+# 1. construct a desired assertion (a graph of RDF triples) using rdflib
 my_assertion = Graph()
 my_assertion.add((
-    URIRef('www.example.org/timbernerslee'),
-    RDF.type,
-    FOAF.Person
+    rdflib.URIRef('www.example.org/timbernerslee'),
+    rdflib.RDF.type,
+    rdflib.FOAF.Person
 ))
 
-# 2. Make a Publication object with this assertion
-np = client.create_nanopub(assertion=my_assertion)
+# 2. Make a Nanopublication object with this assertion
+np = Nanopub(
+    config=np_config,
+    assertion=my_assertion
+)
 
-# 3. Publish the Publication object. The URI at which it is published is returned.
-np = client.publish(np)
+# 3. Publish the Publication object.
+np.publish()
 print(np)
 ```
 

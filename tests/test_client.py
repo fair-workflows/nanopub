@@ -2,17 +2,13 @@ import warnings
 from unittest import mock
 
 import pytest
-from rdflib import FOAF, RDF, ConjunctiveGraph, Graph, Literal, URIRef
+from rdflib import FOAF, RDF, ConjunctiveGraph, Literal
 
 from nanopub import Nanopub, NanopubClient, namespaces
 from nanopub.definitions import TEST_RESOURCES_FILEPATH
-from tests.conftest import default_config, java_wrap, profile_test, skip_if_nanopub_server_unavailable
+from tests.conftest import skip_if_nanopub_server_unavailable
 
-client = NanopubClient(
-    use_test_server=True,
-    profile=profile_test,
-    nanopub_config=default_config,
-)
+client = NanopubClient(use_test_server=True)
 
 TEST_ASSERTION = (namespaces.AUTHOR.DrBob, namespaces.HYCL.claims, Literal('This is a test'))
 PUBKEY = 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCC686zsZaQWthNDSZO6unvhtSkXSLT8iSY/UUwD/' \
@@ -52,7 +48,7 @@ class TestNanopubClient:
         Check that Nanopub text search is returning results for a few common search terms on the
         production nanopub server
         """
-        prod_client = NanopubClient(profile=profile_test)
+        prod_client = NanopubClient()
         searches = ['test', 'US']
         for search in searches:
             results = list(prod_client.find_nanopubs_with_text(search))
@@ -172,7 +168,7 @@ class TestNanopubClient:
         publication = Nanopub(rdf=test_rdf, source_uri='http://a-real-server/example')
         assert not publication.is_test_publication
         # Production server client
-        client = NanopubClient(profile=profile_test, use_test_server=True)
+        client = NanopubClient(use_test_server=True)
         client.find_nanopubs_with_pattern = mock.MagicMock()
         # Because we try searching the prod server with a test publication this should trigger a
         # warning.
@@ -262,41 +258,41 @@ class TestNanopubClient:
             assert len(np.__str__()) > 0
 
 
-    def test_nanopub_sign(self):
-        expected_np_uri = "http://purl.org/np/RANn9T0QMUldZhm6dlUHtOCvwALxE3UTJeVZ0M9qGT-qk"
-        assertion = Graph()
-        assertion.add((
-            URIRef('http://test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
-        ))
-        np = client.create_nanopub(assertion=assertion)
-        java_np = java_wrap.sign(np)
-        np = client.sign(np)
+    # def test_nanopub_sign(self):
+    #     expected_np_uri = "http://purl.org/np/RANn9T0QMUldZhm6dlUHtOCvwALxE3UTJeVZ0M9qGT-qk"
+    #     assertion = Graph()
+    #     assertion.add((
+    #         URIRef('http://test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
+    #     ))
+    #     np = client.create_nanopub(assertion=assertion)
+    #     java_np = java_wrap.sign(np)
+    #     np = client.sign(np)
 
-        assert np.source_uri == expected_np_uri
-        assert np.source_uri == java_np
+    #     assert np.source_uri == expected_np_uri
+    #     assert np.source_uri == java_np
 
-    def test_nanopub_publish(self):
-        expected_np_uri = "http://purl.org/np/RANn9T0QMUldZhm6dlUHtOCvwALxE3UTJeVZ0M9qGT-qk"
-        assertion = Graph()
-        assertion.add((
-            URIRef('http://test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
-        ))
-        np = client.create_nanopub(assertion=assertion)
-        java_np = java_wrap.sign(np)
-        np = client.publish(np)
+    # def test_nanopub_publish(self):
+    #     expected_np_uri = "http://purl.org/np/RANn9T0QMUldZhm6dlUHtOCvwALxE3UTJeVZ0M9qGT-qk"
+    #     assertion = Graph()
+    #     assertion.add((
+    #         URIRef('http://test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
+    #     ))
+    #     np = client.create_nanopub(assertion=assertion)
+    #     java_np = java_wrap.sign(np)
+    #     np = client.publish(np)
 
-        assert np.source_uri == expected_np_uri
-        assert np.source_uri == java_np
+    #     assert np.source_uri == expected_np_uri
+    #     assert np.source_uri == java_np
 
-    def test_nanopub_claim(self):
-        client = NanopubClient(profile=profile_test, use_test_server=True)
-        np = client.claim(statement_text='Some controversial statement')
-        assert np.source_uri is not None
+    # def test_nanopub_claim(self):
+    #     client = NanopubClient(profile=profile_test, use_test_server=True)
+    #     np = client.claim(statement_text='Some controversial statement')
+    #     assert np.source_uri is not None
 
-    def test_nanopub_retract(self):
-        client = NanopubClient(profile=profile_test, use_test_server=True)
-        np = client.retract(uri='http://purl.org/np/RAnksi2yDP7jpe7F6BwWCpMOmzBEcUImkAKUeKEY_2Yus', force=True)
-        assert np.source_uri is not None
+    # def test_nanopub_retract(self):
+    #     client = NanopubClient(profile=profile_test, use_test_server=True)
+    #     np = client.retract(uri='http://purl.org/np/RAnksi2yDP7jpe7F6BwWCpMOmzBEcUImkAKUeKEY_2Yus', force=True)
+    #     assert np.source_uri is not None
 
 
     # def test_nanopub_publish(self):

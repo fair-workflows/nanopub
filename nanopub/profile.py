@@ -40,14 +40,14 @@ class Profile:
             introduction_nanopub_uri: Optional[str] = None
     ) -> None:
         """Create a Profile."""
-        self.orcid_id = orcid_id
-        self.name = name
-        self.introduction_nanopub_uri = introduction_nanopub_uri
+        self._orcid_id = orcid_id
+        self._name = name
+        self._introduction_nanopub_uri = introduction_nanopub_uri
 
         if isinstance(private_key, Path):
             try:
-                with open(private_key, 'r') as f:
-                    self.private_key = f.read().strip()
+                with open(private_key) as f:
+                    self._private_key = f.read().strip()
             except FileNotFoundError:
                 raise ProfileError(
                     f'Private key file {private_key} for nanopub not found.\n'
@@ -55,17 +55,17 @@ class Profile:
                     f'correctly. \n{PROFILE_INSTRUCTIONS_MESSAGE}'
                 )
         else:
-            self.private_key = private_key
+            self._private_key = private_key
 
         if not public_key:
             log.info('Public key not provided when loading the Nanopub profile, generating it from the provided private key')
-            key = RSA.importKey(decodebytes(self.private_key.encode()))
-            self.public_key = key.publickey().export_key().decode('utf-8')
+            key = RSA.importKey(decodebytes(self._private_key.encode()))
+            self._public_key = key.publickey().export_key().decode('utf-8')
         else:
             if isinstance(public_key, Path):
                 try:
-                    with open(public_key, 'r') as f:
-                        self.public_key = f.read().strip()
+                    with open(public_key) as f:
+                        self._public_key = f.read().strip()
                 except FileNotFoundError:
                     raise ProfileError(
                         f'Private key file {public_key} for nanopub not found.\n'
@@ -73,24 +73,67 @@ class Profile:
                         f'correctly. \n{PROFILE_INSTRUCTIONS_MESSAGE}'
                     )
             else:
-                self.public_key = public_key
+                self._public_key = public_key
+
+
+
+    @property
+    def orcid_id(self):
+        return self._orcid_id
+
+    @orcid_id.setter
+    def orcid_id(self, value):
+        self._orcid_id = value
+
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        self._name = value
+
+    @property
+    def private_key(self):
+        return self._private_key
+
+    @private_key.setter
+    def private_key(self, value):
+        self._private_key = value
+
+    @property
+    def public_key(self):
+        return self._public_key
+
+    @public_key.setter
+    def public_key(self, value):
+        self._public_key = value
+
+    @property
+    def introduction_nanopub_uri(self):
+        return self._introduction_nanopub_uri
+
+    @introduction_nanopub_uri.setter
+    def introduction_nanopub_uri(self, value):
+        self._introduction_nanopub_uri = value
+
 
 
     # TODO: remove?
     def get_public_key(self) -> str:
         """Returns the user's public key."""
-        return self.public_key
+        return self._public_key
 
     def get_private_key(self) -> str:
         """Returns the user's private key."""
-        return self.private_key
+        return self._private_key
 
     def __repr__(self):
-        return f"""ORCID: {self.orcid_id}
-Name: {self.name}
-Private key: {self.private_key}
-Public key: {self.public_key}
-Intro Nanopub URI: {self.introduction_nanopub_uri}
+        return f"""ORCID: {self._orcid_id}
+Name: {self._name}
+Private key: {self._private_key}
+Public key: {self._public_key}
+Intro Nanopub URI: {self._introduction_nanopub_uri}
 """
 
 

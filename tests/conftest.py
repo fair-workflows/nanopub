@@ -40,6 +40,8 @@ with open(profile_test_path, "w") as f:
 profile_test = load_profile(profile_test_path)
 
 default_config = NanopubConfig(
+    profile=profile_test,
+    use_test_server=True,
     add_prov_generated_time=False,
     add_pubinfo_generated_time=False,
     attribute_assertion_to_profile=True,
@@ -48,5 +50,11 @@ default_config = NanopubConfig(
     publication_attributed_to=None,
     derived_from=None
 )
+
+# client_test = NanopubClient(
+#     use_test_server=True,
+#     profile=profile_test,
+#     nanopub_config=default_config,
+# )
 
 java_wrap = JavaWrapper(private_key=profile_test.private_key)

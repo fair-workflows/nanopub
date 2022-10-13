@@ -1,9 +1,7 @@
-
 from rdflib import BNode, Graph, Literal
 
 from nanopub import Nanopub, namespaces
-from nanopub.definitions import NANOPUB_TEST_SERVER
-from nanopub.signer import Signer
+from nanopub.signer import add_signature
 from tests.conftest import default_config, java_wrap, profile_test
 
 # from tests.conftest import skip_if_nanopub_server_unavailable
@@ -13,10 +11,10 @@ from tests.conftest import default_config, java_wrap, profile_test
 #     profile=profile_test,
 #     nanopub_config=default_config
 # )
-signer = Signer(
-    profile=profile_test,
-    use_server=NANOPUB_TEST_SERVER,
-)
+# signer = Signer(
+#     profile=profile_test,
+#     use_server=NANOPUB_TEST_SERVER,
+# )
 
 # TEST_ASSERTION = (namespaces.AUTHOR.DrBob, namespaces.HYCL.claims, rdflib.Literal('This is a test'))
 # PUBKEY = 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCC686zsZaQWthNDSZO6unvhtSkXSLT8iSY/UUwD/' \
@@ -36,24 +34,13 @@ class TestSigner:
             BNode('test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
         ))
 
-        # test_concept = rdflib.term.BNode('test')
-        # test_published_uri = 'http://www.example.com/my-nanopub'
-        # expected_concept_uri = 'http://www.example.com/my-nanopub#test'
-        # client.java_wrapper.publish = mock.MagicMock(return_value=test_published_uri)
-
-        # np = client.create_nanopub(
-        #     assertion=assertion,
-        #     # introduces_concept=test_concept,
-        # )
-
         np = Nanopub(
             config=default_config,
-            profile=profile_test,
             assertion=assertion
         )
         java_np = java_wrap.sign(np)
 
-        signed_g = signer.add_signature(np.rdf)
+        signed_g = add_signature(np.rdf, profile_test)
         np.update_from_signed(signed_g)
 
         # print(np.rdf.serialize(format="trig"))

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 This module holds code for representing the RDF of nanopublications, as well as helper functions to
 make handling RDF easier.
@@ -12,9 +11,9 @@ from rdflib import BNode, ConjunctiveGraph, Graph, URIRef
 from rdflib.namespace import DC, DCTERMS, FOAF, PROV, RDF, XSD
 
 from nanopub.config import NanopubConfig
-from nanopub.definitions import DUMMY_NAMESPACE
+from nanopub.definitions import DUMMY_NAMESPACE, DUMMY_NANOPUB_URI, MAX_TRIPLES_PER_NANOPUB, log
 from nanopub.namespaces import HYCL, NP, NPX, NTEMPLATE, ORCID, PAV
-from nanopub.profile import Profile
+from nanopub.signer import add_signature, publish_graph
 
 
 class Nanopub:
@@ -44,14 +43,14 @@ class Nanopub:
         source_uri: str = None,
         introduces_concept: BNode = None,
         config: NanopubConfig = NanopubConfig(),
-        profile: Profile = None
         # **kwargs
     ) -> None:
-        self._profile = profile
+        # print(config.profile)
+        self._profile = config.profile
         self._source_uri = source_uri
         self._concept_uri = None
-        self._signed_file = None
-        self.config = config
+        self._config = config
+        self._published = False
 
         if rdf:
             self._rdf = self._preformat_graph(rdf)
@@ -88,24 +87,24 @@ class Nanopub:
 
         self._validate_from_assertion_arguments(
             introduces_concept=introduces_concept,
-            derived_from=self.config.derived_from,
-            assertion_attributed_to=self.config.assertion_attributed_to,
-            attribute_assertion_to_profile=self.config.attribute_assertion_to_profile,
+            derived_from=self._config.derived_from,
+            assertion_attributed_to=self._config.assertion_attributed_to,
+            attribute_assertion_to_profile=self._config.attribute_assertion_to_profile,
             # publication_attributed_to=publication_attributed_to,
         )
         self._handle_generated_at_time(
-            self.config.add_pubinfo_generated_time,
-            self.config.add_prov_generated_time
+            self._config.add_pubinfo_generated_time,
+            self._config.add_prov_generated_time
         )
-        assertion_attributed_to = self.config.assertion_attributed_to
-        if self.config.attribute_assertion_to_profile:
+        assertion_attributed_to = self._config.assertion_attributed_to
+        if self._config.attribute_assertion_to_profile:
             assertion_attributed_to = rdflib.URIRef(self.profile.orcid_id)
         self._handle_assertion_attributed_to(assertion_attributed_to)
         self._handle_publication_attributed_to(
-            self.config.attribute_publication_to_profile,
-            self.config.publication_attributed_to
+            self._config.attribute_publication_to_profile,
+            self._config.publication_attributed_to
         )
-        self._handle_derived_from(derived_from=self.config.derived_from)
+        self._handle_derived_from(derived_from=self._config.derived_from)
 
         # Concatenate prefixes declarations from all provided graphs in the main graph
         for user_rdf in [assertion, provenance, pubinfo]:
@@ -347,15 +346,71 @@ class Nanopub:
 
     def update_from_signed(self, signed_g: ConjunctiveGraph) -> None:
         """Update the pub RDF to the signed one"""
-        # self._signed_file = signed_filepath
-        # self._rdf = ConjunctiveGraph()
-        # self._rdf.parse(signed_filepath, format="trig")
         self._rdf = signed_g
         self._source_uri = self.get_source_uri_from_graph
         self.head = Graph(self._rdf.store, DUMMY_NAMESPACE.Head)
         self.assertion = Graph(self._rdf.store, DUMMY_NAMESPACE.assertion)
         self.provenance = Graph(self._rdf.store, DUMMY_NAMESPACE.provenance)
         self.pubinfo = Graph(self._rdf.store, DUMMY_NAMESPACE.pubInfo)
+
+
+
+    def sign(self) -> None:
+        """Sign a Nanopub object.
+
+        Sign Publication object. It uses nanopub_java commandline tool to sign
+        the nanopublication RDF with the RSA key in the profile and then publish.
+
+        Args:
+            np: Publication object to sign.
+
+        Returns:
+            dict of str: Publication info with: 'nanopub_uri': the URI of the signed
+            nanopublication, 'concept_uri': the URI of the introduced concept (if applicable)
+        """
+        if len(self.rdf) > MAX_TRIPLES_PER_NANOPUB:
+            raise ValueError(f"Nanopublication contains {len(self.rdf)} triples, which is more than the {MAX_TRIPLES_PER_NANOPUB} authorized")
+        if not self._config.profile:
+            raise ValueError("Profile not available, cannot sign the nanopub")
+
+        # Sign the nanopub
+        signed_g = add_signature(self.rdf, self._config.profile)
+        self.update_from_signed(signed_g)
+        log.info(f"Signed {self.source_uri}")
+
+
+    def publish(self) -> None:
+        """Publish a Nanopub object.
+
+        Publish Publication object to the nanopub server. It uses nanopub_java commandline tool to
+        sign the nanopublication RDF with the RSA key in the profile and then publish.
+
+        Args:
+            publication (Publication): Publication object to publish.
+
+        Returns:
+            dict of str: Publication info with: 'nanopub_uri': the URI of the published
+            nanopublication, 'concept_uri': the URI of the introduced concept (if applicable)
+
+        """
+        if not self.source_uri:
+            self.sign()
+
+        publish_graph(self.rdf)
+
+        if self.introduces_concept:
+            concept_uri = str(self.introduces_concept)
+            # Replace the DUMMY_NANOPUB_URI with the actually published nanopub uri. This is
+            # necessary if a blank node was passed as introduces_concept. In that case the
+            # Nanopub.from_assertion method replaces the blank node with the base nanopub's URI
+            # and appends a fragment, given by the 'name' of the blank node. For example, if a
+            # blank node with name 'step' was passed as introduces_concept, the concept will be
+            # published with a URI that looks like [published nanopub URI]#step.
+            concept_uri = concept_uri.replace(
+                DUMMY_NANOPUB_URI, self.source_uri
+            )
+            self.concept_uri = concept_uri
+            log.info(f"Published concept to {concept_uri}")
 
 
     @property
@@ -375,6 +430,14 @@ class Nanopub:
     #     return self._provenance
 
     @property
+    def config(self):
+        return self._config
+
+    @config.setter
+    def config(self, value):
+        self._config = value
+
+    @property
     def source_uri(self):
         return self._source_uri
 
@@ -383,12 +446,12 @@ class Nanopub:
         self._source_uri = value
 
     @property
-    def signed_file(self):
-        return self._signed_file
+    def published(self):
+        return self._published
 
-    @signed_file.setter
-    def signed_file(self, value):
-        self._signed_file = value
+    @published.setter
+    def published(self, value):
+        self._published = value
 
     @property
     def concept_uri(self):

@@ -1,13 +1,13 @@
 from rdflib import BNode, Graph, Literal, URIRef
 
-from nanopub import Nanopub, NanopubClient, namespaces
-from tests.conftest import default_config, java_wrap, profile_test
+from nanopub import Nanopub, namespaces
+from tests.conftest import default_config, java_wrap
 
-client = NanopubClient(
-    use_test_server=True,
-    profile=profile_test,
-    nanopub_config=default_config
-)
+# client = NanopubClient(
+#     use_test_server=True,
+#     profile=profile_test,
+#     nanopub_config=default_config
+# )
 
 
 class TestNanopublication:
@@ -21,13 +21,11 @@ class TestNanopublication:
 
         np = Nanopub(
             config=default_config,
-            profile=profile_test,
-            # client=client,
             assertion=assertion
         )
         java_np = java_wrap.sign(np)
 
-        np = client.sign(np)
+        np.sign()
 
         assert np.source_uri == expected_np_uri
         assert np.source_uri == java_np
@@ -43,10 +41,9 @@ class TestNanopublication:
 
         np = Nanopub(
             config=default_config,
-            profile=profile_test,
             assertion=assertion
         )
-        np = client.sign(np)
+        np.sign()
         # print(np.rdf.serialize(format='trig'))
         assert np.source_uri == expected_np_uri
 
@@ -60,11 +57,21 @@ class TestNanopublication:
         ))
         np = Nanopub(
             config=default_config,
-            profile=profile_test,
             assertion=assertion
         )
-        np = client.publish(np)
+        np.publish()
         assert np.source_uri == expected_np_uri
+
+
+    # def test_nanopub_claim(self):
+    #     client = NanopubClient(profile=profile_test, use_test_server=True)
+    #     np = client.claim(statement_text='Some controversial statement')
+    #     assert np.source_uri is not None
+
+    # def test_nanopub_retract(self):
+    #     client = NanopubClient(profile=profile_test, use_test_server=True)
+    #     np = client.retract(uri='http://purl.org/np/RAnksi2yDP7jpe7F6BwWCpMOmzBEcUImkAKUeKEY_2Yus', force=True)
+    #     assert np.source_uri is not None
 
 
 

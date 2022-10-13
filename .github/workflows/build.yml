@@ -61,11 +61,6 @@ jobs:
         run: |
           pip install .[doc]
 
-      - name: Build Sphinx docs
-        run: |
-          cd docs
-          make html
-
       - name: Deploy mkdocs on GitHub Pages
         run: |
           git pull

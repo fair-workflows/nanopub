@@ -17,21 +17,14 @@ This is a 3-step recipe that works for most cases:
 Here is an example:
 ```python
 from rdflib import Graph
-from nanopub import NanopubClient, NanopubConfig
+from nanopub import Nanopub, NanopubConfig, load_profile
 
-# Create the client (we use use_test_server=True to point to the test server)
-client = NanopubClient(
+# Create the config (we use use_test_server=True to point to the test server)
+np_config = NanopubConfig(
+    profile=load_profile(),
     use_test_server=True,
-    # You can define how the nanopubs created with this client will be formatted
-    nanopub_config=NanopubConfig(
-    	add_prov_generated_time=True
-        add_pubinfo_generated_time=True
-        attribute_assertion_to_profile= False
-        attribute_publication_to_profile=True
-        assertion_attributed_to=None
-        publication_attributed_to=None
-        derived_from=None
-    )
+    add_prov_generated_time=True,
+    attribute_publication_to_profile=True,
 )
 
 # 1. construct a desired assertion (a graph of RDF triples) using rdflib
@@ -43,11 +36,14 @@ my_assertion.add((
 ))
 
 # 2. Make a Nanopublication object with this assertion
-np = client.create_nanopub(assertion=my_assertion)
+np = Nanopub(
+    config=np_config,
+    assertion=my_assertion
+)
 
 # 3. Publish the Publication object.
-np = client.publish(np)
-# Published to http://purl.org/np/RAfk_zBYDerxd6ipfv8fAcQHEzgZcVylMTEkiLlMzsgwQ
+np.publish()
+print(np)
 ```
 View the resulting nanopublication [here](http://purl.org/np/RAfk_zBYDerxd6ipfv8fAcQHEzgZcVylMTEkiLlMzsgwQ).
 
