@@ -6,33 +6,33 @@ from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
 from rdflib import BNode, ConjunctiveGraph, Literal, Namespace, URIRef
 
-from nanopub.definitions import DUMMY_NAMESPACE, DUMMY_URI, FINAL_NANOPUB_URI, NANOPUB_SERVER_LIST, log
+from nanopub.definitions import FINAL_NANOPUB_URI, NANOPUB_SERVER_LIST, NP_TEMP_PREFIX, log
 from nanopub.namespaces import NPX
 from nanopub.profile import Profile
 from nanopub.trustyuri.rdf import RdfHasher, RdfUtils
 from nanopub.trustyuri.rdf.RdfPreprocessor import transform
 
 
-def add_signature(g: ConjunctiveGraph, profile: Profile) -> ConjunctiveGraph:
+def add_signature(g: ConjunctiveGraph, profile: Profile, dummy_namespace: Namespace) -> ConjunctiveGraph:
     """Implementation in python of the process to sign with the private key"""
     # TODO: Add signature triples
     g.add((
-        DUMMY_NAMESPACE["sig"],
+        dummy_namespace["sig"],
         NPX["hasPublicKey"],
         Literal(profile.public_key),
-        DUMMY_NAMESPACE["pubInfo"],
+        dummy_namespace["pubinfo"],
     ))
     g.add((
-        DUMMY_NAMESPACE["sig"],
+        dummy_namespace["sig"],
         NPX["hasAlgorithm"],
         Literal("RSA"),
-        DUMMY_NAMESPACE["pubInfo"],
+        dummy_namespace["pubinfo"],
     ))
     g.add((
-        DUMMY_NAMESPACE["sig"],
+        dummy_namespace["sig"],
         NPX["hasSignatureTarget"],
-        DUMMY_URI,
-        DUMMY_NAMESPACE["pubInfo"],
+        dummy_namespace[""],
+        dummy_namespace["pubinfo"],
     ))
     # Normalize RDF
     # print("NORMED RDF STARTS")
@@ -41,7 +41,7 @@ def add_signature(g: ConjunctiveGraph, profile: Profile) -> ConjunctiveGraph:
     # TODO: the disgusting rdflib warnings "does not look like a valid URI, trying to serialize this will break." shows up here
     normed_rdf = RdfHasher.normalize_quads(
         quads,
-        baseuri=str(DUMMY_NAMESPACE),
+        baseuri=str(dummy_namespace),
         hashstr=" "
     )
     # Be careful: normed_rdf needs to end with a newline
@@ -58,30 +58,34 @@ def add_signature(g: ConjunctiveGraph, profile: Profile) -> ConjunctiveGraph:
     log.debug(f"Nanopub signature: {signature}")
 
     g.add((
-        DUMMY_NAMESPACE["sig"],
+        dummy_namespace["sig"],
         NPX["hasSignature"],
         Literal(signature),
-        DUMMY_NAMESPACE["pubInfo"],
+        dummy_namespace["pubinfo"],
     ))
 
     quads = RdfUtils.get_quads(g)
     trusty_artefact = RdfHasher.make_hash(
         quads,
-        baseuri=str(DUMMY_NAMESPACE),
+        baseuri=str(dummy_namespace),
         hashstr=" "
     )
     log.debug(f"Trusty artefact: {trusty_artefact}")
 
-    g = replace_trusty_in_graph(trusty_artefact, str(DUMMY_NAMESPACE), g)
-    # print("TRUSTY REPLACE IN PYTHON START")
-    # print(g.serialize(format="trig"))
-    # print("TRUSTY REPLACE IN PYTHON END")
+    g = replace_trusty_in_graph(trusty_artefact, str(dummy_namespace), g)
     return g
 
 
 def replace_trusty_in_graph(trusty_artefact: str, dummy_ns: str, graph: ConjunctiveGraph):
-    np_uri = FINAL_NANOPUB_URI + trusty_artefact
-    # replace_trusty_in_graph()
+    if str(dummy_ns).startswith(NP_TEMP_PREFIX):
+        # Replace with http://purl.org/np/ if the http://purl.org/nanopub/temp/
+        # prefix is used in the dummy nanopub URI
+        np_uri = FINAL_NANOPUB_URI + trusty_artefact
+    else:
+        np_uri = dummy_ns + trusty_artefact
+    print("TRUSTYYYYYYYYYYYYYYYYYYYYYYYYYYy")
+    print(str(np_uri))
+
     graph.bind("this", Namespace(np_uri))
     graph.bind("sub", Namespace(np_uri + "#"))
 
@@ -120,7 +124,7 @@ def publish_graph(g: ConjunctiveGraph, use_server: str = NANOPUB_SERVER_LIST[0])
 
 
 
-def verify(g: ConjunctiveGraph, source_uri: str) -> bool:
+def verify(g: ConjunctiveGraph, source_uri: str, dummy_namespace: Namespace) -> bool:
     # TODO: improve to better test the different components (signature, etc)
 
     # signature_uri = URIRef(f"{np.source_uri}#sig")
@@ -131,7 +135,7 @@ def verify(g: ConjunctiveGraph, source_uri: str) -> bool:
     quads = RdfUtils.get_quads(g)
     trusty_artefact = RdfHasher.make_hash(
         quads,
-        baseuri=str(DUMMY_NAMESPACE),
+        baseuri=str(dummy_namespace),
         hashstr=" "
     )
     expected_uri = f"http://purl.org/np/{trusty_artefact}"
@@ -145,7 +149,7 @@ def verify(g: ConjunctiveGraph, source_uri: str) -> bool:
 # Implement sign/publish in python:
 # 1. Use trusty-uri lib to get the trusty URI
 # 2. Replace the temp nanopub URIs in the graph by the generated trusty URI
-# 3. Add signature in pubInfo (how to generate it?)
+# 3. Add signature in pubinfo (how to generate it?)
 # In java SignatureUtils > createSignedNanopub
 # 4. Publish to one of the np servers: https://monitor.petapico.org/
 # post.setEntity(new StringEntity(nanopubString, "UTF-8"));

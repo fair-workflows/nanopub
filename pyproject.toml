@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "nanopub"
 description = "Python client for Nanopublications"
 readme = "README.md"
-requires-python = ">=3.6"
+requires-python = ">=3.7"
 license = { file = "LICENSE" }
 authors = [
     { name = "Robin Richardson", email = "r.richardson@esciencecenter.nl" },
@@ -142,7 +142,7 @@ skip-string-normalization = true
 
 
 
-# Trying out env from hatch https://hatch.pypa.io
+# https://hatch.pypa.io
 [tool.hatch.envs.default]
 features = [
   "test",
@@ -158,7 +158,6 @@ post-install-commands = [
 dev = "./scripts/dev.sh"
 test = "./scripts/test.sh"
 docs = "./scripts/docs-serve.sh"
-docs-sphinx = "./scripts/docs-sphinx.sh"
 format = "./scripts/format.sh"
 lint = "./scripts/lint.sh"
 

@@ -26,7 +26,7 @@ tim = BNode('timbernerslee')
 # We assert that he is a person
 my_assertion.add((tim, RDF.type, FOAF.Person) )
 
-# Define the config for your nanopubs  
+# Define the config for your nanopubs
 np_config = NanopubConfig(
     add_prov_generated_time=True,
     add_pubinfo_generated_time=True,
@@ -57,7 +57,7 @@ sub:assertion {
 ```
 
 ## Introducing a concept
-You can optionally specify that the Publication introduces a particular concept using blank nodes. 
+You can optionally specify that the Publication introduces a particular concept using blank nodes.
 
 The pubinfo graph will note that this nanopub npx:introduces the concept. The concept should be a blank node (rdflib.term.BNode), and is converted to a URI derived from the nanopub's URI with a fragment (#) made from the blank node's name.
 
@@ -100,7 +100,7 @@ The publication info of the nanopublication denotes that this nanopublication in
 @prefix sub: <http://purl.org/np/RAq9gFEgxlOyG9SSDZ5DmBbyGet2z6pkrdWXIVYa6U6qI#> .
 @prefix this: <http://purl.org/np/RAq9gFEgxlOyG9SSDZ5DmBbyGet2z6pkrdWXIVYa6U6qI> .
 
-sub:pubInfo {
+sub:pubinfo {
    this: npx:introduces sub:timbernerslee .
 }
 ```

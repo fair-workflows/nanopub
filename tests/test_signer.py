@@ -1,33 +1,18 @@
 from rdflib import BNode, Graph, Literal
 
 from nanopub import Nanopub, namespaces
+from nanopub.client import DUMMY_NAMESPACE
 from nanopub.signer import add_signature
 from tests.conftest import default_config, java_wrap, profile_test
 
 # from tests.conftest import skip_if_nanopub_server_unavailable
-
-# client = NanopubClient(
-#     use_test_server=True,
-#     profile=profile_test,
-#     nanopub_config=default_config
-# )
-# signer = Signer(
-#     profile=profile_test,
-#     use_server=NANOPUB_TEST_SERVER,
-# )
-
-# TEST_ASSERTION = (namespaces.AUTHOR.DrBob, namespaces.HYCL.claims, rdflib.Literal('This is a test'))
-# PUBKEY = 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCC686zsZaQWthNDSZO6unvhtSkXSLT8iSY/UUwD/' \
-#          '7T9tabrEvFt/9UPsCsg/A4HG6xeuPtL5mVziVnzbxqi9myQOY62LBja85pYLWaZPUYakP' \
-#          'HyVm9A0bRC2PUYZde+METkZ6eoqLXP26Qo5b6avPcmNnKkr5OQb7KXaeX2K2zQQIDAQAB'
-# NANOPUB_SAMPLE_SIGNED = str(TEST_RESOURCES_FILEPATH / 'nanopub_sample_signed.trig')
 
 
 class TestSigner:
 
 
     def test_nanopub_sign(self):
-        expected_np_uri = "http://purl.org/np/RAmdN3ynXoyMki1Ab9j9O4KWnX2hj7ETw3PdKtOMkpvhY"
+        expected_np_uri = "http://purl.org/np/RAPPd9CZrgAo_XzrDRfUtXvRYVud2PDRgCN-z7eGhIwpc"
 
         assertion = Graph()
         assertion.add((
@@ -40,7 +25,7 @@ class TestSigner:
         )
         java_np = java_wrap.sign(np)
 
-        signed_g = add_signature(np.rdf, profile_test)
+        signed_g = add_signature(np.rdf, profile_test, DUMMY_NAMESPACE)
         np.update_from_signed(signed_g)
 
         # print(np.rdf.serialize(format="trig"))

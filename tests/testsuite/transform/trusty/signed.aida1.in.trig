@@ -1,0 +1,35 @@
+@prefix this: <http://example.org/nanopub-validator-example/RAPuoey8R72zf12frQvr5kcSzef8Tii3lZIBFtJzOBwrE> .
+@prefix sub: <http://example.org/nanopub-validator-example/RAPuoey8R72zf12frQvr5kcSzef8Tii3lZIBFtJzOBwrE#> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix pav: <http://purl.org/pav/> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix dc: <http://purl.org/dc/terms/> .
+
+sub:Head {
+  this: np:hasAssertion sub:assertion;
+    np:hasProvenance sub:provenance;
+    np:hasPublicationInfo sub:pubinfo;
+    a np:Nanopublication .
+}
+
+sub:assertion {
+  sub:assertion npx:asSentence <http://purl.org/aida/Malaria+is+transmitted+by+mosquitoes.>;
+    a npx:UnderspecifiedAssertion .
+}
+
+sub:provenance {
+  sub:assertion prov:hadPrimarySource <http://dx.doi.org/10.3233/ISU-2010-0613> .
+}
+
+sub:pubinfo {
+  sub:sig npx:hasAlgorithm "RSA";
+    npx:hasPublicKey "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQD3RHyHR7WWKBYevw1qK86B6RVzI7oKlvghqXvbpOAX1KueDE6Itru34HRhrVy4OMLCRQWBE3VXktKdbgOxD3vC4cIxz5LX+XOgGWzv5WKSjOfXu/yIeJrzsuIkyHvw7/tToGrE0itJ1wGylJv+YieizmGvNiUHhP0J0+YFMNnvewIDAQAB";
+    npx:hasSignature "ZPW5njzboFeFl3PPDfC1u6QyMPoePKllLBeV+kQx9DNh/ylc0/74Ey4RLJrWSrJEV8uZGU0KiPOl3U/DVP2FYaAWSibfGmKi2GvDev20X3EbLUyVsvwz8Davy1MudqpkpOqhIJw7/Ot7GdYnBCxtUNu6ZZgTf3eZq7CTb4seLOk=";
+    npx:hasSignatureTarget this: .
+
+  this: dc:created "2014-07-29T10:13:35+01:00"^^xsd:dateTime;
+    pav:createdBy <http://orcid.org/0000-0002-1267-0234>;
+    a npx:ExampleNanopub .
+}

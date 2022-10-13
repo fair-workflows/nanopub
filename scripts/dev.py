@@ -1,23 +1,17 @@
 import logging
 
-from rdflib import Graph, Literal, URIRef
+from rdflib import ConjunctiveGraph
 
-from nanopub import Nanopub, NanopubClient, NanopubConfig, load_profile, namespaces
+from nanopub import Nanopub, NanopubClient, NanopubConfig, load_profile
 
 log = logging.getLogger()
 log.setLevel(logging.INFO)
 
-assertion = Graph()
-# assertion.add(( URIRef("http://s"), URIRef("http://p"), URIRef("http://o")))
-assertion.add((
-    URIRef('http://test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
-))
-
 config = NanopubConfig(
     add_prov_generated_time=False,
     add_pubinfo_generated_time=False,
-    attribute_assertion_to_profile=True,
-    attribute_publication_to_profile=True,
+    attribute_assertion_to_profile=False,
+    attribute_publication_to_profile=False,
     profile=load_profile(),
     use_test_server=True,
 )
@@ -27,59 +21,29 @@ client = NanopubClient(
     # profile_path='tests/resources'
 )
 
-np = Nanopub(config=config, assertion=assertion)
-
-np.sign()
-# np.publish()
-
-# np = client.sign(np)
-
-# resp = client.publish(np)
-
-print(np)
-# print(resp)
-
-
-
-# np = client.create_nanopub(
-#     assertion=assertion,
-#     # provenance=prov,
-#     # pubinfo=pubinfo,
-#     nanopub_config=config,
-# )
-# np = client.sign(np)
-# resp = client.publish(np)
-# print(np)
-# print(resp)
-
-
-
-
-
-
-
-## NEW WORKFLOW:
 
 # assertion = Graph()
-# # assertion.add(( URIRef("http://s"), URIRef("http://p"), URIRef("http://o")))
 # assertion.add((
 #     URIRef('http://test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
 # ))
 
 
-# client = NanopubClient(
-#     use_test_server=True,
-
-#     add_prov_generated_time=False,
-#     add_pubinfo_generated_time=False,
-#     attribute_assertion_to_profile=True,
-#     attribute_publication_to_profile=True,
-# )
-
-# np = Nanopub(client=client, assertion=assertion)
+np_g = ConjunctiveGraph()
+np_g.parse("./tests/testsuite/transform/signed/rsa-key1/simple1.in.trig", format="trig")
 
 
-# signed = np.sign()
+np = Nanopub(config=config, rdf=np_g)
+
+# np = Nanopub(config=config, assertion=assertion)
+
+np.sign()
+# np.publish()
+
+# np = client.sign(np)
+# resp = client.publish(np)
+
+print(np)
+
 
 # if signed == True:
 #     published = np.publish()

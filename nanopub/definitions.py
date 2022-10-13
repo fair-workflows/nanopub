@@ -27,10 +27,11 @@ NANOPUB_SERVER_LIST = [
 # DUMMY_NAMESPACE = Namespace(DUMMY_NANOPUB_URI + "/")
 # DUMMY_URI = URIRef(DUMMY_NANOPUB_URI)
 
-DUMMY_NANOPUB_URI = "http://purl.org/nanopub/temp/mynanopub"
+DUMMY_NANOPUB_URI = "http://purl.org/nanopub/temp/np"
 DUMMY_NAMESPACE = Namespace(DUMMY_NANOPUB_URI + "#")
 DUMMY_URI = DUMMY_NAMESPACE[""]
 
+NP_TEMP_PREFIX = "http://purl.org/nanopub/temp/"
 FINAL_NANOPUB_URI = "http://purl.org/np/"
 
 MAX_NP_PER_INDEX = 1100

@@ -1,4 +1,3 @@
-
 from rdflib.term import BNode, URIRef
 
 from nanopub.trustyuri.rdf import RdfUtils

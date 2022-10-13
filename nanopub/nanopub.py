@@ -2,16 +2,17 @@
 This module holds code for representing the RDF of nanopublications, as well as helper functions to
 make handling RDF easier.
 """
+import re
 import warnings
 from datetime import datetime
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 import rdflib
-from rdflib import BNode, ConjunctiveGraph, Graph, URIRef
+from rdflib import BNode, ConjunctiveGraph, Graph, Namespace, URIRef
 from rdflib.namespace import DC, DCTERMS, FOAF, PROV, RDF, XSD
 
 from nanopub.config import NanopubConfig
-from nanopub.definitions import DUMMY_NAMESPACE, DUMMY_NANOPUB_URI, MAX_TRIPLES_PER_NANOPUB, log
+from nanopub.definitions import DUMMY_NAMESPACE, DUMMY_NANOPUB_URI, MAX_TRIPLES_PER_NANOPUB, NANOPUB_TEST_SERVER, log
 from nanopub.namespaces import HYCL, NP, NPX, NTEMPLATE, ORCID, PAV
 from nanopub.signer import add_signature, publish_graph
 
@@ -51,33 +52,44 @@ class Nanopub:
         self._concept_uri = None
         self._config = config
         self._published = False
+        self._dummy_namespace = DUMMY_NAMESPACE
+
+        # TODO: extract dummy namespace from given RDF
+        if rdf:
+            self.extract_dummy_namespace(rdf)
+
+        if self._config.use_test_server:
+            self._config.use_server = NANOPUB_TEST_SERVER
 
         if rdf:
             self._rdf = self._preformat_graph(rdf)
         else:
             self._rdf = self._preformat_graph(ConjunctiveGraph())
 
-        self.head = Graph(self._rdf.store, DUMMY_NAMESPACE.Head)
-        self.assertion = Graph(self._rdf.store, DUMMY_NAMESPACE.assertion)
-        self.provenance = Graph(self._rdf.store, DUMMY_NAMESPACE.provenance)
-        self.pubinfo = Graph(self._rdf.store, DUMMY_NAMESPACE.pubInfo)
+        # print(self._dummy_namespace)
+        # print(self._rdf.serialize(format='trig'))
 
-        self.head.add((DUMMY_NAMESPACE[""], RDF.type, NP.Nanopublication))
+        self.head = Graph(self._rdf.store, self._dummy_namespace.Head)
+        self.assertion = Graph(self._rdf.store, self._dummy_namespace.assertion)
+        self.provenance = Graph(self._rdf.store, self._dummy_namespace.provenance)
+        self.pubinfo = Graph(self._rdf.store, self._dummy_namespace.pubinfo)
+
+        self.head.add((self._dummy_namespace[""], RDF.type, NP.Nanopublication))
         self.head.add(
-            (DUMMY_NAMESPACE[""], NP.hasAssertion, DUMMY_NAMESPACE.assertion)
+            (self._dummy_namespace[""], NP.hasAssertion, self._dummy_namespace.assertion)
         )
         self.head.add(
             (
-                DUMMY_NAMESPACE[""],
+                self._dummy_namespace[""],
                 NP.hasProvenance,
-                DUMMY_NAMESPACE.provenance,
+                self._dummy_namespace.provenance,
             )
         )
         self.head.add(
             (
-                DUMMY_NAMESPACE[""],
+                self._dummy_namespace[""],
                 NP.hasPublicationInfo,
-                DUMMY_NAMESPACE.pubInfo,
+                self._dummy_namespace.pubinfo,
             )
         )
 
@@ -127,24 +139,34 @@ class Nanopub:
         #             f"but not found. Graphs found: {list(self._graphs.keys())}."
         #         )
 
+    def extract_dummy_namespace(self, g: ConjunctiveGraph) -> str:
+        np_contexts = ['head', 'assertion', 'provenance', 'pubinfo']
+        dummy_uri = None
+        dummy_separator = None
+        found_contexts: List[str] = []
+        for c in g.contexts():
+            extract_fragment = re.search(r'^(.*)(\/|#)(.*)$', str(c.identifier), re.IGNORECASE)
+            if extract_fragment:
+                base_uri = extract_fragment.group(1)
+                separator_char = extract_fragment.group(2)
+                fragment = extract_fragment.group(3)
+                if dummy_uri and dummy_uri != base_uri:
+                    raise ValueError(f"2 Nanopublications are defined in this graph: {dummy_uri} and {base_uri}"
+                        "This tool only handles 1 nanopublication at a time")
+                if fragment.lower() in np_contexts:
+                    dummy_uri = base_uri
+                    dummy_separator = separator_char
+                    found_contexts.append(fragment)
+        if dummy_uri and dummy_separator:
+            self._dummy_namespace = Namespace(dummy_uri + dummy_separator)
+        elif len(g) > 1:
+            log.warn("No contexts related to nanopublications have been found in the RDF provided (head, assertion, provenance, pubinfo)")
+
+
     def _preformat_graph(self, g: ConjunctiveGraph) -> ConjunctiveGraph:
-        """Replace blank nodes and add a few default namespaces
-
-        Replace any blank nodes in the supplied RDF with a corresponding uri in the
-        dummy_namespace.'Blank nodes' here refers specifically to rdflib.term.BNode objects. When
-        publishing, the dummy_namespace is replaced with the URI of the actual nanopublication.
-
-        For example, if the nanopub's URI is www.purl.org/ABC123 then the blank node will be
-        replaced with a concrete URIRef of the form www.purl.org/ABC123#blanknodename where
-        'blanknodename' is the name of the rdflib.term.BNode object.
-
-        This is to solve the problem that a user may wish to use the nanopublication to introduce
-        a new concept. This new concept needs its own URI (it cannot simply be given the
-        nanopublication's URI), but it should still lie within the space of the nanopub.
-        Furthermore, the URI the nanopub is published to is not known ahead of time.
-        """
+        """Add a few default namespaces"""
         # Add default namespaces
-        # g.bind("", DUMMY_NAMESPACE)
+        g.bind("", None, replace=True)
         g.bind("np", NP)
         g.bind("npx", NPX)
         g.bind("prov", PROV)
@@ -155,11 +177,12 @@ class Nanopub:
         g.bind("orcid", ORCID)
         g.bind("ntemplate", NTEMPLATE)
         g.bind("foaf", FOAF)
-        self._replace_blank_nodes(g)
+        print(g.serialize(format='trig'))
+        # g = self._replace_blank_nodes(g)
         return g
 
 
-    def _replace_blank_nodes(self, rdf: ConjunctiveGraph) -> None:
+    def _replace_blank_nodes(self, rdf: ConjunctiveGraph) -> ConjunctiveGraph:
         """Replace blank nodes.
 
         Replace any blank nodes in the supplied RDF with a corresponding uri in the
@@ -176,12 +199,15 @@ class Nanopub:
         Furthermore, the URI the nanopub is published to is not known ahead of time.
         """
         for s, p, o in rdf:
-            rdf.remove((s, p, o))
             if isinstance(s, BNode):
-                s = DUMMY_NAMESPACE[str(s)]
+                rdf.remove((s, p, o))
+                s = self._dummy_namespace[str(s)]
+                rdf.add((s, p, o))
             if isinstance(o, BNode):
-                o = DUMMY_NAMESPACE[str(o)]
-            rdf.add((s, p, o))
+                rdf.remove((s, p, o))
+                o = self._dummy_namespace[str(o)]
+                rdf.add((s, p, o))
+        return rdf
 
 
     def _validate_from_assertion_arguments(
@@ -269,12 +295,12 @@ class Nanopub:
         creationtime = rdflib.Literal(datetime.now(), datatype=XSD.dateTime)
         if add_pubinfo_generated_time:
             self.pubinfo.add(
-                (DUMMY_NAMESPACE[""], PROV.generatedAtTime, creationtime)
+                (self._dummy_namespace[""], PROV.generatedAtTime, creationtime)
             )
         if add_prov_generated_time:
             self.provenance.add(
                 (
-                    DUMMY_NAMESPACE.assertion,
+                    self._dummy_namespace.assertion,
                     PROV.generatedAtTime,
                     creationtime,
                 )
@@ -287,7 +313,7 @@ class Nanopub:
             assertion_attributed_to = URIRef(assertion_attributed_to)
             self.provenance.add(
                 (
-                    DUMMY_NAMESPACE.assertion,
+                    self._dummy_namespace.assertion,
                     PROV.wasAttributedTo,
                     assertion_attributed_to,
                 )
@@ -309,7 +335,7 @@ class Nanopub:
                 publication_attributed_to = rdflib.URIRef(publication_attributed_to)
             self.pubinfo.add(
                 (
-                    DUMMY_NAMESPACE[""],
+                    self._dummy_namespace[""],
                     PROV.wasAttributedTo,
                     publication_attributed_to,
                 )
@@ -328,7 +354,7 @@ class Nanopub:
                 derived_from_uri = rdflib.URIRef(derived_from_uri)
                 self.provenance.add(
                     (
-                        DUMMY_NAMESPACE.assertion,
+                        self._dummy_namespace.assertion,
                         PROV.wasDerivedFrom,
                         derived_from_uri,
                     )
@@ -338,9 +364,9 @@ class Nanopub:
     def _handle_introduces_concept(self, introduces_concept: Union[BNode, URIRef]):
         """Handler for `from_assertion` method."""
         if introduces_concept:
-            introduces_concept = DUMMY_NAMESPACE[str(introduces_concept)]
+            introduces_concept = self._dummy_namespace[str(introduces_concept)]
             self.pubinfo.add(
-                (DUMMY_NAMESPACE[""], NPX.introduces, introduces_concept)
+                (self._dummy_namespace[""], NPX.introduces, introduces_concept)
             )
 
 
@@ -348,10 +374,10 @@ class Nanopub:
         """Update the pub RDF to the signed one"""
         self._rdf = signed_g
         self._source_uri = self.get_source_uri_from_graph
-        self.head = Graph(self._rdf.store, DUMMY_NAMESPACE.Head)
-        self.assertion = Graph(self._rdf.store, DUMMY_NAMESPACE.assertion)
-        self.provenance = Graph(self._rdf.store, DUMMY_NAMESPACE.provenance)
-        self.pubinfo = Graph(self._rdf.store, DUMMY_NAMESPACE.pubInfo)
+        self.head = Graph(self._rdf.store, self._dummy_namespace.Head)
+        self.assertion = Graph(self._rdf.store, self._dummy_namespace.assertion)
+        self.provenance = Graph(self._rdf.store, self._dummy_namespace.provenance)
+        self.pubinfo = Graph(self._rdf.store, self._dummy_namespace.pubinfo)
 
 
 
@@ -374,7 +400,7 @@ class Nanopub:
             raise ValueError("Profile not available, cannot sign the nanopub")
 
         # Sign the nanopub
-        signed_g = add_signature(self.rdf, self._config.profile)
+        signed_g = add_signature(self.rdf, self._config.profile, self._dummy_namespace)
         self.update_from_signed(signed_g)
         log.info(f"Signed {self.source_uri}")
 
@@ -396,7 +422,7 @@ class Nanopub:
         if not self.source_uri:
             self.sign()
 
-        publish_graph(self.rdf)
+        publish_graph(self.rdf, use_server=self._config.use_server)
 
         if self.introduces_concept:
             concept_uri = str(self.introduces_concept)

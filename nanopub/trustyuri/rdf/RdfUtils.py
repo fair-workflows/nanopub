@@ -4,17 +4,23 @@ from rdflib.graph import ConjunctiveGraph, Graph
 from rdflib.term import BNode, URIRef
 from rdflib.util import guess_format
 
+from nanopub.definitions import FINAL_NANOPUB_URI, NP_TEMP_PREFIX
+
 
 def get_trustyuri(resource, baseuri, hashstr, bnodemap):
     if resource is None:
         return None
     if isinstance(resource, URIRef):
         suffix = get_suffix(resource, baseuri)
+        prefix = baseuri
+        if str(baseuri).startswith(NP_TEMP_PREFIX):
+            prefix = FINAL_NANOPUB_URI
+
         if suffix is None and not get_str(resource) == get_str(baseuri):
             return resource
         if suffix is None or suffix == "":
-            return str(f"http://purl.org/np/{hashstr}")
-        return str(f"http://purl.org/np/{hashstr}#{suffix}")
+            return str(f"{prefix}{hashstr}")
+        return str(f"{prefix}{hashstr}#{suffix}")
         # return str(re.sub(baseuri, f"http://purl.org/np/{hashstr}{suffix}", str(resource)))
         # return str(get_trustyuri_str(resource, baseuri, hashstr, suffix))
         # return URIRef(get_trustyuri_str(baseuri, hashstr, suffix))
