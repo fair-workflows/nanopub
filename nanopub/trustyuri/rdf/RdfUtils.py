@@ -10,26 +10,24 @@ from nanopub.definitions import FINAL_NANOPUB_URI, NP_TEMP_PREFIX
 def get_trustyuri(resource, baseuri, hashstr, bnodemap):
     if resource is None:
         return None
+    prefix = baseuri
+    if str(baseuri).startswith(NP_TEMP_PREFIX):
+        prefix = FINAL_NANOPUB_URI
     if isinstance(resource, URIRef):
         suffix = get_suffix(resource, baseuri)
-        prefix = baseuri
-        if str(baseuri).startswith(NP_TEMP_PREFIX):
-            prefix = FINAL_NANOPUB_URI
-
         if suffix is None and not get_str(resource) == get_str(baseuri):
             return resource
         if suffix is None or suffix == "":
             return str(f"{prefix}{hashstr}")
+        if hashstr == " " and suffix.startswith("_"):
+            # Add a _ to suffix of URIs starting with a _ to
+            # not confond with blanknodes which are starting with a _
+            suffix = f"_{suffix}"
         return str(f"{prefix}{hashstr}#{suffix}")
-        # return str(re.sub(baseuri, f"http://purl.org/np/{hashstr}{suffix}", str(resource)))
-        # return str(get_trustyuri_str(resource, baseuri, hashstr, suffix))
-        # return URIRef(get_trustyuri_str(baseuri, hashstr, suffix))
     if isinstance(resource, BNode):
         n = get_bnode_number(resource, bnodemap)
-        # np_uri = str(re.sub(baseuri, f"http://purl.org/np/{hashstr}", str(resource)))
-        np_uri = str(f"http://purl.org/np/{hashstr}")
+        np_uri = str(f"{prefix}{hashstr}")
         return str(np_uri + "#_" + str(n))
-        # return URIRef(expand_baseuri(baseuri) + hashstr + "#_" + str(n))
     else:
         return None
 
@@ -75,6 +73,7 @@ def get_quads(conjunctivegraph):
         if not isinstance(g, URIRef):
             g = None
         quads.append((g, s, p, o))
+    quads.sort()
     return quads
 
 

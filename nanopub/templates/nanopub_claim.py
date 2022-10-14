@@ -1,7 +1,7 @@
 """This module includes a client for the nanopub server.
 """
 
-from rdflib import RDF, RDFS, BNode, Literal, URIRef
+from rdflib import RDF, RDFS, Literal, URIRef
 
 from nanopub.config import NanopubConfig
 from nanopub.namespaces import HYCL
@@ -29,8 +29,8 @@ class NanopubClaim(Nanopub):
         super().__init__(
             config=config,
         )
-
-        this_statement = BNode("mystatement")
+        this_statement = self._dummy_namespace["_1"]
+        # this_statement = BNode("mystatement")
         self.assertion.add((this_statement, RDF.type, HYCL.Statement))
         self.assertion.add((this_statement, RDFS.label, Literal(claim)))
 

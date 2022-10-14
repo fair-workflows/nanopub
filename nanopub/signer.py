@@ -14,8 +14,7 @@ from nanopub.trustyuri.rdf.RdfPreprocessor import transform
 
 
 def add_signature(g: ConjunctiveGraph, profile: Profile, dummy_namespace: Namespace) -> ConjunctiveGraph:
-    """Implementation in python of the process to sign with the private key"""
-    # TODO: Add signature triples
+    """Implementation in python of the process to sign with a private key"""
     g.add((
         dummy_namespace["sig"],
         NPX["hasPublicKey"],
@@ -35,10 +34,7 @@ def add_signature(g: ConjunctiveGraph, profile: Profile, dummy_namespace: Namesp
         dummy_namespace["pubinfo"],
     ))
     # Normalize RDF
-    # print("NORMED RDF STARTS")
     quads = RdfUtils.get_quads(g)
-
-    # TODO: the disgusting rdflib warnings "does not look like a valid URI, trying to serialize this will break." shows up here
     normed_rdf = RdfHasher.normalize_quads(
         quads,
         baseuri=str(dummy_namespace),
@@ -83,8 +79,6 @@ def replace_trusty_in_graph(trusty_artefact: str, dummy_ns: str, graph: Conjunct
         np_uri = FINAL_NANOPUB_URI + trusty_artefact
     else:
         np_uri = dummy_ns + trusty_artefact
-    print("TRUSTYYYYYYYYYYYYYYYYYYYYYYYYYYy")
-    print(str(np_uri))
 
     graph.bind("this", Namespace(np_uri))
     graph.bind("sub", Namespace(np_uri + "#"))

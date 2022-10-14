@@ -129,12 +129,11 @@ class Profile:
         return self._private_key
 
     def __repr__(self):
-        return f"""ORCID: {self._orcid_id}
-Name: {self._name}
-Private key: {self._private_key}
-Public key: {self._public_key}
-Intro Nanopub URI: {self._introduction_nanopub_uri}
-"""
+        return f"""\033[1mORCID\033[0m: {self._orcid_id}
+\033[1mName\033[0m: {self._name}
+\033[1mPrivate key\033[0m: {self._private_key}
+\033[1mPublic key\033[0m: {self._public_key}
+\033[1mIntro Nanopub URI\033[0m: {self._introduction_nanopub_uri}"""
 
 
 class ProfileLoader(Profile):

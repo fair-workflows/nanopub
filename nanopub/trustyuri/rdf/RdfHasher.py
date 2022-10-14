@@ -17,10 +17,10 @@ def normalize_quads(quads, hashstr=None, baseuri=None):
     previous = ""
     for q in quads:
         e = ""
-        e = e + value_to_string(q[0])
-        e = e + value_to_string(q[1])
-        e = e + value_to_string(q[2])
-        e = e + value_to_string(q[3])
+        e = e + str(value_to_string(q[0]))
+        e = e + str(value_to_string(q[1]))
+        e = e + str(value_to_string(q[2]))
+        e = e + str(value_to_string(q[3]))
         if not e == previous:
             s = s + e
         previous = e
@@ -28,7 +28,7 @@ def normalize_quads(quads, hashstr=None, baseuri=None):
     return s
 
 
-def make_hash(quads, hashstr=None, baseuri=None):
+def make_hash(quads, hashstr=None, baseuri=None) -> str:
     s = normalize_quads(quads, hashstr, baseuri)
 
     # Uncomment next line to see what goes into the hash:
@@ -36,19 +36,20 @@ def make_hash(quads, hashstr=None, baseuri=None):
     return "RA" + TrustyUriUtils.get_base64(hashlib.sha256(s.encode('utf-8')).digest())
 
 
-def value_to_string(value):
+def value_to_string(value) -> str:
+    # TODO: fix warnings 'does not look like a valid URI, trying to serialize this will break.'
     if value is None:
         return "\n"
     elif isinstance(value, Literal):
         if value.language is not None:
             # TODO: proper canonicalization of language tags
-            return "@" + value.language.lower() + " " + escape(value) + "\n"
+            return f"@{value.language.lower()} {escape(value)}\n"
         if value.datatype is not None:
-            return "^" + value.datatype + " " + escape(value) + "\n"
-        return "^http://www.w3.org/2001/XMLSchema#string " + escape(value) + "\n"
+            return f"^{value.datatype} {escape(value)}\n"
+        return f"^http://www.w3.org/2001/XMLSchema#string {escape(value)}\n"
     else:
-        return str(value) + "\n"
+        return f"{str(value)}\n"
 
 
-def escape(s):
-    return re.sub(r'\n', r'\\n', re.sub(r'\\', r'\\\\', s))
+def escape(s) -> str:
+    return re.sub(r'\n', r'\\n', re.sub(r'\\', r'\\\\', str(s)))

@@ -1,4 +1,5 @@
 #! /usr/bin/env python3
+import os
 import re
 import shutil
 from pathlib import Path
@@ -6,6 +7,7 @@ from typing import Tuple, Union
 
 import click
 import rdflib
+from rdflib import ConjunctiveGraph
 
 from nanopub import Nanopub, NanopubConfig, load_profile, namespaces
 from nanopub.definitions import DEFAULT_PROFILE_PATH, USER_CONFIG_DIR
@@ -19,6 +21,10 @@ DEFAULT_PUBLIC_KEY_PATH = USER_CONFIG_DIR / PUBLIC_KEY_FILE
 RSA = 'RSA'
 ORCID_ID_REGEX = r'^https://orcid.org/(\d{4}-){3}\d{3}(\d|X)$'
 
+# log = logging.getLogger()
+# Set logging level to error to hide RDFLib warnings
+# (it prints warnings even if we don't instantiate any URIRef with space)
+# log.setLevel(logging.ERROR)
 
 def validate_orcid_id(ctx, param, orcid_id: str):
     """
@@ -43,15 +49,64 @@ def profile():
     """Get the current user profile info."""
     try:
         p = load_profile(DEFAULT_PROFILE_PATH)
-        click.echo(f'    👤 Current profile in {DEFAULT_PROFILE_PATH}:')
+        click.echo(f' 👤 User profile in \033[1m{DEFAULT_PROFILE_PATH}\033[0m')
         click.echo(str(p))
     except ProfileError:
-        click.echo(f"⚠️  No profile could be loaded from {DEFAULT_PROFILE_PATH}")
-        click.echo("ℹ️  Use 'np setup' to setup your nanopub profile locally with the interactive CLI")
+        click.echo(f" ⚠️  No profile could be loaded from {DEFAULT_PROFILE_PATH}")
+        click.echo(" ℹ️  Use \033[1mnp setup\033[0m to setup your nanopub profile locally with the interactive CLI")
 
 
-# TODO: np sign my_np.trig
-# nanopub profile (check if profile set, if not start setup_profile)
+
+@cli.command(help='Sign a Nanopublication')
+@click.argument('filepath', type=Path)
+@click.option('-k', '--keypair', nargs=2, type=Path,
+              help='Your RSA public and private keys with which your nanopubs will be signed',
+              default=None)
+def sign(filepath, keypair):
+    # print(filepath)
+    # print(keypair)
+    config = NanopubConfig(
+        add_prov_generated_time=False,
+        add_pubinfo_generated_time=False,
+        attribute_assertion_to_profile=False,
+        attribute_publication_to_profile=False,
+        profile=load_profile(DEFAULT_PROFILE_PATH),
+        use_test_server=True,
+    )
+    g = ConjunctiveGraph()
+    g.parse(filepath)
+
+    # signed_filename = os.path.join(os.path.split(), os.path.basename(filepath))
+    folder_path, filename = os.path.split(filepath)
+    np = Nanopub(
+        config=config,
+        rdf=g
+    )
+    np.sign()
+    signed_filepath = f"{str(folder_path)}/signed.{str(filename)}"
+    np.rdf.serialize(signed_filepath, format='trig')
+    click.echo(f" ✒️  Nanopub signed in \033[1m{signed_filepath}\033[0m with the trusty URI \033[1m{np.source_uri}\033[0m")
+    click.echo(f" 📬️ To publish it run \033[1mnp publish {signed_filepath}\033[0m")
+
+
+@cli.command(help='Publish a Nanopublication')
+@click.argument('filepath', type=Path)
+def publish(filepath):
+    g = ConjunctiveGraph()
+    g.parse(filepath)
+    config = NanopubConfig(
+        add_prov_generated_time=False,
+        add_pubinfo_generated_time=False,
+        attribute_assertion_to_profile=False,
+        attribute_publication_to_profile=False,
+        profile=load_profile(DEFAULT_PROFILE_PATH),
+        use_test_server=True,
+    )
+    np = Nanopub(config=config, rdf=g)
+    np.publish()
+    click.echo(f" 📬️ Nanopub published at \033[1m{np.source_uri}\033[0m")
+
+
 
 @cli.command(help='Interactive CLI to create a nanopub user profile. '
                   'A local version of the profile will be stored in the user config dir '

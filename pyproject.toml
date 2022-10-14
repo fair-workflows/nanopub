@@ -105,7 +105,7 @@ source = ["project"]
 branch = true
 
 [tool.coverage.report]
-omit = ["nanopub/templates/*"]
+omit = ["nanopub/trustyuri/*"]
 
 [tool.flake8]
 max-complexity = 15
@@ -167,13 +167,13 @@ lint = "./scripts/lint.sh"
 markers = [
     "no_rsa_key: mark a test as a test only run when there is no nanopub RSA key setup.",
 ]
-# filterwarnings = [
-#     "ignore:the imp module is deprecated in favour of importlib.*:DeprecationWarning:pyRdfa",
-#     "ignore:It looks like you're parsing an XML document using an HTML parser.*:bs4.XMLParsedAsHTMLWarning:bs4"
-# ]
 # addopts = [
 #   "--strict-config",
 #   "--strict-markers",
+# ]
+# filterwarnings = [
+#     "ignore:the imp module is deprecated in favour of importlib.*:DeprecationWarning:pyRdfa",
+#     "ignore:It looks like you're parsing an XML document using an HTML parser.*:bs4.XMLParsedAsHTMLWarning:bs4"
 # ]
 # xfail_strict = true
 # junit_family = "xunit2"
