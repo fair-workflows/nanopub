@@ -252,13 +252,17 @@ SELECT DISTINCT ?np ?head ?assertion ?provenance ?pubinfo WHERE {
 """
         qres = g.query(get_np_query)
         if len(qres) < 1:
-            raise MalformedNanopubError(f"\033[1mNo nanopublication\033[0m have been found in the provided RDF. "
-                "It should contain a np:Nanopublication object in a Head graph, pointing to 3 graphs: assertion, provenance and pubinfo")
+            raise MalformedNanopubError(
+                "\033[1mNo nanopublication\033[0m have been found in the provided RDF. "
+                "It should contain a np:Nanopublication object in a Head graph, pointing to 3 graphs: assertion, provenance and pubinfo"
+            )
         if len(qres) > 1:
             for row in qres:
                 print(row)
-            raise MalformedNanopubError(f"\033[1mMultiple nanopublications\033[0m are defined in this graph. "
-                "The Nanopub object can only handles 1 nanopublication at a time")
+            raise MalformedNanopubError(
+                "\033[1mMultiple nanopublications\033[0m are defined in this graph. "
+                "The Nanopub object can only handles 1 nanopublication at a time"
+            )
         np_contexts: dict = {}
         for row in qres:
             np_contexts['head'] = row.head
@@ -275,8 +279,10 @@ SELECT DISTINCT ?np ?head ?assertion ?provenance ?pubinfo WHERE {
                 separator_char = extract_uri.group(2)
 
                 if np_namespace and str(np_namespace) != str(base_uri + separator_char):
-                    raise MalformedNanopubError(f"\033[1mMultiple nanopublications URIs\033[0m are defined in this graph, e.g. {np_namespace} and {base_uri + separator_char}"
-                        "The Nanopub object can only handles 1 nanopublication at a time")
+                    raise MalformedNanopubError(
+                        f"\033[1mMultiple nanopublications URIs\033[0m are defined in this graph, e.g. {np_namespace} and {base_uri + separator_char}"
+                        "The Nanopub object can only handles 1 nanopublication at a time"
+                    )
                 np_uri = base_uri
                 np_namespace = base_uri + separator_char
         np_contexts['np_uri'] = np_uri

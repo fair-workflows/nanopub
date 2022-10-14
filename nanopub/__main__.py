@@ -21,10 +21,6 @@ DEFAULT_PUBLIC_KEY_PATH = USER_CONFIG_DIR / PUBLIC_KEY_FILE
 RSA = 'RSA'
 ORCID_ID_REGEX = r'^https://orcid.org/(\d{4}-){3}\d{3}(\d|X)$'
 
-# log = logging.getLogger()
-# Set logging level to error to hide RDFLib warnings
-# (it prints warnings even if we don't instantiate any URIRef with space)
-# log.setLevel(logging.ERROR)
 
 def validate_orcid_id(ctx, param, orcid_id: str):
     """

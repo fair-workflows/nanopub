@@ -13,6 +13,7 @@ config_testsuite = NanopubConfig(
     use_test_server=True,
 )
 
+
 def test_nanopub_sign_uri():
     expected_np_uri = "http://purl.org/np/RAoXkQkJe_lpMhYW61Y9mqWDHa5MAj1o4pWIiYLmAzY50"
     assertion = Graph()
@@ -65,6 +66,7 @@ def test_nanopub_sign_bnode2():
     np.sign()
     assert np.source_uri == expected_np_uri
     assert np.source_uri == java_np
+
 
 def test_nanopub_publish():
     expected_np_uri = "http://purl.org/np/RAoXkQkJe_lpMhYW61Y9mqWDHa5MAj1o4pWIiYLmAzY50"
@@ -183,7 +185,6 @@ def test_nanopub_testsuite_invalid():
             assert True
 
 
-
 def test_nanopub_claim():
     np = NanopubClaim(
         claim='Some controversial statement',
@@ -193,6 +194,7 @@ def test_nanopub_claim():
     np.sign()
     assert np.source_uri is not None
     assert np.source_uri == java_np
+
 
 def test_nanopub_retract():
     np = NanopubRetract(

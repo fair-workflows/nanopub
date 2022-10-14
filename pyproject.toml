@@ -97,8 +97,6 @@ path = "nanopub/_version.py"
 line_length = 120
 skip = ["nanopub/__init__.py"]
 profile = "black"
-# known_third_party = ["nanopub", "trusty_uri"]
-
 
 [tool.coverage.run]
 source = ["project"]
