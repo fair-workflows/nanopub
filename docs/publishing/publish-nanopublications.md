@@ -11,8 +11,8 @@ You can use `Publication` objects to easily publish nanopublications with your a
 This is a 3-step recipe that works for most cases:
   1) Instantiate a `NanopubClient`
   2) Construct a desired assertion using [`rdflib`](https://rdflib.readthedocs.io/en/stable/).
-  3) Make a `Nanopublication` object using the assertion, making use of `NanopubClient.create_nanopub()`.
-  4) Publish the `Nanopublication` object using `NanopubClient.publish()`.
+  3) Make a `Nanopub` object from the assertion.
+  4) Publish the `Nanopub` object using `.publish()`.
 
 Here is an example:
 ```python
@@ -45,9 +45,12 @@ np = Nanopub(
 np.publish()
 print(np)
 ```
-View the resulting nanopublication [here](http://purl.org/np/RAfk_zBYDerxd6ipfv8fAcQHEzgZcVylMTEkiLlMzsgwQ).
+> View an example of resulting nanopublication [here](http://purl.org/np/RAfk_zBYDerxd6ipfv8fAcQHEzgZcVylMTEkiLlMzsgwQ).
+
+You can also just sign the nanopub with `np.sign()`. Upon signing, or publishing, the `np` object will be automatically updated with the signed RDF and generated trusty URI.
 
 This is the resulting assertion part of the nanopublication:
+
 ```turtle
 @prefix sub: <http://purl.org/np/RAfk_zBYDerxd6ipfv8fAcQHEzgZcVylMTEkiLlMzsgwQ#> .
 
@@ -83,4 +86,27 @@ sub:pubinfo {
     this: prov:generatedAtTime "2020-12-01T10:44:32.367084"^^xsd:dateTime ;
         prov:wasAttributedTo <https://orcid.org/0000-0000-0000-0000> .
 }
+```
+
+## Publishing from a file
+
+You can also easily sign and publish a Nanopublication from a file
+
+```python
+from rdflib import ConjunctiveGraph
+from nanopub import Nanopub, NanopubConfig, load_profile
+
+# 1. Create the config
+np_config = NanopubConfig(profile=load_profile(), use_test_server=True)
+
+# 2. Load the file in a RDFLib graph
+g = ConjunctiveGraph()
+g.parse("nanopub.trig")
+
+# 3. Make a Nanopublication object with this assertion
+np = Nanopub(config=np_config, rdf=g)
+
+# 4. Publish the Publication object.
+np.publish()
+print(np)
 ```

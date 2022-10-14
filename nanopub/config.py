@@ -10,6 +10,9 @@ class NanopubConfig:
     """Represents the configuration for nanopubs.
 
     Args:
+        profile: Profile of the user publishing the nanopub
+        use_test_server: A boolean to automatically use the test server
+        use_server: The URL of the server that will be used to publish the nanopub
         add_prov_generated_time: add generated time to provenance
         add_pubinfo_generated_time: add generated time to pubinfo
         attribute_assertion_to_profile: bool

@@ -24,11 +24,11 @@ class Profile:
     """Represents a user profile.
 
     Attributes:
-        orcid_id: The user's ORCID
-        name: The user's name
-        public_key: Path to the user's public key or string
-        private_key: Path to the user's private key or string
-        introduction_nanopub_uri: URI of the user's profile nanopub
+        orcid_id (str): The user's ORCID
+        name (str): The user's name
+        public_key (Union[Path, str]): Path to the user's public key, or the key as string
+        private_key (Optional[Union[Path, str]]): Path to the user's private key, or the key as string
+        introduction_nanopub_uri (Optional[str]): URI of the user's profile nanopub
     """
 
     def __init__(

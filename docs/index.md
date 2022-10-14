@@ -3,7 +3,7 @@
 
 The `nanopub` library provides a high-level, user-friendly python interface for searching, publishing and retracting nanopublications.
 
-Nanopublications are a formalized and machine-readable way of communicating the smallest possible units of publishable information. See [doc](getting-started/what-are-nanopubs) for more information.
+Nanopublications are a formalized and machine-readable way of communicating the smallest possible units of publishable information. See the [What are Nanopublications?](getting-started/what-are-nanopubs) page for more information.
 
 ## Setup
 
@@ -29,22 +29,23 @@ This will add and store RSA keys to sign your nanopublications, publish a nanopu
 
 ## Quick Start
 
-
 ### Publishing nanopublications
+
+Use `load_profile()` to load the user profile from `$HOME/.nanopub`, and `use_test_server=True` to point to the test server (remove it to publish to the Nanopublication network)
 
 ```python
 from rdflib import Graph
 from nanopub import Nanopub, NanopubConfig, load_profile
 
-# Create the config (we use use_test_server=True to point to the test server)
+# 1. Create the config
 np_config = NanopubConfig(
-    profile=load_profile(),
     use_test_server=True,
+    profile=load_profile(),
     add_prov_generated_time=True,
     attribute_publication_to_profile=True,
 )
 
-# 1. construct a desired assertion (a graph of RDF triples) using rdflib
+# 2. Construct a desired assertion (a graph of RDF triples) using rdflib
 my_assertion = Graph()
 my_assertion.add((
     rdflib.URIRef('www.example.org/timbernerslee'),
@@ -52,16 +53,18 @@ my_assertion.add((
     rdflib.FOAF.Person
 ))
 
-# 2. Make a Nanopublication object with this assertion
+# 2. Make a Nanopub object with this assertion
 np = Nanopub(
     config=np_config,
     assertion=my_assertion
 )
 
-# 3. Publish the Publication object.
+# 3. Publish the Nanopub object
 np.publish()
 print(np)
 ```
+
+You can also just sign the nanopub with `np.sign()`. Upon signing, or publishing, the `np` object will be automatically updated with the signed RDF and generated trusty URI.
 
 ### Searching for nanopublications
 
@@ -74,7 +77,7 @@ client = NanopubClient()
 # Search for all nanopublications containing the text 'fair'
 results = client.find_nanopubs_with_text('fair')
 for result in results:
-print(result)
+	print(result)
 ```
 
 ### Fetching nanopublications and inspecting them
@@ -86,12 +89,10 @@ from nanopub import NanopubClient
 client = NanopubClient()
 
 # Fetch the nanopublication at the specified URI
-publication = client.fetch('http://purl.org/np/RApJG4fwj0szOMBMiYGmYvd5MCtRle6VbwkMJUb1SxxDM')
-
-# Print the RDF contents of the nanopublication
-print(publication)
+np = client.fetch('http://purl.org/np/RApJG4fwj0szOMBMiYGmYvd5MCtRle6VbwkMJUb1SxxDM')
+print(np)
 
 # Iterate through all triples in the assertion graph
-for s, p, o in publication.assertion:
-print(s, p, o)
+for s, p, o in np.assertion:
+	print(s, p, o)
 ```

@@ -32,3 +32,11 @@ If you don't have an ORCID iD yet, you need to [register](https://orcid.org/regi
 
 ### Introductory nanopublication
 We encourage you to make use of `np setup`'s option to publish your profile to the nanopub servers. This links your ORCID iD to your RSA key, thereby making all your publications linkable to you. Here is an [example introductory nanopublicaiton](http://purl.org/np/RAy1CYBfBYFd_TFI8Z_jr3taf6fB9u-grqsKyLzTmMvQI). The link to this nanopublication is also stored in your profile.
+
+## Check your profile
+
+You can check the profile currently used by default by running this command in your terminal:
+
+```bash
+np profile
+```

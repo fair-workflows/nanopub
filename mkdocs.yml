@@ -60,6 +60,7 @@ nav:
     - Using the nanopublication's namespace: publishing/using-publication-namespace.md
     - Setting publication info and provenance: publishing/setting-subgraphs.md
     - Retracting a nanopublication: publishing/retraction.md
+    - Publish with the commandline: publishing/publish-with-cli.md
     # - Legacy Publication object: publishing/publishing-nanopublications.md
 
   - Searching:
