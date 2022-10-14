@@ -13,7 +13,6 @@ config_testsuite = NanopubConfig(
     use_test_server=True,
 )
 
-
 def test_nanopub_sign_uri():
     expected_np_uri = "http://purl.org/np/RAoXkQkJe_lpMhYW61Y9mqWDHa5MAj1o4pWIiYLmAzY50"
     assertion = Graph()
@@ -33,7 +32,6 @@ def test_nanopub_sign_uri():
 
 def test_nanopub_sign_bnode():
     expected_np_uri = "http://purl.org/np/RAPPd9CZrgAo_XzrDRfUtXvRYVud2PDRgCN-z7eGhIwpc"
-
     assertion = Graph()
     assertion.add((
         BNode('test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
@@ -117,10 +115,7 @@ def test_nanopub_testsuite_sign_valid():
         "./tests/testsuite/valid/plain/simple1.nq",
         "./tests/testsuite/valid/plain/simple1.trig",
         "./tests/testsuite/valid/plain/simple1.xml",
-        # "./tests/testsuite/valid/signed/nanopub-index1.trig",
-        # "./tests/testsuite/valid/signed/simple1-signed-rsa.trig",
     ]
-    # java -jar lib/nanopub-1.38-jar-with-dependencies.jar sign tests/testsuite/transform/signed/rsa-key1/simple1.in.trig
 
     for test_file in test_files:
         np_g = ConjunctiveGraph()
@@ -209,50 +204,3 @@ def test_nanopub_retract():
     np.sign()
     assert np.source_uri is not None
     assert np.source_uri == java_np
-
-
-
-# def test_assertion_rdf_not_mutated():
-#     """
-#     Check that the assertion rdf graph provided by the user
-#     is not mutated by publishing in instances where it contains
-#     a BNode.
-#     """
-#     rdf = rdflib.Graph()
-#     rdf.add((rdflib.BNode('dontchangeme'), rdflib.RDF.type, rdflib.FOAF.Person))
-#     publication = Publication.from_assertion(assertion_rdf=rdf)
-
-#     client = NanopubClient()
-#     client.java_wrapper.publish = mock.MagicMock()
-#     client.publish(publication)
-
-#     assert (rdflib.BNode('dontchangeme'), rdflib.RDF.type, rdflib.FOAF.Person) in rdf
-
-# def test_retract_with_force():
-#     client = NanopubClient()
-#     client.java_wrapper.publish = mock.MagicMock()
-#     client.retract('http://www.example.com/my-nanopub', force=True)
-
-# TODO: Not sure how to use mocks in this case (we want to get rid of the static get_public_key)
-# @mock.patch('nanopub.client.profile.get_public_key')
-# def test_retract_without_force(self, mock_get_public_key):
-#     test_uri = 'http://www.example.com/my-nanopub'
-#     test_public_key = 'test key'
-#     client = NanopubClient()
-#     client.java_wrapper.publish = mock.MagicMock()
-
-#     # Return a mocked to-be-retracted publication object that is signed with public key
-#     mock_publication = mock.MagicMock()
-#     mock_publication.pubinfo = rdflib.Graph()
-#     mock_publication.signed_with_public_key = test_public_key
-#     client.fetch = mock.MagicMock(return_value=mock_publication)
-
-#     client = NanopubClient()
-#     # Retract should be successful when public keys match
-#     mock_get_public_key.return_value = test_public_key
-#     client.retract(test_uri)
-
-#     # And fail if they don't match
-#     mock_get_public_key.return_value = 'Different public key'
-#     with pytest.raises(AssertionError):
-#         client.retract(test_uri)

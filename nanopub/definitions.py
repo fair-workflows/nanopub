@@ -12,13 +12,13 @@ DEFAULT_PROFILE_PATH = USER_CONFIG_DIR / "profile.yml"
 NANOPUB_TEST_SERVER = 'http://test-server.nanopubs.lod.labs.vu.nl/'
 # https://monitor.petapico.org/.csv
 NANOPUB_SERVER_LIST = [
+    'https://np.petapico.org/',
     'http://app.tkuhn.eculture.labs.vu.nl/nanopub-server-1/',
     'http://app.tkuhn.eculture.labs.vu.nl/nanopub-server-2/',
     'http://app.tkuhn.eculture.labs.vu.nl/nanopub-server-3/',
     'http://app.tkuhn.eculture.labs.vu.nl/nanopub-server-4/',
     'http://server.nanopubs.lod.labs.vu.nl/',
     'http://server.np.dumontierlab.com/',
-    "https://np.petapico.org/",
 ]
 
 

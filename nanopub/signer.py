@@ -109,6 +109,8 @@ def publish_graph(g: ConjunctiveGraph, use_server: str = NANOPUB_SERVER_LIST[0])
     Publish the signed nanopub to the nanopub server we do a simple POST request.
     """
     # headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+    # print(f"Publish to nanopub server {use_server}")
+    log.info(f"Publishing to nanopub server {use_server}")
     headers = {'Content-Type': 'application/trig'}
     data = g.serialize(format="trig")
     r = requests.post(use_server, headers=headers, data=data)

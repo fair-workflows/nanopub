@@ -1,43 +1,52 @@
 import logging
 
-from rdflib import ConjunctiveGraph
+from rdflib import Graph, Literal, URIRef
 
-from nanopub import Nanopub, NanopubClient, NanopubConfig, load_profile
+from nanopub import Nanopub, NanopubConfig, load_profile, namespaces
 
 log = logging.getLogger()
 log.setLevel(logging.INFO)
+console_handler = logging.StreamHandler()
+formatter = logging.Formatter(
+    "%(asctime)s %(levelname)s: [%(module)s:%(funcName)s] %(message)s"
+)
+console_handler.setFormatter(formatter)
+log.addHandler(console_handler)
+
 
 config = NanopubConfig(
     add_prov_generated_time=False,
-    add_pubinfo_generated_time=False,
-    attribute_assertion_to_profile=False,
-    attribute_publication_to_profile=False,
+    add_pubinfo_generated_time=True,
+    attribute_assertion_to_profile=True,
+    attribute_publication_to_profile=True,
     profile=load_profile(),
-    use_test_server=True,
+    # use_test_server=True,
 )
 
-client = NanopubClient(
-    use_test_server=True
-    # profile_path='tests/resources'
-)
+assertion = Graph()
+assertion.add((
+    URIRef('http://test'), namespaces.HYCL.claims, Literal('This is a test for the nanopub python library')
+))
 
 
-# assertion = Graph()
-# assertion.add((
-#     URIRef('http://test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
-# ))
+# np_g = ConjunctiveGraph()
+# np_g.parse("./tests/testsuite/transform/signed/rsa-key1/simple1.in.trig", format="trig")
 
 
-np_g = ConjunctiveGraph()
-np_g.parse("./tests/testsuite/transform/signed/rsa-key1/simple1.in.trig", format="trig")
-
-
-np = Nanopub(config=config, rdf=np_g)
+np = Nanopub(config=config, assertion=assertion)
 
 # np = Nanopub(config=config, assertion=assertion)
 
-np.sign()
-# np.publish()
+# np.sign()
+np.publish()
+# 1. Published at http://app.tkuhn.eculture.labs.vu.nl/nanopub-server-1/RABsDnLcLfgVcVSL9Tog2DJWHRphJjL9X0hEP3_FM4tEs
+# But not properly redirected from https://purl.org/np/RABsDnLcLfgVcVSL9Tog2DJWHRphJjL9X0hEP3_FM4tEs
+
+# 2. Also at http://app.tkuhn.eculture.labs.vu.nl/nanopub-server-1/RAFlANSXJPlQb0GVIgGtwLR1x8cYvjSsCCldJTLE4M7UE
+# https://purl.org/np/RAFlANSXJPlQb0GVIgGtwLR1x8cYvjSsCCldJTLE4M7UE
+
+# 3. Published to official server
+# http://purl.org/np/RAHHhvsxFgr_SxeLjALNwygeuoJaOOtW7VOhm-e4wRJA0
 
 # np = client.sign(np)
 # resp = client.publish(np)

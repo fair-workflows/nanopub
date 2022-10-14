@@ -210,6 +210,7 @@ class Nanopub:
             self.sign()
 
         publish_graph(self.rdf, use_server=self._config.use_server)
+        log.info(f'Published {self.source_uri} to {self._config.use_server}')
         self.published = True
 
         if self.introduces_concept:
@@ -459,7 +460,7 @@ SELECT DISTINCT ?np ?head ?assertion ?provenance ?pubinfo WHERE {
 
 
     def __str__(self) -> str:
-        s = f"Original source URI = {self._source_uri}\n"
+        s = f"Nanopub URI = {self._source_uri}\n"
         s += self._rdf.serialize(format="trig")
         return s
 
