@@ -140,8 +140,9 @@ def test_nanopub_testsuite_sign_valid():
 
 def test_nanopub_testsuite_valid_signed():
     test_files = [
-        # "./tests/testsuite/valid/signed/nanopub-index1.trig",
+        "./tests/testsuite/valid/signed/nanopub-index1.trig",
         "./tests/testsuite/valid/signed/simple1-signed-rsa.trig",
+        "./tests/testsuite/valid/signed/simple1-signed-dsa.trig",
     ]
     # java -jar lib/nanopub-1.38-jar-with-dependencies.jar sign tests/testsuite/transform/signed/rsa-key1/simple1.in.trig
 
@@ -166,6 +167,7 @@ def test_nanopub_testsuite_invalid():
         "./tests/testsuite/invalid/plain/noprovlink.trig",
         "./tests/testsuite/invalid/plain/valid_invalid1.trig",
         "./tests/testsuite/invalid/signed/nanopub-index1.trig",
+        # TODO: implement verification of signature (cf. signer.verify())
         # "./tests/testsuite/invalid/signed/simple1-invalid-rsa.trig",
     ]
     # java -jar lib/nanopub-1.38-jar-with-dependencies.jar sign tests/testsuite/transform/signed/rsa-key1/simple1.in.trig

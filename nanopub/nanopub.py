@@ -5,7 +5,7 @@ make handling RDF easier.
 import re
 import warnings
 from datetime import datetime
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 import rdflib
 from rdflib import BNode, ConjunctiveGraph, Graph, Namespace, URIRef
@@ -60,10 +60,12 @@ class Nanopub:
         self._config = config
         self._published = False
         self._dummy_namespace = DUMMY_NAMESPACE
+        # self._np_namespace = DUMMY_NAMESPACE
 
         # TODO: extract dummy namespace from given RDF
         if rdf:
-            self.extract_dummy_namespace(rdf)
+            np_uris = self.extract_np_uris(rdf)
+            self._dummy_namespace = Namespace(np_uris['np_namespace'])
 
         if self._config.use_test_server:
             self._config.use_server = NANOPUB_TEST_SERVER
@@ -81,24 +83,25 @@ class Nanopub:
         self.provenance = Graph(self._rdf.store, self._dummy_namespace.provenance)
         self.pubinfo = Graph(self._rdf.store, self._dummy_namespace.pubinfo)
 
-        self.head.add((self._dummy_namespace[""], RDF.type, NP.Nanopublication))
-        self.head.add(
-            (self._dummy_namespace[""], NP.hasAssertion, self._dummy_namespace.assertion)
-        )
-        self.head.add(
-            (
-                self._dummy_namespace[""],
-                NP.hasProvenance,
-                self._dummy_namespace.provenance,
+        if not rdf:
+            self.head.add((self._dummy_namespace[""], RDF.type, NP.Nanopublication))
+            self.head.add(
+                (self._dummy_namespace[""], NP.hasAssertion, self._dummy_namespace.assertion)
             )
-        )
-        self.head.add(
-            (
-                self._dummy_namespace[""],
-                NP.hasPublicationInfo,
-                self._dummy_namespace.pubinfo,
+            self.head.add(
+                (
+                    self._dummy_namespace[""],
+                    NP.hasProvenance,
+                    self._dummy_namespace.provenance,
+                )
             )
-        )
+            self.head.add(
+                (
+                    self._dummy_namespace[""],
+                    NP.hasPublicationInfo,
+                    self._dummy_namespace.pubinfo,
+                )
+            )
 
         self.assertion += assertion
         self.provenance += provenance
@@ -131,30 +134,6 @@ class Nanopub:
                 for prefix, namespace in user_rdf.namespaces():
                     self._rdf.bind(prefix, namespace)
                 # cls._replace_blank_nodes(rdf=user_rdf)
-
-
-    def extract_dummy_namespace(self, g: ConjunctiveGraph) -> str:
-        np_contexts = ['head', 'assertion', 'provenance', 'pubinfo']
-        dummy_uri = None
-        dummy_separator = None
-        found_contexts: List[str] = []
-        for c in g.contexts():
-            extract_fragment = re.search(r'^(.*)(\/|#)(.*)$', str(c.identifier), re.IGNORECASE)
-            if extract_fragment:
-                base_uri = extract_fragment.group(1)
-                separator_char = extract_fragment.group(2)
-                fragment = extract_fragment.group(3)
-                if dummy_uri and dummy_uri != base_uri:
-                    raise MalformedNanopubError(f"\033[1mMultiple nanopublications\033[0m are defined in this graph: {dummy_uri} and {base_uri}"
-                        "The Nanopub object can only handles 1 nanopublication at a time")
-                if fragment.lower() in np_contexts:
-                    dummy_uri = base_uri
-                    dummy_separator = separator_char
-                    found_contexts.append(fragment)
-        if dummy_uri and dummy_separator:
-            self._dummy_namespace = Namespace(dummy_uri + dummy_separator)
-        elif len(g) > 1:
-            log.warn("No contexts related to nanopublications have been found in the RDF provided (Head, assertion, provenance, pubinfo)")
 
 
     def _preformat_graph(self, g: ConjunctiveGraph) -> ConjunctiveGraph:
@@ -248,34 +227,74 @@ class Nanopub:
             log.info(f"Published concept to {concept_uri}")
 
 
+    def extract_np_uris(self, g: ConjunctiveGraph) -> dict:
+        """Extract a nanopub URI, namespace and head/assertion/prov/pubinfo contexts from a Graph"""
+        get_np_query = """PREFIX np: <http://www.nanopub.org/nschema#>
+
+SELECT DISTINCT ?np ?head ?assertion ?provenance ?pubinfo WHERE {
+    GRAPH ?head {
+        ?np a np:Nanopublication ;
+            np:hasAssertion ?assertion ;
+            np:hasProvenance ?provenance ;
+            np:hasPublicationInfo ?pubinfo .
+    }
+    GRAPH ?assertion {
+        ?assertionS ?assertionP ?assertionO .
+    }
+    GRAPH ?provenance {
+        ?provenanceS ?provenanceP ?provenanceO .
+    }
+    GRAPH ?pubinfo {
+        ?pubinfoS ?pubinfoP ?pubinfoO .
+    }
+}
+"""
+        qres = g.query(get_np_query)
+        if len(qres) < 1:
+            raise MalformedNanopubError(f"\033[1mNo nanopublication\033[0m have been found in the provided RDF. "
+                "It should contain a np:Nanopublication object in a Head graph, pointing to 3 graphs: assertion, provenance and pubinfo")
+        if len(qres) > 1:
+            for row in qres:
+                print(row)
+            raise MalformedNanopubError(f"\033[1mMultiple nanopublications\033[0m are defined in this graph. "
+                "The Nanopub object can only handles 1 nanopublication at a time")
+        np_contexts: dict = {}
+        for row in qres:
+            np_contexts['head'] = row.head
+            np_contexts['assertion'] = row.assertion
+            np_contexts['provenance'] = row.provenance
+            np_contexts['pubinfo'] = row.pubinfo
+
+        np_uri = None
+        np_namespace = None
+        for c_label, c_uri in np_contexts.items():
+            extract_uri = re.search(r'^(.*)(\/|#)(.*)$', str(c_uri), re.IGNORECASE)
+            if extract_uri:
+                base_uri = extract_uri.group(1)
+                separator_char = extract_uri.group(2)
+
+                if np_namespace and str(np_namespace) != str(base_uri + separator_char):
+                    raise MalformedNanopubError(f"\033[1mMultiple nanopublications URIs\033[0m are defined in this graph, e.g. {np_namespace} and {base_uri + separator_char}"
+                        "The Nanopub object can only handles 1 nanopublication at a time")
+                np_uri = base_uri
+                np_namespace = base_uri + separator_char
+        np_contexts['np_uri'] = np_uri
+        np_contexts['np_namespace'] = np_namespace
+        return np_contexts
+
+
+
     @property
     def is_valid(self) -> bool:
         """Check if a nanopublication is valid"""
-        contexts_list = ['head', 'assertion', 'provenance', 'pubinfo']
-        np_contexts: dict = {}
-        dummy_uri = None
-        dummy_namespace = None
-        for c in self._rdf.contexts():
-            extract_fragment = re.search(r'^(.*)(\/|#)(.*)$', str(c.identifier), re.IGNORECASE)
-            if extract_fragment:
-                base_uri = extract_fragment.group(1)
-                separator_char = extract_fragment.group(2)
-                fragment = extract_fragment.group(3).lower()
+        np_contexts = self.extract_np_uris(self._rdf)
+        np_uri = np_contexts['np_uri']
 
-                if dummy_uri and dummy_uri != base_uri:
-                    raise MalformedNanopubError(f"\033[1mMultiple nanopublications\033[0m are defined in this graph, e.g. {dummy_uri} and {base_uri}"
-                        "The Nanopub object can only handles 1 nanopublication at a time")
+        graph_count = len(list(self._rdf.contexts()))
+        if graph_count > 4:
+            raise MalformedNanopubError(f"Too many graphs found in the provided RDF: {graph_count}. A Nanopub should have only 4 graphs (Head, assertion, provenance, pubinfo)")
 
-                if fragment in contexts_list:
-                    if fragment in np_contexts.keys():
-                        raise MalformedNanopubError(f"Multiple graphs found for {fragment}: "
-                            f"{np_contexts[fragment]} and {c.identifier}")
-
-                    np_contexts[fragment] = c.identifier
-                    dummy_uri = base_uri
-                    dummy_namespace = base_uri + separator_char
-                else:
-                    raise MalformedNanopubError(f"Extra graph \033[1m{c.identifier}\033[0m found that is not related to the nanopub (Head, assertion, provenance, pubinfo)")
+        # for c in self._rdf.contexts():
 
         # Check if any of the graph is empty
         if len(self.head) < 1:
@@ -297,27 +316,26 @@ class Nanopub:
 
         found_pubinfo = False
         for s, p, o in self.pubinfo:
-            if str(s) == str(dummy_uri) or str(s) == str(dummy_namespace):
+            if str(s) == str(np_uri) or str(s) == str(np_contexts['np_namespace']):
                 found_pubinfo = True
                 break
         if not found_pubinfo:
-            raise MalformedNanopubError(f"The pubinfo graph should contain at least one triple that has the nanopub URI as subject: \033[1m{dummy_uri}\033[0m")
+            raise MalformedNanopubError(f"The pubinfo graph should contain at least one triple that has the nanopub URI as subject: \033[1m{np_uri}\033[0m")
 
-        if not self._published:
-            # Check if the Head triples are properly defined
-            check_triples = [
-                (self._dummy_namespace[""], RDF.type, NP.Nanopublication),
-                (self._dummy_namespace[""], NP.hasAssertion, self._dummy_namespace.assertion),
-                (self._dummy_namespace[""], NP.hasProvenance, self._dummy_namespace.provenance),
-                (self._dummy_namespace[""], NP.hasPublicationInfo, self._dummy_namespace.pubinfo),
-            ]
-            for check_triple in check_triples:
-                check_triple = (self._dummy_namespace[""], RDF.type, NP.Nanopublication)
-                if len(list(self.head.triples(check_triple))) != 1:
-                    raise MalformedNanopubError(f"Missing type triple in Head graph: {check_triple}")
         if len(self.head) != 4:
-            print(self.head.serialize(format='trig'))
             raise MalformedNanopubError(f"Too many triples in the nanopublication Head graph: {len(self.head)} instead of 4")
+
+        # if not self._published:
+        #     # Check if the Head triples are properly defined
+        #     check_triples = [
+        #         (URIRef(np_uri), RDF.type, NP.Nanopublication),
+        #         (URIRef(np_uri), NP.hasAssertion, self._dummy_namespace.assertion),
+        #         (URIRef(np_uri), NP.hasProvenance, self._dummy_namespace.provenance),
+        #         (URIRef(np_uri), NP.hasPublicationInfo, self._dummy_namespace.pubinfo),
+        #     ]
+        #     for check_triple in check_triples:
+        #         if len(list(self.head.triples(check_triple))) != 1:
+        #             raise MalformedNanopubError(f"Missing type triple in Head graph: {check_triple}")
         return True
 
 
