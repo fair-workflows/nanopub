@@ -167,7 +167,7 @@ def test_nanopub_testsuite_invalid():
         # TODO: implement verification of signature (cf. signer.verify())
         # "./tests/testsuite/invalid/signed/simple1-invalid-rsa.trig",
     ]
-    # java -jar lib/nanopub-1.38-jar-with-dependencies.jar sign tests/testsuite/transform/signed/rsa-key1/simple1.in.trig
+    # java -jar lib/nanopub-1.*-jar-with-dependencies.jar sign tests/testsuite/transform/signed/rsa-key1/simple1.in.trig
 
     for test_file in test_files:
         np_g = ConjunctiveGraph()

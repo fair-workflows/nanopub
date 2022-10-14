@@ -1,4 +1,3 @@
-
 import pytest
 import rdflib
 
@@ -35,7 +34,7 @@ def test_validate_orcid_id():
         with pytest.raises(ValueError):
             validate_orcid_id(ctx=None, param=None, orcid_id=orcid_id)
 
-
+# TODO: would need to fix the mocks to use the usual key for tests
 # def test_provided_keypair_copied_to_nanopub_dir(tmp_path: Path):
 #     mock_homedir = tmp_path / 'home'
 #     mock_otherdir = tmp_path / 'other'

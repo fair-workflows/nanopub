@@ -25,7 +25,6 @@ skip_if_nanopub_server_unavailable = (
                        reason='Nanopub server is unavailable'))
 
 
-
 # Create a temporary profile.yml file for testing
 profile_test_path = os.path.join(tempfile.mkdtemp(), "profile.yml")
 profile_yaml = f"""orcid_id: https://orcid.org/0000-0000-0000-0000
@@ -50,11 +49,5 @@ default_config = NanopubConfig(
     publication_attributed_to=None,
     derived_from=None
 )
-
-# client_test = NanopubClient(
-#     use_test_server=True,
-#     profile=profile_test,
-#     nanopub_config=default_config,
-# )
 
 java_wrap = JavaWrapper(private_key=profile_test.private_key)

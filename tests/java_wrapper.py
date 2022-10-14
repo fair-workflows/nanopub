@@ -15,13 +15,8 @@ from nanopub.namespaces import NP
 from nanopub.nanopub import Nanopub
 from nanopub.profile import PROFILE_INSTRUCTIONS_MESSAGE
 
-# NANOPUB_JAVA_SCRIPT = ('nanopub-java' if shutil.which('nanopub-java')  # In case installed with pip
-#                        else ROOT_FILEPATH / 'bin' / 'nanopub-java')  # In case of local dev
-
 # Only used in dev or tests when the repo is cloned
-NANOPUB_JAVA_SCRIPT = (ROOT_FILEPATH / 'bin' / 'nanopub-java')
-
-NANOPUB_TEST_SERVER = 'http://test-server.nanopubs.lod.labs.vu.nl/'
+NANOPUB_JAVA_SCRIPT = (ROOT_FILEPATH / 'scripts' / 'nanopub-java')
 
 
 class JavaWrapper:
@@ -30,19 +25,14 @@ class JavaWrapper:
     a nanopub server.
     """
 
-    def __init__(
-        self,
-        # use_test_server: bool = False,
-        private_key: str = None
-    ):
+    def __init__(self, private_key: str = None) -> None:
         """Construct JavaWrapper.
 
         Args:
             use_test_server: Toggle using the test nanopub server.
         """
-        # self.use_test_server = use_test_server
         if private_key:
-            # Work around to put keys in files (needed for nanopub-java)
+            # Put keys in files (needed for nanopub-java)
             keys_dir = tempfile.mkdtemp()
             private_key_path = os.path.join(keys_dir, "id_rsa")
             with open(private_key_path, "w") as f:
@@ -54,7 +44,6 @@ class JavaWrapper:
             public_key = key.publickey().export_key().decode('utf-8').replace("-----BEGIN PUBLIC KEY-----\n", "").replace("-----END PUBLIC KEY-----", "")
             with open(public_key_path, "w") as f:
                 f.write(public_key)
-        # print(self.private_key)
 
 
     def _run_command(self, command):
@@ -106,42 +95,6 @@ class JavaWrapper:
         return str(unsigned_path.parent / f'signed.{unsigned_path.name}')
 
 
-
-    # def publish(self, signed: str):
-    #     """Publish.
-
-    #     Publish the signed nanopub to the nanopub server. Publishing to the real server depends
-    #     on nanopub-java, for the test server we do a simple POST request.
-    #     TODO: Use nanopub-java for publishing to test once it supports it.
-    #     """
-    #     args = ''
-    #     if self.private_key:
-    #         args = f'-k {self.private_key}'
-
-    #     if self.use_test_server:
-    #         headers = {'content-type': 'application/x-www-form-urlencoded'}
-    #         with open(signed, 'rb') as data:
-    #             r = requests.post(NANOPUB_TEST_SERVER, headers=headers, data=data)
-    #         r.raise_for_status()
-    #     else:
-    #         print("Java publishing disabled since python does it")
-    #         # self._run_command(f'{NANOPUB_JAVA_SCRIPT} publish {signed} {args}')
-    #     return self.extract_nanopub_url(signed)
-
-    # @staticmethod
-    # def extract_nanopub_url(signed: Union[str, Path]):
-    #     # Extract nanopub URL
-    #     # (this is pretty horrible, switch to python version as soon as it is ready)
-    #     extracturl = rdflib.Graph()
-    #     extracturl.parse(str(signed), format="trig")
-    #     return dict(extracturl.namespaces())['this'].__str__()
-
     # def make_keys(self, path_name='~/.nanopub/id'):
-    #     """
-    #     Use nanopub-java to make the RSA keys for this user.
-    #     By default, this uses the path name ~/.nanopub/id and produces a key-pair:
-    #         ~/.nanopub/id_rsa and ~/.nanopub/id_rsa.pub
-
-    #     NOTE THAT THE JAVA TOOL ADDS _rsa TO THE END OF YOUR PATH.
-    #     """
+    #     """Use nanopub-java to make the RSA keys in ~/.nanopub/id_rsa"""
     #     self._run_command(f'{NANOPUB_JAVA_SCRIPT} mkkeys -a RSA -f {path_name}')

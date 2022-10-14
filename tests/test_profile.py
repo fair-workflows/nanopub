@@ -75,6 +75,7 @@ def test_profile_file_not_found(tmpdir):
         load_profile(test_file)
 
 
+# TODO: fix the mocks to use the usual key for tests
 # def test_store_profile(tmpdir):
 #     test_file = Path(tmpdir / 'profile.yml')
 
