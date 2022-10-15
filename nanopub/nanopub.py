@@ -206,6 +206,11 @@ class Nanopub:
             log.info(f"Published concept to {concept_uri}")
 
 
+    def store(self, filepath: Path, format: str = 'trig') -> None:
+        """Store a Nanopub objectat a given path"""
+        self._rdf.serialize(filepath, format=format)
+
+
     def extract_np_uris(self, g: ConjunctiveGraph) -> dict:
         """Extract a nanopub URI, namespace and head/assertion/prov/pubinfo contexts from a Graph"""
         get_np_query = """PREFIX np: <http://www.nanopub.org/nschema#>

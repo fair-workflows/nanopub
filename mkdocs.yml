@@ -21,7 +21,7 @@ nav:
     - Setting publication info and provenance: publishing/setting-subgraphs.md
     - Retracting a nanopublication: publishing/retraction.md
     - Using nanopub templates: publishing/templates.md
-    - Handle users profile: publishing/profile.md
+    - Handle user profile: publishing/profile.md
     - Publish with the commandline: publishing/publish-with-cli.md
 
   - Searching:

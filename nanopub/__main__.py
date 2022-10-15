@@ -10,7 +10,7 @@ import rdflib
 
 from nanopub import Nanopub, NanopubConfig, load_profile, namespaces
 from nanopub.definitions import DEFAULT_PROFILE_PATH, USER_CONFIG_DIR, MalformedNanopubError
-from nanopub.profile import Profile, ProfileError, generate_keys, store_profile
+from nanopub.profile import Profile, ProfileError, generate_keys
 
 PRIVATE_KEY_FILE = 'id_rsa'
 PUBLIC_KEY_FILE = 'id_rsa.pub'
@@ -183,7 +183,7 @@ def setup(orcid_id, publish, newkeys, name, keypair: Union[Tuple[Path, Path], No
     public_key = DEFAULT_PUBLIC_KEY_PATH.read_text()
 
     profile = Profile(orcid_id, name, DEFAULT_PUBLIC_KEY_PATH, DEFAULT_PRIVATE_KEY_PATH)
-    store_profile(profile, USER_CONFIG_DIR)
+    profile.store_profile(USER_CONFIG_DIR)
 
 
     # Declare the user to nanopub
@@ -205,7 +205,7 @@ def setup(orcid_id, publish, newkeys, name, keypair: Union[Tuple[Path, Path], No
         profile.introduction_nanopub_uri = np.concept_uri
 
         # Store profile nanopub uri
-        store_profile(profile, USER_CONFIG_DIR)
+        profile.store_profile(USER_CONFIG_DIR)
 
 
 def _create_this_is_me_rdf(orcid_id: str, public_key: str, name: str

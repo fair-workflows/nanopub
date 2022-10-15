@@ -1,11 +1,9 @@
 from typing import Optional
 
-from Crypto.PublicKey import RSA
 from rdflib import Literal, URIRef
 from rdflib.namespace import FOAF
 
 from nanopub.config import NanopubConfig
-from nanopub.definitions import log
 from nanopub.namespaces import NPX
 from nanopub.nanopub import Nanopub
 
@@ -45,26 +43,3 @@ class NanopubIntroduction(Nanopub):
         self.assertion.add((orcid_node, FOAF.name, Literal(self.config.profile.name)))
         if host:
             self.assertion.add((key_declaration, NPX.hasKeyLocation, URIRef(host)))
-
-
-    # TODO: move this to profile
-    def _generate_keys(self) -> str:
-        """Generate private/public RSA key pair at the path specified in the profile.yml, to be used to sign nanopubs"""
-        key = RSA.generate(2048)
-        private_key_str = key.export_key('PEM', pkcs=8).decode('utf-8')
-        public_key_str = key.publickey().export_key().decode('utf-8')
-
-        # Format private and public keys to remove header/footer and all newlines, as this is required by nanopub-java
-        private_key_str = private_key_str.replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "").replace("\n", "").strip()
-        public_key_str = public_key_str.replace("-----BEGIN PUBLIC KEY-----", "").replace("-----END PUBLIC KEY-----", "").replace("\n", "").strip()
-
-        # Store key pair
-        private_key_file = open(self.config.profile.private_key, "w")
-        private_key_file.write(private_key_str)
-        private_key_file.close()
-
-        public_key_file = open(self.config.profile.public_key, "w")
-        public_key_file.write(public_key_str)
-        public_key_file.close()
-        log.info(f"Public/private RSA key pair has been generated for {self.config.profile.orcid_id}")
-        return public_key_str

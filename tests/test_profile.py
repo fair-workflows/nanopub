@@ -41,8 +41,6 @@ def test_instantiate_profile_str():
     assert p.introduction_nanopub_uri is None
     assert p.private_key == TEST_PRIVATE_KEY
     assert p.public_key == TEST_PUBLIC_KEY
-    assert p.private_key == TEST_PRIVATE_KEY
-    assert p.public_key == TEST_PUBLIC_KEY
 
 
 
@@ -52,8 +50,6 @@ def test_load_profile():
     assert p.orcid_id == 'https://orcid.org/0000-0000-0000-0000'
     assert p.name == 'Python Tests'
     assert p.introduction_nanopub_uri is None
-    assert p.private_key == TEST_PRIVATE_KEY
-    assert p.public_key == TEST_PUBLIC_KEY
     assert p.private_key == TEST_PRIVATE_KEY
     assert p.public_key == TEST_PUBLIC_KEY
 
@@ -75,25 +71,63 @@ def test_profile_file_not_found(tmpdir):
         load_profile(test_file)
 
 
-# TODO: fix the mocks to use the usual key for tests
-# def test_store_profile(tmpdir):
-#     test_file = Path(tmpdir / 'profile.yml')
+def test_store_profile(tmpdir):
+    test_folder = Path(tmpdir)
 
-#     p = profile.Profile('pietje', 'https://orcid.org/0000-0000-0000-0000',
-#                         Path('/home/.nanopub/id_rsa.pub'), Path('/home/.nanopub/id_rsa'))
+    p = Profile(
+        name='Python Tests',
+        orcid_id='https://orcid.org/0000-0000-0000-0000',
+        private_key=TEST_PRIVATE_KEY,
+        public_key=TEST_PUBLIC_KEY
+    )
+    p.store_profile(test_folder)
 
-#     with mock.patch('nanopub.profile.PROFILE_PATH', test_file):
-#         profile.store_profile(p)
+    profile_path = test_folder / "profile.yml"
+    pubkey_path = test_folder / "id_rsa.pub"
+    privkey_path = test_folder / "id_rsa"
+    with profile_path.open('r') as f:
+        assert f.read() == (
+            'orcid_id: https://orcid.org/0000-0000-0000-0000\n'
+            'name: Python Tests\n'
+            f"public_key: {pubkey_path}\n"
+            f"private_key: {privkey_path}\n"
+            'introduction_nanopub_uri:\n')
 
-#         with test_file.open('r') as f:
-#             assert f.read() == (
-#                 'orcid_id: pietje\n'
-#                 'name: https://orcid.org/0000-0000-0000-0000\n'
-#                 f"public_key: {Path('/home/.nanopub/id_rsa.pub')}\n"
-#                 f"private_key: {Path('/home/.nanopub/id_rsa')}\n"
-#                 'introduction_nanopub_uri:\n')
 
 
+def test_generate_keys(tmpdir):
+    p = Profile(
+        name='Python Tests',
+        orcid_id='https://orcid.org/0000-0000-0000-0000',
+    )
+    assert p.private_key is not None
+    assert p.public_key is not None
+
+
+def test_generate_keys_store_profile(tmpdir):
+    p = Profile(
+        name='Python Tests',
+        orcid_id='https://orcid.org/0000-0000-0000-0000',
+    )
+    assert p.private_key is not None
+    assert p.public_key is not None
+
+    test_folder = Path(tmpdir)
+    p.store_profile(test_folder)
+
+    profile_path = test_folder / "profile.yml"
+    pubkey_path = test_folder / "id_rsa.pub"
+    privkey_path = test_folder / "id_rsa"
+    with profile_path.open('r') as f:
+        assert f.read() == (
+            'orcid_id: https://orcid.org/0000-0000-0000-0000\n'
+            'name: Python Tests\n'
+            f"public_key: {pubkey_path}\n"
+            f"private_key: {privkey_path}\n"
+            'introduction_nanopub_uri:\n')
+
+
+# TODO: fix to use the usual key for tests
 # def test_get_public_key(tmpdir):
 
 #     fake_public_key = 'AAABBBCCC111222333\n'

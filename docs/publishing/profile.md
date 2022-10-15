@@ -1,4 +1,4 @@
-# Handle users profile
+# Handle user profile
 
 ## Check your profile
 
@@ -53,4 +53,19 @@ p = Profile(
     private_key="YOUR_PRIVATE_KEY",
     public_key="YOUR_PUBLIC_KEY"
 )
+```
+
+## Generate new keys for your nanopub profile
+
+If you do not provide private and public keys a new key pair will be automatically generated. You can then store it where you want.
+
+```bash
+from nanopub import Profile
+
+p = Profile(
+    name='Your Name',
+    orcid_id='https://orcid.org/0000-0000-0000-0000',
+)
+# By default the profile and keys will be stored in $HOME/.nanopub
+p.store()
 ```
