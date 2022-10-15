@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 
 from rdflib import Literal, URIRef
 from rdflib.namespace import DC, DCTERMS, RDF, RDFS, XSD
@@ -10,10 +10,10 @@ from nanopub.nanopub import Nanopub
 
 
 class NanopubIndex(Nanopub):
-    """
-    Publish a list of nanopub URIs in a Nanopub Index
+    """Publish a list of nanopub URIs in a Nanopub Index
 
     Args:
+        config: config for the nanopub
         np_list: List of nanopub URIs
         title: Title of the Nanopub Index
         description: Description of the Nanopub Index
@@ -25,7 +25,7 @@ class NanopubIndex(Nanopub):
     def __init__(
         self,
         config: NanopubConfig,
-        np_list: List[str],
+        np_list: Union[List[str], List[Nanopub]],
         title: str,
         description: str,
         creation_time: str,
@@ -41,10 +41,14 @@ class NanopubIndex(Nanopub):
         )
 
         for np in np_list:
-            if top_level:
-                self.assertion.add((DUMMY_URI, NPX.appendsIndex, URIRef(np)))
+            if isinstance(np, Nanopub):
+                np_uri = np.source_uri
             else:
-                self.assertion.add((DUMMY_URI, NPX.includesElement, URIRef(np)))
+                np_uri = np
+            if top_level:
+                self.assertion.add((DUMMY_URI, NPX.appendsIndex, URIRef(np_uri)))
+            else:
+                self.assertion.add((DUMMY_URI, NPX.includesElement, URIRef(np_uri)))
 
         self.pubinfo.add((DUMMY_URI, RDF.type, NPX.NanopubIndex))
         self.pubinfo.add((DUMMY_URI, DC.title, Literal(title)))
@@ -68,14 +72,12 @@ class NanopubIndex(Nanopub):
 
 def create_nanopub_index(
     config: NanopubConfig,
-    np_list: List[str],
+    np_list: Union[List[str], List[Nanopub]],
     title: str,
     description: str,
     creation_time: str,
     creators: List[str],
     see_also: str = None,
-    # pub_list: List[Nanopublication] = [],
-    publish: bool = False,
 ) -> List[Nanopub]:
     """Create a Nanopub index.
 
@@ -89,7 +91,7 @@ def create_nanopub_index(
         creators: List of the ORCID of the creators of the Nanopub Index
         see_also: A URL to a page with further information on the Nanopub Index
     """
-    pub_list = []
+    pub_list: List[Nanopub] = []
     for i in range(0, len(np_list), MAX_NP_PER_INDEX):
         np_chunk = np_list[i:i + MAX_NP_PER_INDEX]
         pub = NanopubIndex(
@@ -102,16 +104,9 @@ def create_nanopub_index(
             see_also,
             top_level=False
         )
-        if publish:
-            pub.publish()
-            log_msg = "Published"
-        else:
-            pub.sign()
-            log_msg = "Signed"
-        pub_uri = pub.source_uri
-        log.info(f"{log_msg} Nanopub Index: {pub_uri}")
-
-        pub_list.append(pub_uri)
+        pub.sign()
+        log.info(f"Signed Nanopub Index: {pub.source_uri}")
+        pub_list.append(pub)
 
     if len(pub_list) > 1:
         toplevel_pub = NanopubIndex(
@@ -124,16 +119,8 @@ def create_nanopub_index(
             see_also,
             top_level=True
         )
-
-        if publish:
-            toplevel_pub.publish()
-            log_msg = "Published"
-        else:
-            toplevel_pub.sign()
-            log_msg = "Signed"
-        toplevel_uri = toplevel_pub.source_uri
-        log.info(f"{log_msg} Nanopub Index: {toplevel_uri}")
-
-        pub_list.append(toplevel_uri)
+        toplevel_pub.sign()
+        log.info(f"Signed top level Nanopub Index: {toplevel_pub.source_uri}")
+        pub_list.append(toplevel_pub)
 
     return pub_list

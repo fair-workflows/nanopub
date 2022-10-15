@@ -12,6 +12,7 @@ class NanopubRetract(Nanopub):
     corresponds to the 'uri' argument.
 
     Args:
+        config: config for the nanopub
         uri (str): The uri pointing to the to-be-retracted nanopublication
         force (bool): Toggle using force to retract, this will even retract the
             nanopublication if it is signed with a different public key than the one

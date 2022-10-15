@@ -1,31 +1,28 @@
+from typing import Optional
+
 from Crypto.PublicKey import RSA
 from rdflib import Literal, URIRef
 from rdflib.namespace import FOAF
 
 from nanopub.config import NanopubConfig
-from nanopub.definitions import DUMMY_NAMESPACE, USER_CONFIG_DIR, log
+from nanopub.definitions import log
 from nanopub.namespaces import NPX
 from nanopub.nanopub import Nanopub
-from nanopub.profile import generate_keys
 
 
 class NanopubIntroduction(Nanopub):
-    """
-    Publish a Nanopub introduction to introduce a key pair for an ORCID
+    """Publish a Nanopub introduction to introduce a key pair for an ORCID
 
     Args:
-        np_list: List of nanopub URIs
-        title: Title of the Nanopub Index
-        description: Description of the Nanopub Index
-        creation_time: Creation time of the Nanopub Index, in format YYYY-MM-DDThh-mm-ss
-        creators: List of the ORCID of the creators of the Nanopub Index
-        see_also: A URL to a page with further information on the Nanopub Index
+        config: config for the nanopub
+        host: the service where the keypair are hosted
     """
 
     def __init__(
         self,
         config: NanopubConfig,
-        public_key: str = None,
+        host: Optional[str] = None,
+        # public_key: str = None,
     ) -> None:
         config.add_prov_generated_time = False
         config.add_pubinfo_generated_time = True
@@ -35,21 +32,22 @@ class NanopubIntroduction(Nanopub):
             config=config,
         )
 
-        if not public_key:
-            log.info("Generating private/public pair keys")
-            public_key = generate_keys(USER_CONFIG_DIR)
-            # self._generate_keys()
+        # if not self.config.profile.public_key:
+        #     log.info("Generating private/public pair keys")
+        #     public_key = generate_keys(USER_CONFIG_DIR)
 
-        # key_declaration = BNode('keyDeclaration')
-        key_declaration = DUMMY_NAMESPACE.keyDeclaration
+        key_declaration = self._dummy_namespace.keyDeclaration
         orcid_node = URIRef(self.config.profile.orcid_id)
 
         self.assertion.add((key_declaration, NPX.declaredBy, orcid_node))
         self.assertion.add((key_declaration, NPX.hasAlgorithm, Literal("RSA")))
-        self.assertion.add((key_declaration, NPX.hasPublicKey, Literal(public_key)))
+        self.assertion.add((key_declaration, NPX.hasPublicKey, Literal(self.config.profile.public_key)))
         self.assertion.add((orcid_node, FOAF.name, Literal(self.config.profile.name)))
+        if host:
+            self.assertion.add((key_declaration, NPX.hasKeyLocation, URIRef(host)))
 
 
+    # TODO: move this to profile
     def _generate_keys(self) -> str:
         """Generate private/public RSA key pair at the path specified in the profile.yml, to be used to sign nanopubs"""
         key = RSA.generate(2048)

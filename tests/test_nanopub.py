@@ -2,8 +2,9 @@ from pathlib import Path
 
 from rdflib import RDF, BNode, ConjunctiveGraph, Graph, Literal, URIRef
 
-from nanopub import Nanopub, NanopubClaim, NanopubConfig, NanopubRetract, namespaces
+from nanopub import Nanopub, NanopubClaim, NanopubConfig, NanopubRetract, create_nanopub_index, namespaces
 from nanopub.definitions import MalformedNanopubError
+from nanopub.templates.nanopub_introduction import NanopubIntroduction
 from tests.conftest import default_config, java_wrap, profile_test
 
 config_testsuite = NanopubConfig(
@@ -48,6 +49,29 @@ def test_nanopub_sign_bnode():
     java_np = java_wrap.sign(np)
     np.sign()
     assert np.has_valid_signature
+    assert np.source_uri == expected_np_uri
+    assert np.source_uri == java_np
+
+
+def test_nanopub_sign_bnode2():
+    # java -jar lib/nanopub-1.*-SNAPSHOT-jar-with-dependencies.jar sign tests/testsuite/valid/plain/bnode2.trig
+    expected_np_uri = "http://purl.org/np/RAgZzcMm4bxLVPo2Ve4aOTbh_BHoyEVCxY_lMposaRar8"
+    assertion = Graph()
+    assertion.add((
+        BNode('test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
+    ))
+    assertion.add((
+        BNode('test2'), namespaces.HYCL.claims, Literal('This is another test of nanopub-python')
+    ))
+    np = Nanopub(
+        config=default_config,
+        assertion=assertion
+    )
+    java_np = java_wrap.sign(np)
+    np.sign()
+    # TODO: When verifying with 2 BNode, they are assign unpredictably _1 and _2 to the URI
+    # and creates a different URI
+    # assert np.has_valid_signature
     assert np.source_uri == expected_np_uri
     assert np.source_uri == java_np
 
@@ -213,24 +237,29 @@ def test_nanopub_retract():
     assert np.source_uri == java_np
 
 
-def test_nanopub_sign_bnode2():
-    # java -jar lib/nanopub-1.*-SNAPSHOT-jar-with-dependencies.jar sign tests/testsuite/valid/plain/bnode2.trig
-    expected_np_uri = "http://purl.org/np/RAgZzcMm4bxLVPo2Ve4aOTbh_BHoyEVCxY_lMposaRar8"
-    assertion = Graph()
-    assertion.add((
-        BNode('test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
-    ))
-    assertion.add((
-        BNode('test2'), namespaces.HYCL.claims, Literal('This is another test of nanopub-python')
-    ))
-    np = Nanopub(
-        config=default_config,
-        assertion=assertion
+def test_nanopub_introduction():
+    np = NanopubIntroduction(
+        config=config_testsuite,
+        host="http://test"
     )
     java_np = java_wrap.sign(np)
     np.sign()
-    # TODO: When verifying with 2 BNode, they are assign unpredictably _1 and _2 to the URI
-    # and creates a different URI
-    # assert np.has_valid_signature
-    assert np.source_uri == expected_np_uri
+    assert np.source_uri is not None
     assert np.source_uri == java_np
+
+
+def test_nanopub_index():
+    np_list = create_nanopub_index(
+        config=config_testsuite,
+        np_list=[
+            "https://purl.org/np/RAD28Nl4h_mFH92bsHUrtqoU4C6DCYy_BRTvpimjVFgJo",
+            "https://purl.org/np/RAEhbEJ1tdhPqM6gNPScX9vIY1ZtUzOz7woeJNzB3sh3E",
+        ],
+        title="My nanopub index",
+        description="This is my nanopub index",
+        creation_time="2020-09-21T00:00:00",
+        creators=["https://orcid.org/0000-0000-0000-0000"],
+        see_also="https://github.com/fair-workflows/Nanopub",
+    )
+    for np in np_list:
+        assert np.source_uri is not None

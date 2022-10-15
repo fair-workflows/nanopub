@@ -20,6 +20,7 @@ nav:
     - Using the nanopublication's namespace: publishing/using-publication-namespace.md
     - Setting publication info and provenance: publishing/setting-subgraphs.md
     - Retracting a nanopublication: publishing/retraction.md
+    - Using nanopub templates: publishing/templates.md
     - Handle users profile: publishing/profile.md
     - Publish with the commandline: publishing/publish-with-cli.md
 
@@ -28,10 +29,11 @@ nav:
     - Fetching: searching/fetching.md
 
   - API Reference:
-    - Client: reference/client.md
     - Nanopub: reference/nanopub.md
+    - Templates: reference/templates.md
     - Config: reference/config.md
     - Profile: reference/profile.md
+    - Client: reference/client.md
     - Namespaces: reference/namespaces.md
 
   - "<span>Issues&nbsp;&nbsp;<i class='fa-solid fa-arrow-up-right-from-square'></i></span>": https://github.com/fair-workflows/nanopub/issues" target="_blank

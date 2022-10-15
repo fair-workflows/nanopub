@@ -15,6 +15,7 @@ class NanopubClaim(Nanopub):
     Ontology (http://purl.org/petapico/o/hycl).
 
     Args:
+        config: config for the nanopub
         claim (str): the text of the statement, example: 'All cats are grey'
     """
 
