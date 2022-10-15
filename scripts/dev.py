@@ -2,7 +2,7 @@ import logging
 
 from rdflib import Graph, Literal, URIRef
 
-from nanopub import Nanopub, NanopubConfig, load_profile, namespaces
+from nanopub import Nanopub, NanopubConf, load_profile, namespaces
 
 log = logging.getLogger()
 log.setLevel(logging.INFO)
@@ -14,7 +14,7 @@ console_handler.setFormatter(formatter)
 log.addHandler(console_handler)
 
 
-config = NanopubConfig(
+config = NanopubConf(
     add_prov_generated_time=False,
     add_pubinfo_generated_time=True,
     attribute_assertion_to_profile=True,
@@ -33,7 +33,7 @@ assertion.add((
 # np_g.parse("./tests/testsuite/transform/signed/rsa-key1/simple1.in.trig", format="trig")
 
 
-np = Nanopub(config=config, assertion=assertion)
+np = Nanopub(conf=config, assertion=assertion)
 
 # np = Nanopub(config=config, assertion=assertion)
 

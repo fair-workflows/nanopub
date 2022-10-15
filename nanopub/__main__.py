@@ -8,7 +8,7 @@ from typing import Tuple, Union
 import click
 import rdflib
 
-from nanopub import Nanopub, NanopubConfig, load_profile, namespaces
+from nanopub import Nanopub, NanopubConf, load_profile, namespaces
 from nanopub.definitions import DEFAULT_PROFILE_PATH, USER_CONFIG_DIR, MalformedNanopubError
 from nanopub.profile import Profile, ProfileError, generate_keys
 
@@ -59,7 +59,7 @@ def profile():
               default=None)
 def sign(filepath: Path, private_key: Path):
     if private_key:
-        config = NanopubConfig(
+        config = NanopubConf(
             profile=Profile(
                 # TODO: better handle Profile without name or orcid_id
                 name='', orcid_id='',
@@ -67,11 +67,11 @@ def sign(filepath: Path, private_key: Path):
             ),
         )
     else:
-        config = NanopubConfig(profile=load_profile())
+        config = NanopubConf(profile=load_profile())
 
     folder_path, filename = os.path.split(filepath)
     np = Nanopub(
-        config=config,
+        conf=config,
         rdf=filepath
     )
     np.sign()
@@ -88,11 +88,11 @@ def sign(filepath: Path, private_key: Path):
 def publish(filepath: Path, test: bool):
     if test:
         click.echo("Publishing to test server")
-    config = NanopubConfig(
+    config = NanopubConf(
         profile=load_profile(),
         use_test_server=test,
     )
-    np = Nanopub(config=config, rdf=filepath)
+    np = Nanopub(conf=config, rdf=filepath)
     np.publish()
     click.echo(f" 📬️ Nanopub published at \033[1m{np.source_uri}\033[0m")
 
@@ -101,8 +101,8 @@ def publish(filepath: Path, test: bool):
 @cli.command(help='Check if a signed Nanopublication is valid')
 @click.argument('filepath', type=Path)
 def check(filepath: Path):
-    config = NanopubConfig(profile=load_profile())
-    np = Nanopub(config=config, rdf=filepath)
+    config = NanopubConf(profile=load_profile())
+    np = Nanopub(conf=config, rdf=filepath)
     try:
         np.is_valid
         click.echo(f"\033[1m✅ Valid nanopub\033[0m {np.source_uri}")
@@ -191,7 +191,7 @@ def setup(orcid_id, publish, newkeys, name, keypair: Union[Tuple[Path, Path], No
         assertion, concept = _create_this_is_me_rdf(orcid_id, public_key, name)
         np = Nanopub(
             assertion=assertion,
-            config=NanopubConfig(
+            conf=NanopubConf(
                 assertion_attributed_to=orcid_id,
                 profile=profile
             ),

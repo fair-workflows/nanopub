@@ -9,13 +9,13 @@ You can also easily create your own template by inheriting from the `Nanopub` cl
 Publish a simple HYCL claim:
 
 ```python
-from nanopub import NanopubConfig, NanopubClaim
+from nanopub import NanopubConf, NanopubClaim
 
-np_config = NanopubConfig(profile=load_profile(), use_test_server=True)
+np_conf = NanopubConf(profile=load_profile(), use_test_server=True)
 
 np = NanopubClaim(
 	claim='All cats are grey',
-    config=np_config,
+    config=np_conf,
 )
 np.publish()
 ```
@@ -27,13 +27,13 @@ To publish an index of nanopublications. Note that a nanopub cannot contain more
 For this we will use the `create_nanopub_index()` function instead of directly instantiating a `NanopubIndex`
 
 ```bash
-from nanopub import NanopubConfig
+from nanopub import NanopubConf
 from nanopub.templates import NanopubIndex
 
-np_config = NanopubConfig(profile=load_profile(), use_test_server=True)
+np_conf = NanopubConf(profile=load_profile(), use_test_server=True)
 
 np_list = create_nanopub_index(
-	config=np_config,
+	config=np_conf,
     np_list=[
     	"https://purl.org/np/RAD28Nl4h_mFH92bsHUrtqoU4C6DCYy_BRTvpimjVFgJo",
     	"https://purl.org/np/RAEhbEJ1tdhPqM6gNPScX9vIY1ZtUzOz7woeJNzB3sh3E",
@@ -55,13 +55,13 @@ for np in np_list:
 To publish a nanopublication introducing a keypair for an ORCID.
 
 ```python
-from nanopub import NanopubConfig
+from nanopub import NanopubConf
 from nanopub.templates import NanopubIntroduction
 
-np_config = NanopubConfig(profile=load_profile(), use_test_server=True)
+np_conf = NanopubConf(profile=load_profile(), use_test_server=True)
 
 np = NanopubIntroduction(
-    config=np_config,
+    config=np_conf,
     host=None,
 )
 np.publish()
@@ -76,7 +76,7 @@ Here is the `NanopubClaim` class explained:
 ```python
 from rdflib import RDF, RDFS, Literal, URIRef
 
-from nanopub.config import NanopubConfig
+from nanopub.config import NanopubConf
 from nanopub.namespaces import HYCL
 from nanopub.nanopub import Nanopub
 
@@ -86,7 +86,7 @@ class NanopubClaim(Nanopub):
         self,
         # Define the args the users should provide
         claim: str,
-        config: NanopubConfig,
+        config: NanopubConf,
     ) -> None:
         # Enforce specific nanopub configs
         config.add_prov_generated_time = True

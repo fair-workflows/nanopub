@@ -3,10 +3,10 @@ from typing import List, Union
 from rdflib import Literal, URIRef
 from rdflib.namespace import DC, DCTERMS, RDF, RDFS, XSD
 
-from nanopub.config import NanopubConfig
 from nanopub.definitions import DUMMY_NAMESPACE, DUMMY_URI, MAX_NP_PER_INDEX, log
 from nanopub.namespaces import NPX, PAV
 from nanopub.nanopub import Nanopub
+from nanopub.nanopub_conf import NanopubConf
 
 
 class NanopubIndex(Nanopub):
@@ -24,7 +24,7 @@ class NanopubIndex(Nanopub):
 
     def __init__(
         self,
-        config: NanopubConfig,
+        conf: NanopubConf,
         np_list: Union[List[str], List[Nanopub]],
         title: str,
         description: str,
@@ -33,11 +33,11 @@ class NanopubIndex(Nanopub):
         see_also: str = None,
         top_level: bool = False,
     ) -> None:
-        config.add_prov_generated_time = False
-        config.add_pubinfo_generated_time = True
-        config.attribute_publication_to_profile = True
+        conf.add_prov_generated_time = False
+        conf.add_pubinfo_generated_time = True
+        conf.attribute_publication_to_profile = True
         super().__init__(
-            config=config,
+            conf=conf,
         )
 
         for np in np_list:
@@ -71,7 +71,7 @@ class NanopubIndex(Nanopub):
 
 
 def create_nanopub_index(
-    config: NanopubConfig,
+    conf: NanopubConf,
     np_list: Union[List[str], List[Nanopub]],
     title: str,
     description: str,
@@ -95,7 +95,7 @@ def create_nanopub_index(
     for i in range(0, len(np_list), MAX_NP_PER_INDEX):
         np_chunk = np_list[i:i + MAX_NP_PER_INDEX]
         pub = NanopubIndex(
-            config,
+            conf,
             np_chunk,
             title,
             description,
@@ -110,7 +110,7 @@ def create_nanopub_index(
 
     if len(pub_list) > 1:
         toplevel_pub = NanopubIndex(
-            config,
+            conf,
             pub_list,
             title,
             description,

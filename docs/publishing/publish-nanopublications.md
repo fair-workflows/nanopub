@@ -20,10 +20,10 @@ This is a 3-step recipe that works for most cases:
 Here is an example:
 ```python
 from rdflib import Graph
-from nanopub import Nanopub, NanopubConfig, load_profile
+from nanopub import Nanopub, NanopubConf, load_profile
 
 # Create the config (we use use_test_server=True to point to the test server)
-np_config = NanopubConfig(
+np_conf = NanopubConf(
     profile=load_profile(),
     use_test_server=True,
     add_prov_generated_time=True,
@@ -40,7 +40,7 @@ my_assertion.add((
 
 # 2. Make a Nanopublication object with this assertion
 np = Nanopub(
-    config=np_config,
+    config=np_conf,
     assertion=my_assertion
 )
 
@@ -97,17 +97,17 @@ You can also easily sign and publish a Nanopublication from a file.
 
 ```python
 from rdflib import ConjunctiveGraph
-from nanopub import Nanopub, NanopubConfig, load_profile
+from nanopub import Nanopub, NanopubConf, load_profile
 
 # 1. Create the config
-np_config = NanopubConfig(profile=load_profile(), use_test_server=True)
+np_conf = NanopubConf(profile=load_profile(), use_test_server=True)
 
 # 2. Load the file in a RDFLib graph
 g = ConjunctiveGraph()
 g.parse("nanopub.trig")
 
 # 3. Make a Nanopublication object with this assertion
-np = Nanopub(config=np_config, rdf=g)
+np = Nanopub(config=np_conf, rdf=g)
 
 # 4. Publish the Publication object.
 np.publish()
@@ -120,7 +120,7 @@ You can change the log level of your logger to display more logs from the Nanopu
 
 ```python
 from rdflib import Graph
-from nanopub import Nanopub, NanopubConfig, load_profile
+from nanopub import Nanopub, NanopubConf, load_profile
 
 # Instantiate the logger
 logger = logging.getLogger()
@@ -133,7 +133,7 @@ console_handler.setFormatter(formatter)
 logger.addHandler(console_handler)
 
 # Usual workflow to publish nanopubs
-np_config = NanopubConfig(
+np_conf = NanopubConf(
     profile=load_profile(),
     use_test_server=True,
     add_prov_generated_time=True,
@@ -148,7 +148,7 @@ my_assertion.add((
 ))
 
 np = Nanopub(
-    config=np_config,
+    config=np_conf,
     assertion=my_assertion
 )
 np.publish()

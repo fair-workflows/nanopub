@@ -1,13 +1,13 @@
 # Retracting a nanopublication
 A nanopublication is persistent, you can never edit nor delete it. You can however retract a nanopublication. This is done by publishing a new nanopublication that states that you retract the original publication. You can use `NanopubClient.retract()`:
 ```python
-from nanopub import NanopubConfig, NanopubRetract
+from nanopub import NanopubConf, NanopubRetract
 
-np_config = NanopubConfig(profile=load_profile(), use_test_server=True)
+np_conf = NanopubConf(profile=load_profile(), use_test_server=True)
 
 np = NanopubRetract(
 	'http://purl.org/np/RAfk_zBYDerxd6ipfv8fAcQHEzgZcVylMTEkiLlMzsgwQ',
-    np_config,
+    np_conf,
 )
 np.publish()
 ```
@@ -31,7 +31,7 @@ We can use `force=True` to override this behavior:
 ```python
 np = NanopubRetract(
 	'http://purl.org/np/RAfk_zBYDerxd6ipfv8fAcQHEzgZcVylMTEkiLlMzsgwQ',
-    np_config,
+    np_conf,
     force=True
 )
 ```

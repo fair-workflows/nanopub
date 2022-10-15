@@ -2,12 +2,12 @@ from pathlib import Path
 
 from rdflib import RDF, BNode, ConjunctiveGraph, Graph, Literal, URIRef
 
-from nanopub import Nanopub, NanopubClaim, NanopubConfig, NanopubRetract, create_nanopub_index, namespaces
+from nanopub import Nanopub, NanopubClaim, NanopubConf, NanopubRetract, create_nanopub_index, namespaces
 from nanopub.definitions import MalformedNanopubError
 from nanopub.templates.nanopub_introduction import NanopubIntroduction
 from tests.conftest import default_config, java_wrap, profile_test
 
-config_testsuite = NanopubConfig(
+config_testsuite = NanopubConf(
     add_prov_generated_time=False,
     add_pubinfo_generated_time=False,
     attribute_assertion_to_profile=False,
@@ -25,7 +25,7 @@ def test_nanopub_sign_uri():
     ))
 
     np = Nanopub(
-        config=default_config,
+        conf=default_config,
         assertion=assertion
     )
     java_np = java_wrap.sign(np)
@@ -43,7 +43,7 @@ def test_nanopub_sign_bnode():
     ))
 
     np = Nanopub(
-        config=default_config,
+        conf=default_config,
         assertion=assertion
     )
     java_np = java_wrap.sign(np)
@@ -64,7 +64,7 @@ def test_nanopub_sign_bnode2():
         BNode('test2'), namespaces.HYCL.claims, Literal('This is another test of nanopub-python')
     ))
     np = Nanopub(
-        config=default_config,
+        conf=default_config,
         assertion=assertion
     )
     java_np = java_wrap.sign(np)
@@ -83,7 +83,7 @@ def test_nanopub_publish():
         URIRef('http://test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
     ))
     np = Nanopub(
-        config=default_config,
+        conf=default_config,
         assertion=assertion
     )
     java_np = java_wrap.sign(np)
@@ -107,7 +107,7 @@ def test_nanopub_signed_testsuite1():
     )[0])
 
     np = Nanopub(
-        config=config_testsuite,
+        conf=config_testsuite,
         rdf=np_g
     )
     java_np = java_wrap.sign(np)
@@ -137,7 +137,7 @@ def test_nanopub_testsuite_sign_valid():
             np_g.parse(test_file)
 
         np = Nanopub(
-            config=config_testsuite,
+            conf=config_testsuite,
             rdf=Path(test_file)
         )
         java_np = java_wrap.sign(np)
@@ -157,7 +157,7 @@ def test_nanopub_testsuite_sign_valid_trix():
         np_g = ConjunctiveGraph()
         np_g.parse(test_file, format="trix")
         np = Nanopub(
-            config=config_testsuite,
+            conf=config_testsuite,
             rdf=np_g
         )
         java_np = java_wrap.sign(np)
@@ -178,7 +178,7 @@ def test_nanopub_testsuite_valid_signed():
     for test_file in test_files:
         print(f'✅ Testing validating signed valid nanopub: {test_file}')
         np = Nanopub(
-            config=config_testsuite,
+            conf=config_testsuite,
             rdf=Path(test_file)
         )
         assert np.is_valid
@@ -204,7 +204,7 @@ def test_nanopub_testsuite_invalid():
 
         try:
             np = Nanopub(
-                config=config_testsuite,
+                conf=config_testsuite,
                 rdf=Path(test_file)
             )
             np.is_valid
@@ -217,7 +217,7 @@ def test_nanopub_testsuite_invalid():
 def test_nanopub_claim():
     np = NanopubClaim(
         claim='Some controversial statement',
-        config=config_testsuite,
+        conf=config_testsuite,
     )
     java_np = java_wrap.sign(np)
     np.sign()
@@ -229,7 +229,7 @@ def test_nanopub_retract():
     np = NanopubRetract(
         uri='http://purl.org/np/RAnksi2yDP7jpe7F6BwWCpMOmzBEcUImkAKUeKEY_2Yus',
         force=True,
-        config=config_testsuite,
+        conf=config_testsuite,
     )
     java_np = java_wrap.sign(np)
     np.sign()
@@ -239,7 +239,7 @@ def test_nanopub_retract():
 
 def test_nanopub_introduction():
     np = NanopubIntroduction(
-        config=config_testsuite,
+        conf=config_testsuite,
         host="http://test"
     )
     java_np = java_wrap.sign(np)
@@ -250,7 +250,7 @@ def test_nanopub_introduction():
 
 def test_nanopub_index():
     np_list = create_nanopub_index(
-        config=config_testsuite,
+        conf=config_testsuite,
         np_list=[
             "https://purl.org/np/RAD28Nl4h_mFH92bsHUrtqoU4C6DCYy_BRTvpimjVFgJo",
             "https://purl.org/np/RAEhbEJ1tdhPqM6gNPScX9vIY1ZtUzOz7woeJNzB3sh3E",

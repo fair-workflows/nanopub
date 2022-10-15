@@ -16,7 +16,7 @@ An example:
 
 ```python
 from rdflib import Graph, BNode, RDF, FOAF
-from nanopub import Nanopub, NanopubConfig, NanopubClient
+from nanopub import Nanopub, NanopubConf, NanopubClient
 
 my_assertion = Graph()
 
@@ -27,7 +27,7 @@ tim = BNode('timbernerslee')
 my_assertion.add((tim, RDF.type, FOAF.Person) )
 
 # Define the config for your nanopubs
-np_config = NanopubConfig(
+np_conf = NanopubConf(
     add_prov_generated_time=True,
     add_pubinfo_generated_time=True,
     attribute_publication_to_profile=True,
@@ -35,7 +35,7 @@ np_config = NanopubConfig(
 # And create a nanopub object for this assertion
 np = Nanopub(
     assertion=my_assertion,
-	config=np_config
+	config=np_conf
 )
 
 # Let's publish this to the test server
@@ -78,7 +78,7 @@ my_assertion.add((tim, rdflib.RDF.type, rdflib.FOAF.Person) )
 np = Nanopub(
     assertion=my_assertion,
     introduces_concept=tim,
-    config=NanopubConfig(
+    config=NanopubConf(
         add_prov_generated_time=True,
         add_pubinfo_generated_time=True,
         attribute_publication_to_profile=True,

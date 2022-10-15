@@ -1,8 +1,9 @@
 from rdflib import URIRef
 
-from nanopub.config import NanopubConfig
 from nanopub.namespaces import NPX
 from nanopub.nanopub import Nanopub
+from nanopub.nanopub_conf import NanopubConf
+from nanopub.profile import ProfileError
 
 
 class NanopubRetract(Nanopub):
@@ -21,17 +22,19 @@ class NanopubRetract(Nanopub):
 
     def __init__(
         self,
-        config: NanopubConfig,
+        conf: NanopubConf,
         uri: str,
         force: bool = False,
     ) -> None:
-        config.add_prov_generated_time = True
-        config.add_pubinfo_generated_time = True
-        config.attribute_publication_to_profile = True
-        config.attribute_assertion_to_profile = True
+        conf.add_prov_generated_time = True
+        conf.add_pubinfo_generated_time = True
+        conf.attribute_publication_to_profile = True
+        conf.attribute_assertion_to_profile = True
         super().__init__(
-            config=config,
+            conf=conf,
         )
+        if not self.profile:
+            raise ProfileError("No profile provided, cannot generate a Nanopub to retract another nanopub")
 
         # if not force:
         #     self._check_public_keys_match(uri)
@@ -52,12 +55,12 @@ class NanopubRetract(Nanopub):
         their_public_key = publication.signed_with_public_key
         print("KEYS")
         print(their_public_key)
-        print(self.config.profile.public_key)
-        if their_public_key != self.config.profile.public_key:
+        print(self.conf.profile.public_key)
+        if their_public_key != self.conf.profile.public_key:
             print("python cant compare 2 strings")
         if (
             their_public_key is not None
-            and their_public_key != self.config.profile.public_key
+            and their_public_key != self.conf.profile.public_key
         ):
             raise AssertionError(
                 "The public key in your profile does not match the public key"

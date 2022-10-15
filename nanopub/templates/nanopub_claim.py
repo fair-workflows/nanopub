@@ -3,9 +3,10 @@
 
 from rdflib import RDF, RDFS, Literal, URIRef
 
-from nanopub.config import NanopubConfig
 from nanopub.namespaces import HYCL
 from nanopub.nanopub import Nanopub
+from nanopub.nanopub_conf import NanopubConf
+from nanopub.profile import ProfileError
 
 
 class NanopubClaim(Nanopub):
@@ -22,14 +23,17 @@ class NanopubClaim(Nanopub):
     def __init__(
         self,
         claim: str,
-        config: NanopubConfig,
+        conf: NanopubConf,
     ) -> None:
-        config.add_prov_generated_time = True
-        config.add_pubinfo_generated_time = True
-        config.attribute_publication_to_profile = True
+        conf.add_prov_generated_time = True
+        conf.add_pubinfo_generated_time = True
+        conf.attribute_publication_to_profile = True
         super().__init__(
-            config=config,
+            conf=conf,
         )
+        if not self.profile:
+            raise ProfileError("No profile provided, cannot generate a Nanopub Claim")
+
         this_statement = self._dummy_namespace["claim"]
         # this_statement = BNode("mystatement")
         self.assertion.add((this_statement, RDF.type, HYCL.Statement))

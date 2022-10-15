@@ -35,10 +35,10 @@ Use `load_profile()` to load the user profile from `$HOME/.nanopub`, and `use_te
 
 ```python
 from rdflib import Graph
-from nanopub import Nanopub, NanopubConfig, load_profile
+from nanopub import Nanopub, NanopubConf, load_profile
 
 # 1. Create the config
-np_config = NanopubConfig(
+np_conf = NanopubConf(
     use_test_server=True,
     profile=load_profile(),
     add_prov_generated_time=True,
@@ -55,7 +55,7 @@ my_assertion.add((
 
 # 2. Make a Nanopub object with this assertion
 np = Nanopub(
-    config=np_config,
+    config=np_conf,
     assertion=my_assertion
 )
 

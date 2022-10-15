@@ -15,7 +15,7 @@ def test_nanopub_sign():
     ))
 
     np = Nanopub(
-        config=default_config,
+        conf=default_config,
         assertion=assertion
     )
     java_np = java_wrap.sign(np)

@@ -4,7 +4,7 @@ import tempfile
 import pytest
 import requests
 
-from nanopub import NanopubConfig, load_profile
+from nanopub import NanopubConf, load_profile
 from nanopub.client import NANOPUB_TEST_GRLC_URL
 from nanopub.definitions import TEST_RESOURCES_FILEPATH
 from tests.java_wrapper import JavaWrapper
@@ -38,7 +38,7 @@ with open(profile_test_path, "w") as f:
 
 profile_test = load_profile(profile_test_path)
 
-default_config = NanopubConfig(
+default_config = NanopubConf(
     profile=profile_test,
     use_test_server=True,
     add_prov_generated_time=False,

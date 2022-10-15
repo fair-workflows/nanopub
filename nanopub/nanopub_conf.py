@@ -6,7 +6,7 @@ from nanopub.profile import Profile
 
 
 @dataclass
-class NanopubConfig:
+class NanopubConf:
     """Represents the configuration for nanopubs.
 
     Args:

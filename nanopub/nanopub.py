@@ -12,7 +12,6 @@ import rdflib
 from rdflib import BNode, ConjunctiveGraph, Graph, Namespace, URIRef
 from rdflib.namespace import DC, DCTERMS, FOAF, PROV, RDF, XSD
 
-from nanopub.config import NanopubConfig
 from nanopub.definitions import (
     DUMMY_NAMESPACE,
     DUMMY_NANOPUB_URI,
@@ -22,6 +21,7 @@ from nanopub.definitions import (
     log,
 )
 from nanopub.namespaces import HYCL, NP, NPX, NTEMPLATE, ORCID, PAV
+from nanopub.nanopub_conf import NanopubConf
 from nanopub.profile import ProfileError
 from nanopub.signer import add_signature, publish_graph, verify_signature, verify_trusty
 
@@ -50,18 +50,18 @@ class Nanopub:
         rdf: Union[ConjunctiveGraph, Path] = None,
         source_uri: str = None,
         introduces_concept: BNode = None,
-        config: NanopubConfig = NanopubConfig(),
+        conf: NanopubConf = NanopubConf(),
         # **kwargs
     ) -> None:
         # print(config.profile)
-        self._profile = config.profile
+        self._profile = conf.profile
         self._source_uri = source_uri
         self._concept_uri = None
-        self._config = config
+        self._conf = conf
         self._published = False
         self._dummy_namespace = DUMMY_NAMESPACE
-        if self._config.use_test_server:
-            self._config.use_server = NANOPUB_TEST_SERVER
+        if self._conf.use_test_server:
+            self._conf.use_server = NANOPUB_TEST_SERVER
 
 
         if isinstance(rdf, ConjunctiveGraph):
@@ -110,24 +110,24 @@ class Nanopub:
 
         self._validate_nanopub_arguments(
             introduces_concept=introduces_concept,
-            derived_from=self._config.derived_from,
-            assertion_attributed_to=self._config.assertion_attributed_to,
-            attribute_assertion_to_profile=self._config.attribute_assertion_to_profile,
+            derived_from=self._conf.derived_from,
+            assertion_attributed_to=self._conf.assertion_attributed_to,
+            attribute_assertion_to_profile=self._conf.attribute_assertion_to_profile,
             # publication_attributed_to=publication_attributed_to,
         )
         self._handle_generated_at_time(
-            self._config.add_pubinfo_generated_time,
-            self._config.add_prov_generated_time
+            self._conf.add_pubinfo_generated_time,
+            self._conf.add_prov_generated_time
         )
-        assertion_attributed_to = self._config.assertion_attributed_to
-        if self._config.attribute_assertion_to_profile:
+        assertion_attributed_to = self._conf.assertion_attributed_to
+        if self._conf.attribute_assertion_to_profile:
             assertion_attributed_to = rdflib.URIRef(self.profile.orcid_id)
         self._handle_assertion_attributed_to(assertion_attributed_to)
         self._handle_publication_attributed_to(
-            self._config.attribute_publication_to_profile,
-            self._config.publication_attributed_to
+            self._conf.attribute_publication_to_profile,
+            self._conf.publication_attributed_to
         )
-        self._handle_derived_from(derived_from=self._config.derived_from)
+        self._handle_derived_from(derived_from=self._conf.derived_from)
 
         # Concatenate prefixes declarations from all provided graphs in the main graph
         for user_rdf in [assertion, provenance, pubinfo]:
@@ -170,14 +170,14 @@ class Nanopub:
         """Sign a Nanopub object."""
         if len(self.rdf) > MAX_TRIPLES_PER_NANOPUB:
             raise MalformedNanopubError(f"Nanopublication contains {len(self.rdf)} triples, which is more than the {MAX_TRIPLES_PER_NANOPUB} authorized")
-        if not self._config.profile:
+        if not self._conf.profile:
             raise ProfileError("Profile not available, cannot sign the nanopub")
         if self.source_uri:
             raise MalformedNanopubError("The nanopub have already been signed")
 
         if self.is_valid:
             # Sign the nanopub
-            signed_g = add_signature(self.rdf, self._config.profile, self._dummy_namespace)
+            signed_g = add_signature(self.rdf, self._conf.profile, self._dummy_namespace)
             self.update_from_signed(signed_g)
             log.info(f"Signed {self.source_uri}")
 
@@ -187,8 +187,8 @@ class Nanopub:
         if not self.source_uri:
             self.sign()
 
-        publish_graph(self.rdf, use_server=self._config.use_server)
-        log.info(f'Published {self.source_uri} to {self._config.use_server}')
+        publish_graph(self.rdf, use_server=self._conf.use_server)
+        log.info(f'Published {self.source_uri} to {self._conf.use_server}')
         self.published = True
 
         if self.introduces_concept:
@@ -351,12 +351,12 @@ SELECT DISTINCT ?np ?head ?assertion ?provenance ?pubinfo WHERE {
 
 
     @property
-    def config(self):
-        return self._config
+    def conf(self):
+        return self._conf
 
-    @config.setter
-    def config(self, value):
-        self._config = value
+    @conf.setter
+    def conf(self, value):
+        self._conf = value
 
     @property
     def source_uri(self):

@@ -1,5 +1,5 @@
 from ._version import __version__
-from .config import NanopubConfig
+from .nanopub_conf import NanopubConf
 from .client import NanopubClient
 from .profile import Profile, load_profile, generate_keys
 from .nanopub import Nanopub
