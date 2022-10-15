@@ -114,7 +114,7 @@ source = ["project"]
 branch = true
 
 [tool.coverage.report]
-omit = ["nanopub/trustyuri/*"]
+omit = ["nanopub/trustyuri/*", "tests/*"]
 
 
 [tool.flake8]
