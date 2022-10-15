@@ -21,12 +21,6 @@ NANOPUB_SERVER_LIST = [
     'http://server.np.dumontierlab.com/',
 ]
 
-
-# Dummy URI when referring to a nanopub, will be replaced with published URI when publishing.
-# DUMMY_NANOPUB_URI = "http://purl.org/np/ARTIFACTCODE-PLACEHOLDER"
-# DUMMY_NAMESPACE = Namespace(DUMMY_NANOPUB_URI + "/")
-# DUMMY_URI = URIRef(DUMMY_NANOPUB_URI)
-
 DUMMY_NANOPUB_URI = "http://purl.org/nanopub/temp/np"
 DUMMY_NAMESPACE = Namespace(DUMMY_NANOPUB_URI + "#")
 DUMMY_URI = DUMMY_NAMESPACE[""]
@@ -38,3 +32,9 @@ MAX_NP_PER_INDEX = 1100
 MAX_TRIPLES_PER_NANOPUB = 1200
 
 log = logging.getLogger()
+
+
+class MalformedNanopubError(ValueError):
+    """
+    Error to be raised if a Nanopub is not formed correctly.
+    """

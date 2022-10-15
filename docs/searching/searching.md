@@ -64,7 +64,7 @@ results = client.find_nanopubs_with_text('fair', filter_retracted=False)
 ```
 
 ## Filtering search results for a particular publication key
-You can filter search results to publications that are signed with a specific publication key (effectively filtering on publications from a single author). 
+You can filter search results to publications that are signed with a specific publication key (effectively filtering on publications from a single author).
 
 You use the `pubkey` argument for that. Here is an example with `NanopubClient.find_nanopubs_with_text`:
 
@@ -73,6 +73,6 @@ from nanopub import NanopubClient, profile
 # Search for nanopublications containing the text 'test',
 # filtering on publications signed with my publication key.
 client = NanopubClient(use_test_server=True)
-my_public_key = profile.get_public_key()
+my_public_key = profile.public_key
 results = client.find_nanopubs_with_text('test', pubkey=my_public_key)
 ```

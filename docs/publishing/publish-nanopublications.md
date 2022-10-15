@@ -2,11 +2,14 @@
 
 The `nanopub` library provides an intuitive API that makes publishing nanopublications much easier. The rationale is that you often do not want to worry about the details of composing the RDF that is often the same in each nanopublication. Instead you should focus on the content of your nanopublication: the assertion.
 
-## Prerequisits for publishing
-Before you can publish you should [setup your profile](../getting-started/setup)
+!!! info "Prerequisite for publishing"
+
+	Before you can sign and publish you should [setup your profile](/nanopub/getting-started/setup), check if it is properly set by running `np profile` in your terminal.
+
 
 ## A simple recipe for publishing RDF triples
-You can use `Publication` objects to easily publish nanopublications with your assertion (think of the assertion as the content of your nanopublication).
+
+You can use `Nanopub` objects to easily publish nanopublications with your assertion (think of the assertion as the content of your nanopublication).
 
 This is a 3-step recipe that works for most cases:
   1) Instantiate a `NanopubClient`
@@ -90,7 +93,7 @@ sub:pubinfo {
 
 ## Publishing from a file
 
-You can also easily sign and publish a Nanopublication from a file
+You can also easily sign and publish a Nanopublication from a file.
 
 ```python
 from rdflib import ConjunctiveGraph
@@ -107,6 +110,47 @@ g.parse("nanopub.trig")
 np = Nanopub(config=np_config, rdf=g)
 
 # 4. Publish the Publication object.
+np.publish()
+print(np)
+```
+
+## Get more logs
+
+You can change the log level of your logger to display more logs from the Nanopublication library, which can be help when debugging.
+
+```python
+from rdflib import Graph
+from nanopub import Nanopub, NanopubConfig, load_profile
+
+# Instantiate the logger
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+console_handler = logging.StreamHandler()
+formatter = logging.Formatter(
+    "%(asctime)s %(levelname)s: [%(module)s:%(funcName)s] %(message)s"
+)
+console_handler.setFormatter(formatter)
+logger.addHandler(console_handler)
+
+# Usual workflow to publish nanopubs
+np_config = NanopubConfig(
+    profile=load_profile(),
+    use_test_server=True,
+    add_prov_generated_time=True,
+    attribute_publication_to_profile=True,
+)
+
+my_assertion = Graph()
+my_assertion.add((
+    rdflib.URIRef('www.example.org/timbernerslee'),
+    rdflib.RDF.type,
+    rdflib.FOAF.Person
+))
+
+np = Nanopub(
+    config=np_config,
+    assertion=my_assertion
+)
 np.publish()
 print(np)
 ```

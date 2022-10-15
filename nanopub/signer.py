@@ -6,7 +6,7 @@ from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
 from rdflib import BNode, ConjunctiveGraph, Literal, Namespace, URIRef
 
-from nanopub.definitions import FINAL_NANOPUB_URI, NANOPUB_SERVER_LIST, NP_TEMP_PREFIX, log
+from nanopub.definitions import FINAL_NANOPUB_URI, NANOPUB_SERVER_LIST, NP_TEMP_PREFIX, MalformedNanopubError, log
 from nanopub.namespaces import NPX
 from nanopub.profile import Profile
 from nanopub.trustyuri.rdf import RdfHasher, RdfUtils
@@ -40,19 +40,17 @@ def add_signature(g: ConjunctiveGraph, profile: Profile, dummy_namespace: Namesp
         baseuri=str(dummy_namespace),
         hashstr=" "
     )
-    # Be careful: normed_rdf needs to end with a newline
-    # print("NORMED RDF STARTS")
-    # print(normed_rdf)
-    # print("NORMED RDF END")
+    # Note: normed_rdf needs to end with a newline
+    # print(f"NORMED RDF STARTS\n{normed_rdf}\nNORMED RDF ENDS")
 
-    # Signature signature = Signature.getInstance("SHA256withRSA");
-    # https://stackoverflow.com/questions/55036059/a-java-server-use-sha256withrsa-to-sign-message-but-python-can-not-verify
+    # Sign the normalized RDF with the private RSA key
     private_key = RSA.importKey(decodebytes(profile.private_key.encode()))
     signer = PKCS1_v1_5.new(private_key)
     signature_b = signer.sign(SHA256.new(normed_rdf.encode()))
     signature = encodebytes(signature_b).decode().replace("\n", "")
     log.debug(f"Nanopub signature: {signature}")
 
+    # Add the signature to the graph
     g.add((
         dummy_namespace["sig"],
         NPX["hasSignature"],
@@ -60,6 +58,7 @@ def add_signature(g: ConjunctiveGraph, profile: Profile, dummy_namespace: Namesp
         dummy_namespace["pubinfo"],
     ))
 
+    # Generate the trusty URI
     quads = RdfUtils.get_quads(g)
     trusty_artefact = RdfHasher.make_hash(
         quads,
@@ -98,9 +97,7 @@ def replace_trusty_in_graph(trusty_artefact: str, dummy_ns: str, graph: Conjunct
 
         graph.remove((s, p, o, g))
         graph.add((new_s, new_p, new_o, new_g))
-        # print(str(new_g))
     return graph
-
 
 
 def publish_graph(g: ConjunctiveGraph, use_server: str = NANOPUB_SERVER_LIST[0]) -> bool:
@@ -109,7 +106,6 @@ def publish_graph(g: ConjunctiveGraph, use_server: str = NANOPUB_SERVER_LIST[0])
     Publish the signed nanopub to the nanopub server we do a simple POST request.
     """
     # headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-    # print(f"Publish to nanopub server {use_server}")
     log.info(f"Publishing to nanopub server {use_server}")
     headers = {'Content-Type': 'application/trig'}
     data = g.serialize(format="trig")
@@ -119,34 +115,46 @@ def publish_graph(g: ConjunctiveGraph, use_server: str = NANOPUB_SERVER_LIST[0])
     return True
 
 
-
-def verify(g: ConjunctiveGraph, source_uri: str, dummy_namespace: Namespace) -> bool:
-    # TODO: improve to better test the different components (signature, etc)
-
-    # signature_uri = URIRef(f"{np.source_uri}#sig")
-    # for s, p, o in g.triples((signature_uri, NPX.hasSignature, None)):
-    #     signature = str(o)
-    # g.remove((signature_uri, NPX.hasSignature, None))
-
+def verify_trusty(g: ConjunctiveGraph, source_uri: str, source_namespace: Namespace) -> bool:
+    source_trusty = source_uri.split('/')[-1]
     quads = RdfUtils.get_quads(g)
-    trusty_artefact = RdfHasher.make_hash(
+    expected_trusty = RdfHasher.make_hash(
         quads,
-        baseuri=str(dummy_namespace),
+        baseuri=str(source_namespace),
         hashstr=" "
     )
-    expected_uri = f"http://purl.org/np/{trusty_artefact}"
-    if expected_uri != source_uri:
-        print(f"The Trusty artefact of the nanopub {source_uri} is not valid. It should be {trusty_artefact}")
-        return False
+    if expected_trusty != source_trusty:
+        raise MalformedNanopubError(f"The Trusty artefact of the nanopub {source_trusty} is not valid. It should be {expected_trusty}")
     else:
         return True
 
 
-# Implement sign/publish in python:
-# 1. Use trusty-uri lib to get the trusty URI
-# 2. Replace the temp nanopub URIs in the graph by the generated trusty URI
-# 3. Add signature in pubinfo (how to generate it?)
-# In java SignatureUtils > createSignedNanopub
-# 4. Publish to one of the np servers: https://monitor.petapico.org/
-# post.setEntity(new StringEntity(nanopubString, "UTF-8"));
-# post.setHeader("Content-Type", RDFFormat.TRIG.getDefaultMIMEType());
+def verify_signature(g: ConjunctiveGraph, source_uri: str, source_namespace: Namespace) -> bool:
+    # Get public key from the triples
+    pubkey_uri = URIRef(f"{source_uri}#sig")
+    pubkey = ''
+    for s, p, o in g.triples((pubkey_uri, NPX.hasPublicKey, None)):
+        pubkey = str(o)
+
+    # Get signature from the triples
+    signature_uri = URIRef(f"{source_uri}#sig")
+    signature = ''
+    for s, p, o in g.triples((signature_uri, NPX.hasSignature, None)):
+        signature = str(o)
+    # g.remove((signature_uri, NPX.hasSignature, None))
+
+    quads = RdfUtils.get_quads(g)
+    normed_rdf = RdfHasher.normalize_quads(
+        quads,
+        baseuri=str(source_namespace),
+        hashstr=" "
+    )
+
+    key = RSA.import_key(decodebytes(str(pubkey).encode()))
+    hash_value = SHA256.new(normed_rdf.encode())
+    verifier = PKCS1_v1_5.new(key)
+    try:
+        verifier.verify(hash_value, decodebytes(signature.encode()))
+        return True
+    except Exception as e:
+        raise MalformedNanopubError(e)

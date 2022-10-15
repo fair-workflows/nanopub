@@ -29,7 +29,7 @@ class NanopubClaim(Nanopub):
         super().__init__(
             config=config,
         )
-        this_statement = self._dummy_namespace["_1"]
+        this_statement = self._dummy_namespace["claim"]
         # this_statement = BNode("mystatement")
         self.assertion.add((this_statement, RDF.type, HYCL.Statement))
         self.assertion.add((this_statement, RDFS.label, Literal(claim)))

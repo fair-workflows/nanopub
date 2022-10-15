@@ -56,24 +56,6 @@ class NanopubClient:
                 log.warn(f"{use_server} is not in our list of nanopub servers. {', '.join(NANOPUB_SERVER_LIST)}\nMake sure you are using an existing Nanopub server.")
 
 
-    # def publish_signed(self, signed_path: str) -> Nanopub:
-    #     """Publish a signed publication file.
-
-    #     Args:
-    #         signed_path: Path to the signed file of a nanopub.
-
-    #     Returns:
-    #         dict of str: Publication info with: 'nanopub_uri': the URI of the published
-    #         nanopublication, 'concept_uri': the URI of the introduced concept (if applicable)
-    #     """
-    #     g = ConjunctiveGraph()
-    #     g.parse(signed_path, format='trig')
-    #     np = Nanopub(rdf=g)
-    #     np = self.sign(np)
-    #     log.info(f"Published to {np.source_uri}")
-    #     return np
-
-
     def find_nanopubs_with_text(
         self, text: str, pubkey: str = None, filter_retracted: bool = True
     ):
@@ -104,6 +86,7 @@ class NanopubClient:
         if filter_retracted:
             endpoint = "find_valid_signed_nanopubs_with_text"
         return self._search(endpoint=endpoint, params=params)
+
 
     def find_nanopubs_with_pattern(
         self,
@@ -148,6 +131,7 @@ class NanopubClient:
 
         yield from self._search(endpoint=endpoint, params=params)
 
+
     def find_things(
         self,
         type: str,
@@ -187,6 +171,7 @@ class NanopubClient:
 
         yield from self._search(endpoint=endpoint, params=params)
 
+
     def find_retractions_of(
         self, source: Union[str, Nanopub], valid_only=True
     ) -> List[str]:
@@ -195,7 +180,7 @@ class NanopubClient:
         Find all nanopublications that retract a certain nanopublication.
 
         Args:
-            source (str or nanopub.Publication): URI or Publication object to find retractions for
+            source (str or nanopub.Publication): URI or Nanopub object to find retractions for
             valid_only (bool): Toggle returning only valid retractions, i.e. retractions that are
                 signed with the same public key as the publication they retract. Default is True.
 
@@ -244,6 +229,7 @@ class NanopubClient:
         url = grlc_url + endpoint
         return requests.get(url, params=params, headers=headers)
 
+
     def _query_grlc_try_servers(
         self, params: dict, endpoint: str
     ) -> Tuple[requests.Response, str]:
@@ -273,6 +259,7 @@ class NanopubClient:
             f"Could not get response from any of the nanopub grlc "
             f"endpoints.{resp}"
         )
+
 
     def _search(self, endpoint: str, params: dict):
         """
@@ -321,6 +308,7 @@ class NanopubClient:
             page_number += page_number
             for result in bindings:
                 yield self._parse_search_result(result)
+
 
     @staticmethod
     def _parse_search_result(result: dict):

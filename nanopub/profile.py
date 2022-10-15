@@ -1,4 +1,6 @@
-# from functools import lru_cache
+"""
+This module holds objects and functions to load a nanopub user profile.
+"""
 from base64 import decodebytes
 from pathlib import Path
 from typing import Optional, Union
@@ -118,16 +120,6 @@ class Profile:
         self._introduction_nanopub_uri = value
 
 
-
-    # TODO: remove?
-    def get_public_key(self) -> str:
-        """Returns the user's public key."""
-        return self._public_key
-
-    def get_private_key(self) -> str:
-        """Returns the user's private key."""
-        return self._private_key
-
     def __repr__(self):
         return f"""\033[1mORCID\033[0m: {self._orcid_id}
 \033[1mName\033[0m: {self._name}
@@ -146,7 +138,7 @@ class ProfileLoader(Profile):
             public_key: Optional[Path],
             introduction_nanopub_uri: Optional[str] = None
     ) -> None:
-        """Create a Profile."""
+        """Create a ProfileLoader."""
         super().__init__(
             orcid_id=orcid_id,
             name=name,
@@ -160,12 +152,6 @@ _load_profile = yatiml.load_function(ProfileLoader)
 
 
 _dump_profile = yatiml.dump_function(ProfileLoader)
-
-
-# TODO: remove
-def get_orcid_id() -> str:
-    """Returns the user's ORCID."""
-    return load_profile().orcid_id
 
 
 # @lru_cache()
@@ -188,7 +174,6 @@ def load_profile(profile_path: Union[Path, str] = DEFAULT_PROFILE_PATH) -> Profi
         raise ProfileError(msg)
 
 
-# TODO: fix for new Profile class
 def store_profile(profile: Profile, folder: Path) -> Path:
     """Stores the nanopub user profile.
 

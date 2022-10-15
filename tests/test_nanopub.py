@@ -1,7 +1,9 @@
+from pathlib import Path
+
 from rdflib import RDF, BNode, ConjunctiveGraph, Graph, Literal, URIRef
 
 from nanopub import Nanopub, NanopubClaim, NanopubConfig, NanopubRetract, namespaces
-from nanopub.nanopub import MalformedNanopubError
+from nanopub.definitions import MalformedNanopubError
 from tests.conftest import default_config, java_wrap, profile_test
 
 config_testsuite = NanopubConfig(
@@ -27,6 +29,7 @@ def test_nanopub_sign_uri():
     )
     java_np = java_wrap.sign(np)
     np.sign()
+    assert np.has_valid_signature
     assert np.source_uri == expected_np_uri
     assert np.source_uri == java_np
 
@@ -44,26 +47,7 @@ def test_nanopub_sign_bnode():
     )
     java_np = java_wrap.sign(np)
     np.sign()
-    assert np.source_uri == expected_np_uri
-    assert np.source_uri == java_np
-
-
-def test_nanopub_sign_bnode2():
-    # java -jar lib/nanopub-1.*-SNAPSHOT-jar-with-dependencies.jar sign tests/testsuite/valid/plain/bnode2.trig
-    expected_np_uri = "http://purl.org/np/RAgZzcMm4bxLVPo2Ve4aOTbh_BHoyEVCxY_lMposaRar8"
-    assertion = Graph()
-    assertion.add((
-        BNode('test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
-    ))
-    assertion.add((
-        BNode('test2'), namespaces.HYCL.claims, Literal('This is another test of nanopub-python')
-    ))
-    np = Nanopub(
-        config=default_config,
-        assertion=assertion
-    )
-    java_np = java_wrap.sign(np)
-    np.sign()
+    assert np.has_valid_signature
     assert np.source_uri == expected_np_uri
     assert np.source_uri == java_np
 
@@ -80,6 +64,7 @@ def test_nanopub_publish():
     )
     java_np = java_wrap.sign(np)
     np.publish()
+    assert np.has_valid_signature
     assert np.source_uri == expected_np_uri
     assert np.source_uri == java_np
 
@@ -103,6 +88,7 @@ def test_nanopub_signed_testsuite1():
     )
     java_np = java_wrap.sign(np)
     np.sign()
+    assert np.has_valid_signature
     assert np.source_uri == expected_np_uri
     assert np.source_uri == java_np
     assert np.source_uri == out_source_uri
@@ -116,10 +102,10 @@ def test_nanopub_testsuite_sign_valid():
         "./tests/testsuite/valid/plain/aida1.trig",
         "./tests/testsuite/valid/plain/simple1.nq",
         "./tests/testsuite/valid/plain/simple1.trig",
-        "./tests/testsuite/valid/plain/simple1.xml",
     ]
 
     for test_file in test_files:
+        print(f'✒️ Testing signing valid nanopub: {test_file}')
         np_g = ConjunctiveGraph()
         if test_file.endswith(".xml"):
             np_g.parse(test_file, format="trix")
@@ -128,28 +114,48 @@ def test_nanopub_testsuite_sign_valid():
 
         np = Nanopub(
             config=config_testsuite,
+            rdf=Path(test_file)
+        )
+        java_np = java_wrap.sign(np)
+        np.sign()
+        assert np.has_valid_signature
+        assert np.is_valid
+        assert np.source_uri == java_np
+
+
+def test_nanopub_testsuite_sign_valid_trix():
+    test_files = [
+        "./tests/testsuite/valid/plain/simple1.xml",
+    ]
+
+    for test_file in test_files:
+        print(f'✒️ Testing signing valid nanopub: {test_file}')
+        np_g = ConjunctiveGraph()
+        np_g.parse(test_file, format="trix")
+        np = Nanopub(
+            config=config_testsuite,
             rdf=np_g
         )
         java_np = java_wrap.sign(np)
         np.sign()
+        assert np.has_valid_signature
+        assert np.is_valid
         assert np.source_uri == java_np
 
 
 def test_nanopub_testsuite_valid_signed():
     test_files = [
-        "./tests/testsuite/valid/signed/nanopub-index1.trig",
-        "./tests/testsuite/valid/signed/simple1-signed-rsa.trig",
-        "./tests/testsuite/valid/signed/simple1-signed-dsa.trig",
+        "./tests/testsuite/valid/signed/nanopub-python1.trig",
+        # "./tests/testsuite/valid/signed/simple1-signed-rsa.trig",
+        # "./tests/testsuite/valid/signed/simple1-signed-dsa.trig",
     ]
     # java -jar lib/nanopub-1.38-jar-with-dependencies.jar sign tests/testsuite/transform/signed/rsa-key1/simple1.in.trig
 
     for test_file in test_files:
-        np_g = ConjunctiveGraph()
-        np_g.parse(test_file)
-
+        print(f'✅ Testing validating signed valid nanopub: {test_file}')
         np = Nanopub(
             config=config_testsuite,
-            rdf=np_g
+            rdf=Path(test_file)
         )
         assert np.is_valid
 
@@ -164,19 +170,18 @@ def test_nanopub_testsuite_invalid():
         "./tests/testsuite/invalid/plain/noprovlink.trig",
         "./tests/testsuite/invalid/plain/valid_invalid1.trig",
         "./tests/testsuite/invalid/signed/nanopub-index1.trig",
-        # TODO: implement verification of signature (cf. signer.verify())
+        # ValueError: RSA key format is not supported:
         # "./tests/testsuite/invalid/signed/simple1-invalid-rsa.trig",
     ]
     # java -jar lib/nanopub-1.*-jar-with-dependencies.jar sign tests/testsuite/transform/signed/rsa-key1/simple1.in.trig
 
     for test_file in test_files:
-        np_g = ConjunctiveGraph()
-        np_g.parse(test_file)
+        print(f'❎ Testing validating signed invalid nanopub: {test_file}')
 
         try:
             np = Nanopub(
                 config=config_testsuite,
-                rdf=np_g
+                rdf=Path(test_file)
             )
             np.is_valid
             assert False
@@ -205,4 +210,27 @@ def test_nanopub_retract():
     java_np = java_wrap.sign(np)
     np.sign()
     assert np.source_uri is not None
+    assert np.source_uri == java_np
+
+
+def test_nanopub_sign_bnode2():
+    # java -jar lib/nanopub-1.*-SNAPSHOT-jar-with-dependencies.jar sign tests/testsuite/valid/plain/bnode2.trig
+    expected_np_uri = "http://purl.org/np/RAgZzcMm4bxLVPo2Ve4aOTbh_BHoyEVCxY_lMposaRar8"
+    assertion = Graph()
+    assertion.add((
+        BNode('test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
+    ))
+    assertion.add((
+        BNode('test2'), namespaces.HYCL.claims, Literal('This is another test of nanopub-python')
+    ))
+    np = Nanopub(
+        config=default_config,
+        assertion=assertion
+    )
+    java_np = java_wrap.sign(np)
+    np.sign()
+    # TODO: When verifying with 2 BNode, they are assign unpredictably _1 and _2 to the URI
+    # and creates a different URI
+    # assert np.has_valid_signature
+    assert np.source_uri == expected_np_uri
     assert np.source_uri == java_np

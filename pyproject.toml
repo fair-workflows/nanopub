@@ -12,7 +12,7 @@ authors = [
     { name = "Robin Richardson", email = "r.richardson@esciencecenter.nl" },
     { name = "Djura Smits" },
     { name = "Sven van den Burg" },
-    # { name = "Vincent Emonet", email = "vincent.emonet@gmail.com" },
+    { name = "Vincent Emonet", email = "vincent.emonet@gmail.com" },
 ]
 keywords = [
     "Nanopublication",
@@ -29,7 +29,6 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
 ]
-
 dynamic = ["version"]
 
 dependencies = [
@@ -62,19 +61,12 @@ doc = [
     "mdx-include >=1.4.1,<2.0.0",
     "mkdocs-markdownextradata-plugin >=0.1.7,<0.3.0",
     "jinja2 ==3.0.3",
-
-    "recommonmark",
-    "sphinx",
-    "sphinx_rtd_theme",
-    "sphinx-tabs",
 ]
 dev = [
     "mypy ==0.971",
     "uvicorn[standard] >=0.12.0,<0.19.0",
     "pre-commit >=2.17.0,<3.0.0",
     "autoflake >=1.4.0,<2.0.0",
-
-    "types-PyYAML",
     "types-requests",
 ]
 
@@ -101,7 +93,7 @@ post-install-commands = [
 [tool.hatch.envs.default.scripts]
 dev = "./scripts/dev.sh"
 test = "./scripts/test.sh"
-docs = "./scripts/docs-serve.sh"
+docs = "./scripts/docs.sh"
 format = "./scripts/format.sh"
 lint = "./scripts/lint.sh"
 
@@ -126,7 +118,7 @@ omit = ["nanopub/trustyuri/*"]
 
 
 [tool.flake8]
-max-complexity = 15
+max-complexity = 17
 max-line-length = 120
 per-file-ignores = [
     "__init__.py:F401",

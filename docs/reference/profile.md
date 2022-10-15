@@ -1,3 +1,3 @@
 # Profile
 
-::: nanopub.Profile
+::: nanopub.profile

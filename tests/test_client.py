@@ -2,15 +2,14 @@ import warnings
 from unittest import mock
 
 import pytest
-from rdflib import FOAF, RDF, ConjunctiveGraph, Literal
+from rdflib import FOAF, RDF, ConjunctiveGraph
 
-from nanopub import Nanopub, NanopubClient, namespaces
+from nanopub import Nanopub, NanopubClient
 from nanopub.definitions import TEST_RESOURCES_FILEPATH
 from tests.conftest import skip_if_nanopub_server_unavailable
 
 client = NanopubClient(use_test_server=True)
 
-TEST_ASSERTION = (namespaces.AUTHOR.DrBob, namespaces.HYCL.claims, Literal('This is a test'))
 PUBKEY = 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCC686zsZaQWthNDSZO6unvhtSkXSLT8iSY/UUwD/' \
          '7T9tabrEvFt/9UPsCsg/A4HG6xeuPtL5mVziVnzbxqi9myQOY62LBja85pYLWaZPUYakP' \
          'HyVm9A0bRC2PUYZde+METkZ6eoqLXP26Qo5b6avPcmNnKkr5OQb7KXaeX2K2zQQIDAQAB'

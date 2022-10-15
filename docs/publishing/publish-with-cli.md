@@ -2,9 +2,9 @@
 
 Once installed, you can use the `nanopub` library through the `np` command line interface to sign and publish Nanopublication.
 
-!!! info "Profile setup"
+!!! info "Prerequisite for publishing"
 
-	Make sure your profile is properly set by running `np profile`
+	Before you can sign and publish you should [setup your profile](/nanopub/getting-started/setup), check if it is properly set by running `np profile` in your terminal.
 
 ## Sign
 
@@ -18,6 +18,14 @@ This will generate the signed nanopub in a file `signed.nanopub.trig`
 
 ```bash
 np publish signed.nanopub.trig
+```
+
+## Check
+
+Check if a signed nanopublication is valid:
+
+```bash
+np check signed.nanopub.trig
 ```
 
 ## Help

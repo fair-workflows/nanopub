@@ -7,10 +7,9 @@ from typing import Tuple, Union
 
 import click
 import rdflib
-from rdflib import ConjunctiveGraph
 
 from nanopub import Nanopub, NanopubConfig, load_profile, namespaces
-from nanopub.definitions import DEFAULT_PROFILE_PATH, USER_CONFIG_DIR
+from nanopub.definitions import DEFAULT_PROFILE_PATH, USER_CONFIG_DIR, MalformedNanopubError
 from nanopub.profile import Profile, ProfileError, generate_keys, store_profile
 
 PRIVATE_KEY_FILE = 'id_rsa'
@@ -44,7 +43,7 @@ def cli():
 def profile():
     """Get the current user profile info."""
     try:
-        p = load_profile(DEFAULT_PROFILE_PATH)
+        p = load_profile()
         click.echo(f' 👤 User profile in \033[1m{DEFAULT_PROFILE_PATH}\033[0m')
         click.echo(str(p))
     except ProfileError:
@@ -55,28 +54,25 @@ def profile():
 
 @cli.command(help='Sign a Nanopublication')
 @click.argument('filepath', type=Path)
-@click.option('-k', '--keypair', nargs=2, type=Path,
-              help='Your RSA public and private keys with which your nanopubs will be signed',
+@click.option('-k', '--private-key', nargs=2, type=Path,
+              help='Your RSA private keys with which your nanopubs will be signed',
               default=None)
-def sign(filepath, keypair):
-    # print(filepath)
-    # print(keypair)
-    config = NanopubConfig(
-        add_prov_generated_time=False,
-        add_pubinfo_generated_time=False,
-        attribute_assertion_to_profile=False,
-        attribute_publication_to_profile=False,
-        profile=load_profile(DEFAULT_PROFILE_PATH),
-        use_test_server=True,
-    )
-    g = ConjunctiveGraph()
-    g.parse(filepath)
+def sign(filepath: Path, private_key: Path):
+    if private_key:
+        config = NanopubConfig(
+            profile=Profile(
+                # TODO: better handle Profile without name or orcid_id
+                name='', orcid_id='',
+                private_key=private_key
+            ),
+        )
+    else:
+        config = NanopubConfig(profile=load_profile())
 
-    # signed_filename = os.path.join(os.path.split(), os.path.basename(filepath))
     folder_path, filename = os.path.split(filepath)
     np = Nanopub(
         config=config,
-        rdf=g
+        rdf=filepath
     )
     np.sign()
     signed_filepath = f"{str(folder_path)}/signed.{str(filename)}"
@@ -87,20 +83,31 @@ def sign(filepath, keypair):
 
 @cli.command(help='Publish a Nanopublication')
 @click.argument('filepath', type=Path)
-def publish(filepath):
-    g = ConjunctiveGraph()
-    g.parse(filepath)
+@click.option('--test', is_flag=True, default=False,
+              help='Prompt questions to generate the dataset metadata and analyze the endpoint (default), or only analyze')
+def publish(filepath: Path, test: bool):
+    if test:
+        click.echo("Publishing to test server")
     config = NanopubConfig(
-        add_prov_generated_time=False,
-        add_pubinfo_generated_time=False,
-        attribute_assertion_to_profile=False,
-        attribute_publication_to_profile=False,
-        profile=load_profile(DEFAULT_PROFILE_PATH),
-        use_test_server=True,
+        profile=load_profile(),
+        use_test_server=test,
     )
-    np = Nanopub(config=config, rdf=g)
+    np = Nanopub(config=config, rdf=filepath)
     np.publish()
     click.echo(f" 📬️ Nanopub published at \033[1m{np.source_uri}\033[0m")
+
+
+
+@cli.command(help='Check if a signed Nanopublication is valid')
+@click.argument('filepath', type=Path)
+def check(filepath: Path):
+    config = NanopubConfig(profile=load_profile())
+    np = Nanopub(config=config, rdf=filepath)
+    try:
+        np.is_valid
+        click.echo(f"\033[1m✅ Valid nanopub\033[0m {np.source_uri}")
+    except MalformedNanopubError as e:
+        click.echo(f"\033[1m❌ Invalid nanopub\033[0m: {e}")
 
 
 

@@ -24,8 +24,8 @@ def test_instantiate_profile_path():
     assert p.introduction_nanopub_uri is None
     assert p.private_key == TEST_PRIVATE_KEY
     assert p.public_key == TEST_PUBLIC_KEY
-    assert p.get_private_key() == TEST_PRIVATE_KEY
-    assert p.get_public_key() == TEST_PUBLIC_KEY
+    assert p.private_key == TEST_PRIVATE_KEY
+    assert p.public_key == TEST_PUBLIC_KEY
 
 
 def test_instantiate_profile_str():
@@ -41,8 +41,8 @@ def test_instantiate_profile_str():
     assert p.introduction_nanopub_uri is None
     assert p.private_key == TEST_PRIVATE_KEY
     assert p.public_key == TEST_PUBLIC_KEY
-    assert p.get_private_key() == TEST_PRIVATE_KEY
-    assert p.get_public_key() == TEST_PUBLIC_KEY
+    assert p.private_key == TEST_PRIVATE_KEY
+    assert p.public_key == TEST_PUBLIC_KEY
 
 
 
@@ -54,8 +54,8 @@ def test_load_profile():
     assert p.introduction_nanopub_uri is None
     assert p.private_key == TEST_PRIVATE_KEY
     assert p.public_key == TEST_PUBLIC_KEY
-    assert p.get_private_key() == TEST_PRIVATE_KEY
-    assert p.get_public_key() == TEST_PUBLIC_KEY
+    assert p.private_key == TEST_PRIVATE_KEY
+    assert p.public_key == TEST_PUBLIC_KEY
 
 
 def test_fail_loading_incomplete_profile(tmpdir):
@@ -109,13 +109,13 @@ def test_profile_file_not_found(tmpdir):
 
 #         # Check for fail if keys are not there
 #         with pytest.raises(profile.ProfileError):
-#             p.get_public_key()
+#             p.public_key
 
 #         # Check correct keys are returned if they do exist
 #         with open(public_key_path, 'w') as outfile:
 #             outfile.write(fake_public_key)
 
-#         assert p.get_public_key() == fake_public_key
+#         assert p.public_key == fake_public_key
 
 
 # def test_introduction_nanopub_uri_roundtrip(tmpdir):

@@ -1,6 +1,6 @@
 [![Version](https://img.shields.io/pypi/v/nanopub)](https://pypi.org/project/nanopub) [![Python versions](https://img.shields.io/pypi/pyversions/nanopub)](https://pypi.org/project/nanopub) [![Pull requests welcome](https://img.shields.io/badge/pull%20requests-welcome-brightgreen)](https://github.com/fair-workflows/nanopub/fork)
 
-[![Python application](https://github.com/fair-workflows/nanopub/actions/workflows/build.yml/badge.svg)](https://github.com/fair-workflows/nanopub/actions/workflows/build.yml)
+[![Python application](https://github.com/fair-workflows/nanopub/actions/workflows/build.yml/badge.svg)](https://github.com/fair-workflows/nanopub/actions/workflows/build.yml){:target="_blank"} [![Publish](https://github.com/fair-workflows/nanopub/actions/workflows/pypi.yml/badge.svg)](https://github.com/fair-workflows/nanopub/actions/workflows/pypi.yml){:target="_blank"} [![cffconvert](https://github.com/fair-workflows/nanopub/actions/workflows/cffconvert.yml/badge.svg)](https://github.com/fair-workflows/nanopub/actions/workflows/cffconvert.yml){:target="_blank"}
 
 
 ## 📥 Install for development
@@ -62,7 +62,7 @@ To install the project for development you can either use [`venv`](https://docs.
 
 === "venv"
 
-    Try to sign a nanopublication with the code defined in `scripts/run.py` to test your changes:
+    Try to sign a nanopublication with the code defined in `scripts/dev.py` to test your changes:
 
     ```bash
     ./scripts/dev.sh
@@ -74,7 +74,7 @@ To install the project for development you can either use [`venv`](https://docs.
     ./scripts/format.sh
     ```
 
-    Or check the code for errors:
+    Check the code for errors, and if it is in accordance with the PEP8 style guide, by running `flake8` and `mypy`:
 
     ```bash
     ./scripts/lint.sh
@@ -82,7 +82,7 @@ To install the project for development you can either use [`venv`](https://docs.
 
 === "hatch"
 
-    Try to sign a nanopublication with the code defined in `scripts/run.py` to test your changes:
+    Try to sign a nanopublication with the code defined in `scripts/dev.py` to test your changes:
 
     ```bash
     hatch run dev
@@ -94,7 +94,7 @@ To install the project for development you can either use [`venv`](https://docs.
     hatch run format
     ```
 
-    Or check the code for errors:
+    Check the code for errors, and if it is in accordance with the PEP8 style guide, by running `flake8` and `mypy`:
 
     ```bash
     hatch run lint
@@ -103,7 +103,7 @@ To install the project for development you can either use [`venv`](https://docs.
 
 ## ✅ Run the tests
 
-[![Python application](https://github.com/fair-workflows/nanopub/actions/workflows/build.yml/badge.svg)](https://github.com/fair-workflows/nanopub/actions/workflows/build.yml)
+[![Python application](https://github.com/fair-workflows/nanopub/actions/workflows/build.yml/badge.svg)](https://github.com/fair-workflows/nanopub/actions/workflows/build.yml){:target="_blank"}
 
 Tests are automatically run by a GitHub Actions workflow when new code is pushed to the GitHub repository.
 
@@ -117,10 +117,10 @@ The tests use the [```nanopub-java```](https://github.com/Nanopublication/nanopu
 	./scripts/test.sh
 	```
 
-	You can also run the only a specific file:
+	You can also run only a specific test:
 
 	```bash
-	./scripts/test.sh tests/test_nanopub.py
+	./scripts/test.sh tests/test_nanopub.py::test_nanopub_sign_uri
 	```
 
 === "hatch"
@@ -134,7 +134,7 @@ The tests use the [```nanopub-java```](https://github.com/Nanopublication/nanopu
 
 ## 📖 Generate docs
 
-[![Publish docs](https://github.com/fair-workflows/nanopub/actions/workflows/deploy-docs.yml/badge.svg)](https://github.com/fair-workflows/nanopub/actions/workflows/deploy-docs.yml)
+[![Publish docs](https://github.com/fair-workflows/nanopub/actions/workflows/build.yml/badge.svg)](https://github.com/fair-workflows/nanopub/actions/workflows/build.yml){:target="_blank"}
 
 The documentation (this website) is automatically generated from the markdown files in the `docs` folder and python docstring comments, and published by a GitHub Actions workflow.
 
@@ -143,7 +143,7 @@ Serve the docs on [http://localhost:8008](http://localhost:8008){:target="_blank
 === "venv"
 
     ```bash
-    ./scripts/docs-serve.sh
+    ./scripts/docs.sh
     ```
 
 === "hatch"
@@ -155,7 +155,7 @@ Serve the docs on [http://localhost:8008](http://localhost:8008){:target="_blank
 
 ## 🏷️ Publish a new release
 
-[![Publish to PyPI](https://github.com/fair-workflows/nanopub/actions/workflows/pypi.yml/badge.svg)](https://github.com/fair-workflows/nanopub/actions/workflows/pypi.yml)
+[![Publish to PyPI](https://github.com/fair-workflows/nanopub/actions/workflows/pypi.yml/badge.svg)](https://github.com/fair-workflows/nanopub/actions/workflows/pypi.yml){:target="_blank"}
 
 1. Increment the `__version__` in `nanopub/_version.py`
 2. Push to GitHub

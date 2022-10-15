@@ -24,7 +24,7 @@ sub:provenance {
 }
 
 sub:pubinfo {
-	sub:signature npx:hasAlgorithm "RSA" ;
+	sub:sig npx:hasAlgorithm "RSA" ;
 		npx:hasPublicKey "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCwUtewGCpT5vIfXYE1bmf/Uqu1ojqnWdYxv+ySO80ul8Gu7m8KoyPAwuvaPj0lvPtHrg000qMmkxzKhYknEjq8v7EerxZNYp5B3/3+5ZpuWOYAs78UnQVjbHSmDdmryr4D4VvvNIiUmd0yxci47dTFUj4DvfHnGd6hVe5+goqdcwIDAQAB" ;
 		npx:hasSignature "OC0xJTavw9h/JSZIZl/NLzEZqQk1E7XWV3o1btD1cojxf9FMtgZuMMOtnPcgydRn3gK0wbUh+ATV4sEFdG51khsrOOH7+RylqnaE9XD4L65dwPZ/PpI32/LMYsQ62rsb0ajWtXr5cKDIKaoah0U1V85XlLGhoEyzrLZCU5uqJbo=" ;
 		npx:hasSignatureTarget this: .
