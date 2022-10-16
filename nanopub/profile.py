@@ -8,7 +8,8 @@ from typing import Optional, Union
 import yatiml
 from Crypto.PublicKey import RSA
 
-from nanopub.definitions import DEFAULT_PROFILE_PATH, USER_CONFIG_DIR, log
+from nanopub.definitions import DEFAULT_PROFILE_PATH, USER_CONFIG_DIR
+from nanopub.utils import log
 
 PROFILE_INSTRUCTIONS_MESSAGE = '''
     Follow these instructions to correctly setup your nanopub profile:
@@ -95,7 +96,7 @@ class Profile:
         return public_key_str
 
 
-    def store_profile(self, folder: Path = USER_CONFIG_DIR) -> Path:
+    def store(self, folder: Path = USER_CONFIG_DIR) -> Path:
         """Stores the nanopub user profile. By default the profile is stored in `HOME_DIR/.nanopub/profile.yaml`.
 
         Args:
@@ -130,14 +131,6 @@ introduction_nanopub_uri:{intro_uri}
         with open(profile_path, "w") as f:
             f.write(profile_yaml)
 
-        # pdump = ProfileLoader(
-        #     name=self.name,
-        #     orcid_id=self.orcid_id,
-        #     private_key=private_key_path,
-        #     public_key=public_key_path,
-        #     introduction_nanopub_uri=self.introduction_nanopub_uri,
-        # )
-        # _dump_profile(pdump, profile_path)
         return profile_path
 
 

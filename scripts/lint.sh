@@ -3,6 +3,8 @@
 set -e
 set -x
 
+bash ./scripts/format.sh
+
 isort nanopub tests --check-only
 flake8 nanopub tests
 mypy nanopub

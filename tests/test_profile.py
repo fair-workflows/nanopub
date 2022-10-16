@@ -80,7 +80,7 @@ def test_store_profile(tmpdir):
         private_key=TEST_PRIVATE_KEY,
         public_key=TEST_PUBLIC_KEY
     )
-    p.store_profile(test_folder)
+    p.store(test_folder)
 
     profile_path = test_folder / "profile.yml"
     pubkey_path = test_folder / "id_rsa.pub"
@@ -113,7 +113,7 @@ def test_generate_keys_store_profile(tmpdir):
     assert p.public_key is not None
 
     test_folder = Path(tmpdir)
-    p.store_profile(test_folder)
+    p.store(test_folder)
 
     profile_path = test_folder / "profile.yml"
     pubkey_path = test_folder / "id_rsa.pub"
@@ -125,6 +125,9 @@ def test_generate_keys_store_profile(tmpdir):
             f"public_key: {pubkey_path}\n"
             f"private_key: {privkey_path}\n"
             'introduction_nanopub_uri:\n')
+
+    p2 = load_profile(profile_path)
+    assert p2.private_key == p.private_key
 
 
 # TODO: fix to use the usual key for tests
@@ -139,7 +142,7 @@ def test_generate_keys_store_profile(tmpdir):
 
 #     test_profile = Path(tmpdir / 'profile.yml')
 #     with mock.patch('nanopub.profile.PROFILE_PATH', test_profile):
-#         profile.store_profile(p)
+#         profile.store(p)
 
 #         # Check for fail if keys are not there
 #         with pytest.raises(profile.ProfileError):
@@ -160,7 +163,7 @@ def test_generate_keys_store_profile(tmpdir):
 #                         'https://example.com/nanopub')
 
 #     with mock.patch('nanopub.profile.PROFILE_PATH', test_file):
-#         profile.store_profile(p)
+#         profile.store(p)
 
 #         with test_file.open('r') as f:
 #             assert f.read() == (

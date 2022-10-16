@@ -1,4 +1,3 @@
-import logging
 from pathlib import Path
 
 from rdflib import Namespace
@@ -30,11 +29,3 @@ FINAL_NANOPUB_URI = "http://purl.org/np/"
 
 MAX_NP_PER_INDEX = 1100
 MAX_TRIPLES_PER_NANOPUB = 1200
-
-log = logging.getLogger()
-
-
-class MalformedNanopubError(ValueError):
-    """
-    Error to be raised if a Nanopub is not formed correctly.
-    """

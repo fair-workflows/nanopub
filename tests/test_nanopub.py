@@ -3,8 +3,8 @@ from pathlib import Path
 from rdflib import RDF, BNode, ConjunctiveGraph, Graph, Literal, URIRef
 
 from nanopub import Nanopub, NanopubClaim, NanopubConf, NanopubRetract, create_nanopub_index, namespaces
-from nanopub.definitions import MalformedNanopubError
 from nanopub.templates.nanopub_introduction import NanopubIntroduction
+from nanopub.utils import MalformedNanopubError
 from tests.conftest import default_config, java_wrap, profile_test
 
 config_testsuite = NanopubConf(

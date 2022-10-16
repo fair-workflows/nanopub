@@ -9,8 +9,9 @@ import rdflib
 import requests
 
 from nanopub import namespaces
-from nanopub.definitions import DUMMY_NANOPUB_URI, NANOPUB_SERVER_LIST, NANOPUB_TEST_SERVER, log
+from nanopub.definitions import DUMMY_NANOPUB_URI, NANOPUB_SERVER_LIST, NANOPUB_TEST_SERVER
 from nanopub.nanopub import Nanopub
+from nanopub.utils import log
 
 # from nanopub.signer import Signer
 

@@ -6,15 +6,16 @@ from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
 from rdflib import BNode, ConjunctiveGraph, Literal, Namespace, URIRef
 
-from nanopub.definitions import FINAL_NANOPUB_URI, NANOPUB_SERVER_LIST, NP_TEMP_PREFIX, MalformedNanopubError, log
+from nanopub.definitions import FINAL_NANOPUB_URI, NANOPUB_SERVER_LIST, NP_TEMP_PREFIX
 from nanopub.namespaces import NPX
 from nanopub.profile import Profile
 from nanopub.trustyuri.rdf import RdfHasher, RdfUtils
 from nanopub.trustyuri.rdf.RdfPreprocessor import transform
+from nanopub.utils import MalformedNanopubError, extract_signature, log
 
 
 def add_signature(g: ConjunctiveGraph, profile: Profile, dummy_namespace: Namespace) -> ConjunctiveGraph:
-    """Implementation in python of the process to sign with a private key"""
+    """Implementation in python of the process to sign a nanopub with a RSA private key"""
     g.add((
         dummy_namespace["sig"],
         NPX["hasPublicKey"],
@@ -72,6 +73,7 @@ def add_signature(g: ConjunctiveGraph, profile: Profile, dummy_namespace: Namesp
 
 
 def replace_trusty_in_graph(trusty_artefact: str, dummy_ns: str, graph: ConjunctiveGraph):
+    """Replace all references to the dummy namespace by the Trusty artefact in a Graph"""
     if str(dummy_ns).startswith(NP_TEMP_PREFIX):
         # Replace with http://purl.org/np/ if the http://purl.org/nanopub/temp/
         # prefix is used in the dummy nanopub URI
@@ -81,7 +83,9 @@ def replace_trusty_in_graph(trusty_artefact: str, dummy_ns: str, graph: Conjunct
 
     graph.bind("this", Namespace(np_uri))
     graph.bind("sub", Namespace(np_uri + "#"))
+    graph.bind("", None, replace=True)
 
+    # Iterate quads in the graph, and replace by the transformed value
     bnodemap: dict = {}
     for s, p, o, c in graph.quads():
         if c:
@@ -105,9 +109,9 @@ def publish_graph(g: ConjunctiveGraph, use_server: str = NANOPUB_SERVER_LIST[0])
 
     Publish the signed nanopub to the nanopub server we do a simple POST request.
     """
-    # headers = {'Content-Type': 'application/x-www-form-urlencoded'}
     log.info(f"Publishing to nanopub server {use_server}")
     headers = {'Content-Type': 'application/trig'}
+    # Used by nanopub-java: {'Content-Type': 'application/x-www-form-urlencoded'}
     data = g.serialize(format="trig")
     r = requests.post(use_server, headers=headers, data=data)
     r.raise_for_status()
@@ -116,6 +120,7 @@ def publish_graph(g: ConjunctiveGraph, use_server: str = NANOPUB_SERVER_LIST[0])
 
 
 def verify_trusty(g: ConjunctiveGraph, source_uri: str, source_namespace: Namespace) -> bool:
+    """Verify Trusty URI in a nanopub Graph"""
     source_trusty = source_uri.split('/')[-1]
     quads = RdfUtils.get_quads(g)
     expected_trusty = RdfHasher.make_hash(
@@ -129,20 +134,14 @@ def verify_trusty(g: ConjunctiveGraph, source_uri: str, source_namespace: Namesp
         return True
 
 
-def verify_signature(g: ConjunctiveGraph, source_uri: str, source_namespace: Namespace) -> bool:
-    # Get public key from the triples
-    pubkey_uri = URIRef(f"{source_uri}#sig")
-    pubkey = ''
-    for s, p, o in g.triples((pubkey_uri, NPX.hasPublicKey, None)):
-        pubkey = str(o)
+def verify_signature(g: ConjunctiveGraph, source_namespace: Namespace) -> bool:
+    """Verify RSA signature in a nanopub Graph"""
+    # Get signature and public key from the triples
+    np_sig = extract_signature(g)
+    if not np_sig:
+        raise MalformedNanopubError("No Signature found in the nanopublication RDF")
 
-    # Get signature from the triples
-    signature_uri = URIRef(f"{source_uri}#sig")
-    signature = ''
-    for s, p, o in g.triples((signature_uri, NPX.hasSignature, None)):
-        signature = str(o)
-    # g.remove((signature_uri, NPX.hasSignature, None))
-
+    # Normalize RDF
     quads = RdfUtils.get_quads(g)
     normed_rdf = RdfHasher.normalize_quads(
         quads,
@@ -150,11 +149,12 @@ def verify_signature(g: ConjunctiveGraph, source_uri: str, source_namespace: Nam
         hashstr=" "
     )
 
-    key = RSA.import_key(decodebytes(str(pubkey).encode()))
+    # Verify signature using the normalized RDF
+    key = RSA.import_key(decodebytes(str(np_sig["public_key"]).encode()))
     hash_value = SHA256.new(normed_rdf.encode())
     verifier = PKCS1_v1_5.new(key)
     try:
-        verifier.verify(hash_value, decodebytes(signature.encode()))
+        verifier.verify(hash_value, decodebytes(np_sig["signature"].encode()))
         return True
     except Exception as e:
         raise MalformedNanopubError(e)

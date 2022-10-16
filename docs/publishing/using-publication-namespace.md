@@ -16,7 +16,7 @@ An example:
 
 ```python
 from rdflib import Graph, BNode, RDF, FOAF
-from nanopub import Nanopub, NanopubConf, NanopubClient
+from nanopub import Nanopub, NanopubConf, load_profile
 
 my_assertion = Graph()
 
@@ -28,6 +28,7 @@ my_assertion.add((tim, RDF.type, FOAF.Person) )
 
 # Define the config for your nanopubs
 np_conf = NanopubConf(
+    profile=load_profile(),
     add_prov_generated_time=True,
     add_pubinfo_generated_time=True,
     attribute_publication_to_profile=True,
@@ -39,12 +40,10 @@ np = Nanopub(
 )
 
 # Let's publish this to the test server
-client = NanopubClient(use_test_server=True)
-np = client.publish(np)
+np.publish()
 print(np)
-# Published to http://purl.org/np/RAdaZsPRcY5usXFKwSBfz9g-HOu-Bo1XmmhQc4g7uESgU
 ```
-View the full nanopublication [here](http://purl.org/np/RAdaZsPRcY5usXFKwSBfz9g-HOu-Bo1XmmhQc4g7uESgU).
+> View the full nanopublication [here](http://purl.org/np/RAdaZsPRcY5usXFKwSBfz9g-HOu-Bo1XmmhQc4g7uESgU).
 
 As you can see in the assertion, the 'timbernerslee' blank node is replaced with
 a uri in the nanopublication's namespace:
@@ -62,9 +61,10 @@ You can optionally specify that the Publication introduces a particular concept 
 The pubinfo graph will note that this nanopub npx:introduces the concept. The concept should be a blank node (rdflib.term.BNode), and is converted to a URI derived from the nanopub's URI with a fragment (#) made from the blank node's name.
 
 An example:
+
 ```python
 import rdflib
-from nanopub import Publication, NanopubClient
+from nanopub import Nanopub, NanopubConf, load_profile
 
 my_assertion = rdflib.Graph()
 
@@ -79,6 +79,7 @@ np = Nanopub(
     assertion=my_assertion,
     introduces_concept=tim,
     config=NanopubConf(
+        profile=load_profile(),
         add_prov_generated_time=True,
         add_pubinfo_generated_time=True,
         attribute_publication_to_profile=True,
@@ -86,13 +87,12 @@ np = Nanopub(
 )
 
 # Let's publish this to the test server
-client = NanopubClient(use_test_server=True)
-client.publish(np)
+np.publish()
 print(np)
 # Published to http://purl.org/np/RAq9gFEgxlOyG9SSDZ5DmBbyGet2z6pkrdWXIVYa6U6qI
 # Published concept to http://purl.org/np/RAq9gFEgxlOyG9SSDZ5DmBbyGet2z6pkrdWXIVYa6U6qI#timbernerslee
 ```
-View the full nanopublication [here](http://purl.org/np/RAq9gFEgxlOyG9SSDZ5DmBbyGet2z6pkrdWXIVYa6U6qI).
+> View the full nanopublication [here](http://purl.org/np/RAq9gFEgxlOyG9SSDZ5DmBbyGet2z6pkrdWXIVYa6U6qI).
 
 The publication info of the nanopublication denotes that this nanopublication introduces the 'timbernerslee' concept:
 ```turtle

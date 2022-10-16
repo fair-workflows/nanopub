@@ -3,10 +3,11 @@ from typing import List, Union
 from rdflib import Literal, URIRef
 from rdflib.namespace import DC, DCTERMS, RDF, RDFS, XSD
 
-from nanopub.definitions import DUMMY_NAMESPACE, DUMMY_URI, MAX_NP_PER_INDEX, log
+from nanopub.definitions import DUMMY_NAMESPACE, DUMMY_URI, MAX_NP_PER_INDEX
 from nanopub.namespaces import NPX, PAV
 from nanopub.nanopub import Nanopub
 from nanopub.nanopub_conf import NanopubConf
+from nanopub.utils import log
 
 
 class NanopubIndex(Nanopub):

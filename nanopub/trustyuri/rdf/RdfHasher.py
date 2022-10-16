@@ -4,10 +4,10 @@ from functools import cmp_to_key
 
 from rdflib.term import Literal
 
-from nanopub.definitions import log
 from nanopub.trustyuri import TrustyUriUtils
 from nanopub.trustyuri.rdf.RdfPreprocessor import preprocess
 from nanopub.trustyuri.rdf.StatementComparator import StatementComparator
+from nanopub.utils import log
 
 
 def normalize_quads(quads, hashstr=None, baseuri=None):
