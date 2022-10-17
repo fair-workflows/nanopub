@@ -27,7 +27,7 @@ jobs:
 
       - name: Setup nanopub profile (including RSA keys)
         run: |
-           np setup --orcid_id https://orcid.org/0000-0000-0000-0000 --no-publish --name test --newkeys
+          np setup --orcid-id https://orcid.org/0000-0000-0000-0000 --no-publish --name test --newkeys
 
       - name: Test with pytest
         run: |

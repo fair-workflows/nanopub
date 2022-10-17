@@ -1,8 +1,6 @@
 from dataclasses import asdict, dataclass
 from typing import Optional
 
-from rdflib import Namespace, URIRef
-
 from nanopub.definitions import NANOPUB_SERVER_LIST
 from nanopub.profile import Profile
 
@@ -40,27 +38,5 @@ class NanopubConf:
 
     derived_from: Optional[str] = None
 
-
-    dict = asdict
-
-
-# TODO: fix definition of all nanopub URIs
-# test the comparison in retract
-@dataclass
-class NanopubUris:
-    """Represents the URIs and namespace used in a nanopub.
-
-    Args:
-        namespace: Namespace used in the nanopub
-        np_uri: the URI of the nanopub
-    """
-
-    namespace: Namespace
-    np_uri: URIRef
-    head: URIRef
-    assertion: URIRef
-    provenance: URIRef
-    pubinfo: URIRef
-    signature: URIRef
 
     dict = asdict

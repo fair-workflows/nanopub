@@ -285,7 +285,7 @@ def test_nanopub_fetch():
         assert np.assertion is not None
         assert np.pubinfo is not None
         assert np.provenance is not None
-        # assert np.is_valid
+        assert np.is_valid
 
 
 def test_unvalid_fetch():

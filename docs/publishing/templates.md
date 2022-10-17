@@ -96,7 +96,7 @@ class NanopubClaim(Nanopub):
         )
 
         # Build the nanopub assertion from the args
-        this_statement = self._namespace["claim"]
+        this_statement = self._namespace.claim
         self.assertion.add((this_statement, RDF.type, HYCL.Statement))
         self.assertion.add((this_statement, RDFS.label, Literal(claim)))
 
