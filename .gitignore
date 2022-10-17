@@ -1,3 +1,6 @@
+# Signed nanopubs files in tests
+tests/testsuite/**/signed.*.*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

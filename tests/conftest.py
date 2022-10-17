@@ -21,8 +21,11 @@ def pytest_configure(config):
 
 
 skip_if_nanopub_server_unavailable = (
-    pytest.mark.skipif(requests.get(NANOPUB_TEST_GRLC_URL).status_code != 200,
-                       reason='Nanopub server is unavailable'))
+    pytest.mark.skipif(
+        requests.get(NANOPUB_TEST_GRLC_URL).status_code != 200,
+        reason='Nanopub server is unavailable'
+    )
+)
 
 
 # Create a temporary profile.yml file for testing

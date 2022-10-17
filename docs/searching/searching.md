@@ -5,6 +5,7 @@ The `NanopubClient` provides methods for searching the nanopub server. It provid
 Search for all nanopublications containing some text using `NanopubClient.find_nanopubs_with_text()`
 ```python
 from nanopub import NanopubClient
+
 client = NanopubClient()
 results = client.find_nanopubs_with_text('fair')
 ```
@@ -13,6 +14,7 @@ results = client.find_nanopubs_with_text('fair')
 Search for nanopublications whose assertions contain triples that match a specific pattern.
 ```python
 from nanopub import NanopubClient
+
 client = NanopubClient()
 # Search for nanopublications whose assertions contain triples that are ```rdf:Statement```s.
 results = client.find_nanopubs_with_pattern(
@@ -25,6 +27,7 @@ results = client.find_nanopubs_with_pattern(
 Search for any nanopublications that introduce a concept of the given type, that contain text with the given search term.
 ```python
 from nanopub import NanopubClient
+
 client = NanopubClient()
 # Search for nanopublications that introduce a concept that is a ```p-plan:Step```.
 results = client.find_things('http://purl.org/net/p-plan#Step')
@@ -58,6 +61,7 @@ You can toggle this behavior with the `filter_retracted` parameter, here is an e
 
 ```python
 from nanopub import NanopubClient
+
 client = NanopubClient()
 # Search for nanopublications containing the text fair, also returning retracted publications.
 results = client.find_nanopubs_with_text('fair', filter_retracted=False)
@@ -70,6 +74,7 @@ You use the `pubkey` argument for that. Here is an example with `NanopubClient.f
 
 ```python
 from nanopub import NanopubClient, profile
+
 # Search for nanopublications containing the text 'test',
 # filtering on publications signed with my publication key.
 client = NanopubClient(use_test_server=True)

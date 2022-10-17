@@ -1,10 +1,7 @@
-import warnings
-from unittest import mock
-
 import pytest
-from rdflib import FOAF, RDF, ConjunctiveGraph
+from rdflib import FOAF, RDF
 
-from nanopub import Nanopub, NanopubClient
+from nanopub import NanopubClient
 from nanopub.definitions import TEST_RESOURCES_FILEPATH
 from tests.conftest import skip_if_nanopub_server_unavailable
 
@@ -145,38 +142,6 @@ class TestNanopubClient:
         # the results are retracted nanopublications.
         assert len(all_results) > len(filtered_results)
 
-    def test_find_retractions_of_publication_raise_warning(self):
-        test_rdf = ConjunctiveGraph()
-        test_rdf.parse(NANOPUB_SAMPLE_SIGNED, format='trig')
-
-        # # A test publication
-        # publication = Nanopub(rdf=test_rdf, source_uri='http://test-server/example')
-        # assert publication.is_test_publication
-
-        # # Production server client
-        # client = NanopubClient(profile=profile_test, use_test_server=False)
-        # client.find_nanopubs_with_pattern = mock.MagicMock()
-        # # Because we try searching the prod server with a test publication this should trigger a
-        # # warning.
-        # with warnings.catch_warnings(record=True) as w:
-        #     warnings.simplefilter("always")
-        #     client.find_retractions_of(publication, valid_only=False)
-        #     assert len(w) == 1
-
-        # Not a test publication
-        publication = Nanopub(rdf=test_rdf, source_uri='http://a-real-server/example')
-        assert not publication.is_test_publication
-        # Production server client
-        client = NanopubClient(use_test_server=True)
-        client.find_nanopubs_with_pattern = mock.MagicMock()
-        # Because we try searching the prod server with a test publication this should trigger a
-        # warning.
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-            client.find_retractions_of(publication, valid_only=False)
-            assert len(w) == 1
-
-
     @pytest.mark.flaky(max_runs=10)
     @skip_if_nanopub_server_unavailable
     def test_find_retractions_of(self):
@@ -184,15 +149,16 @@ class TestNanopubClient:
         results = client.find_retractions_of(uri, valid_only=False)
         expected_uris = [
             'http://purl.org/np/RAYhe0XddJhBsJvVt0h_aq16p6f94ymc2wS-q2BAgnPVY',
-            'http://purl.org/np/RACdYpR-6DZnT6JkEr1ItoYYXMAILjOhDqDZsMVO8EBZI']
+            'http://purl.org/np/RACdYpR-6DZnT6JkEr1ItoYYXMAILjOhDqDZsMVO8EBZI'
+        ]
         for expected_uri in expected_uris:
             assert expected_uri in results
+
 
     @pytest.mark.flaky(max_runs=10)
     @skip_if_nanopub_server_unavailable
     def test_find_retractions_of_valid_only(self):
         uri = 'http://purl.org/np/RAnksi2yDP7jpe7F6BwWCpMOmzBEcUImkAKUeKEY_2Yus'
-        # uri = 'http://purl.org/np/RAXUwamR3TGmJAPAJHiamh4sGCmYmzLG9jj-02HR0Ok0U'
         results = client.find_retractions_of(uri, valid_only=True)
         expected_uri = 'http://purl.org/np/RAYhe0XddJhBsJvVt0h_aq16p6f94ymc2wS-q2BAgnPVY'
         assert expected_uri in results
@@ -234,24 +200,3 @@ class TestNanopubClient:
     )
     def test_parse_search_result(self, test_input, expected):
         assert client._parse_search_result(test_input) == expected
-
-    @pytest.mark.flaky(max_runs=10)
-    @skip_if_nanopub_server_unavailable
-    def test_nanopub_fetch(self):
-        """
-        Check that Nanopub fetch is returning results for a few known nanopub URIs.
-        """
-        known_nps = [
-            'http://purl.org/np/RANGY8fx_EYVeZzJOinH9FoY-WrQBerKKUy2J9RCDWH6U',
-            'http://purl.org/np/RAABh3eQwmkdflVp50zYavHUK0NgZE2g2ewS2j4Ur6FHI',
-            'http://purl.org/np/RA8to60YFWSVCh2n_iyHZ2yiYEt-hX_DdqbWa5yI9r-gI'
-        ]
-
-        for np_uri in known_nps:
-            np = client.fetch(np_uri)
-            assert isinstance(np, Nanopub)
-            assert len(np.rdf) > 0
-            assert np.assertion is not None
-            assert np.pubinfo is not None
-            assert np.provenance is not None
-            assert len(np.__str__()) > 0

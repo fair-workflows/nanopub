@@ -16,7 +16,7 @@ class NanopubClaim(Nanopub):
     Ontology (http://purl.org/petapico/o/hycl).
 
     Args:
-        config: config for the nanopub
+        conf: config for the nanopub
         claim (str): the text of the statement, example: 'All cats are grey'
     """
 
@@ -34,7 +34,7 @@ class NanopubClaim(Nanopub):
         if not self.profile:
             raise ProfileError("No profile provided, cannot generate a Nanopub Claim")
 
-        this_statement = self._dummy_namespace["claim"]
+        this_statement = self._namespace["claim"]
         # this_statement = BNode("mystatement")
         self.assertion.add((this_statement, RDF.type, HYCL.Statement))
         self.assertion.add((this_statement, RDFS.label, Literal(claim)))

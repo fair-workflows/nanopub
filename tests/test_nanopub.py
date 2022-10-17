@@ -1,11 +1,12 @@
 from pathlib import Path
 
+import pytest
 from rdflib import RDF, BNode, ConjunctiveGraph, Graph, Literal, URIRef
 
 from nanopub import Nanopub, NanopubClaim, NanopubConf, NanopubRetract, create_nanopub_index, namespaces
 from nanopub.templates.nanopub_introduction import NanopubIntroduction
 from nanopub.utils import MalformedNanopubError
-from tests.conftest import default_config, java_wrap, profile_test
+from tests.conftest import default_config, java_wrap, profile_test, skip_if_nanopub_server_unavailable
 
 config_testsuite = NanopubConf(
     add_prov_generated_time=False,
@@ -263,3 +264,33 @@ def test_nanopub_index():
     )
     for np in np_list:
         assert np.source_uri is not None
+
+
+@pytest.mark.flaky(max_runs=10)
+@skip_if_nanopub_server_unavailable
+def test_nanopub_fetch():
+    """Check that creating Nanopub from source URI (fetch) works for a few known nanopub URIs."""
+    known_nps = [
+        'http://purl.org/np/RANGY8fx_EYVeZzJOinH9FoY-WrQBerKKUy2J9RCDWH6U',
+        'http://purl.org/np/RAABh3eQwmkdflVp50zYavHUK0NgZE2g2ewS2j4Ur6FHI',
+        'http://purl.org/np/RA8to60YFWSVCh2n_iyHZ2yiYEt-hX_DdqbWa5yI9r-gI'
+    ]
+    for np_uri in known_nps:
+        np = Nanopub(
+            source_uri=np_uri,
+            conf=NanopubConf(use_test_server=True)
+        )
+        print(np)
+        assert len(np.rdf) > 0
+        assert np.assertion is not None
+        assert np.pubinfo is not None
+        assert np.provenance is not None
+        # assert np.is_valid
+
+
+def test_unvalid_fetch():
+    try:
+        publication = Nanopub(source_uri='http://a-real-server/example')
+        assert publication.is_valid
+    except Exception:
+        assert True

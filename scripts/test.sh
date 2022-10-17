@@ -3,4 +3,4 @@
 set -e
 set -x
 
-pytest -s --cov=nanopub --cov-report=term-missing:skip-covered tests ${@}
+pytest -s --cov=nanopub --cov-report=term-missing:skip-covered ${@}

@@ -1,10 +1,12 @@
 # The nanopub test server
 Throughout this documentation we make use of the
 [nanopub test server](http://test-server.nanopubs.lod.labs.vu.nl/)
-by setting `use_test_server=True` when instantiating `NanopubClient`:
+by setting `use_test_server=True` when instantiating `NanopubConf` or `NanopubClient`:
 ```python
-from nanopub import NanopubClient
+from nanopub import NanopubClient, NanopubConf
+
 client = NanopubClient(use_test_server=True)
+np_conf = NanopubConf(use_test_server=True)
 ```
 This will search and fetch from, and publish to the [nanopub test server](http://test-server.nanopubs.lod.labs.vu.nl/).
 

@@ -4,9 +4,9 @@ The nanopub library provides a few objects to easily publish specific types of n
 
 You can also easily create your own template by inheriting from the `Nanopub` class.
 
-## Claim
+## 💬 Claim
 
-Publish a simple HYCL claim:
+Publish a simple [HYCL](http://purl.org/petapico/o/hycl) claim:
 
 ```python
 from nanopub import NanopubConf, NanopubClaim
@@ -15,12 +15,12 @@ np_conf = NanopubConf(profile=load_profile(), use_test_server=True)
 
 np = NanopubClaim(
 	claim='All cats are grey',
-    config=np_conf,
+    conf=np_conf,
 )
 np.publish()
 ```
 
-## Nanopub index
+## 🗂️ Nanopub index
 
 To publish an index of nanopublications. Note that a nanopub cannot contain more than 1200 triples. So to publish large index with more than 1200 elements we need to split it and publish multiple nanopublications: the different nanopub index that composes this index, and a top level index that points to all the nanopub indexes.
 
@@ -33,7 +33,7 @@ from nanopub.templates import NanopubIndex
 np_conf = NanopubConf(profile=load_profile(), use_test_server=True)
 
 np_list = create_nanopub_index(
-	config=np_conf,
+	conf=np_conf,
     np_list=[
     	"https://purl.org/np/RAD28Nl4h_mFH92bsHUrtqoU4C6DCYy_BRTvpimjVFgJo",
     	"https://purl.org/np/RAEhbEJ1tdhPqM6gNPScX9vIY1ZtUzOz7woeJNzB3sh3E",
@@ -43,14 +43,13 @@ np_list = create_nanopub_index(
     creation_time="2020-09-21T00:00:00",
     creators=["https://orcid.org/0000-0000-0000-0000"],
     see_also="https://github.com/fair-workflows/nanopub",
-    publish=False,
 )
 for np in np_list:
 	print(np)
 	np.publish()
 ```
 
-## ORCID introduction
+## 👤 ORCID introduction
 
 To publish a nanopublication introducing a keypair for an ORCID.
 
@@ -61,13 +60,13 @@ from nanopub.templates import NanopubIntroduction
 np_conf = NanopubConf(profile=load_profile(), use_test_server=True)
 
 np = NanopubIntroduction(
-    config=np_conf,
+    conf=np_conf,
     host=None,
 )
 np.publish()
 ```
 
-## Create your own template
+## ✍️ Create your own template
 
 You can create your own template by inheriting from the `Nanopub` class. It allows you to define classes to assist your users with publishing specific sets of triples.
 
@@ -86,18 +85,18 @@ class NanopubClaim(Nanopub):
         self,
         # Define the args the users should provide
         claim: str,
-        config: NanopubConf,
+        conf: NanopubConf,
     ) -> None:
-        # Enforce specific nanopub configs
-        config.add_prov_generated_time = True
-        config.add_pubinfo_generated_time = True
-        config.attribute_publication_to_profile = True
+        # Enforce a specific nanopub conf
+        conf.add_prov_generated_time = True
+        conf.add_pubinfo_generated_time = True
+        conf.attribute_publication_to_profile = True
         super().__init__(
-            config=config,
+            conf=config,
         )
 
         # Build the nanopub assertion from the args
-        this_statement = self._dummy_namespace["claim"]
+        this_statement = self._namespace["claim"]
         self.assertion.add((this_statement, RDF.type, HYCL.Statement))
         self.assertion.add((this_statement, RDFS.label, Literal(claim)))
 

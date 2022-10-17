@@ -12,7 +12,7 @@ my_assertion.add((BNode('timbernserslee'), RDF.type, FOAF.Person))
 
 np = Nanopub(
     assertion=my_assertion,
-    config=NanopubConf(
+    conf=NanopubConf(
         add_prov_generated_time=True,
         add_pubinfo_generated_time=True,
         attribute_publication_to_profile=True,
@@ -44,7 +44,7 @@ my_assertion.add((BNode('timbernserslee'), RDF.type, FOAF.Person))
 
 np = Nanopub(
     assertion=my_assertion,
-    config=NanopubConf(
+    conf=NanopubConf(
         add_prov_generated_time=True,
         add_pubinfo_generated_time=True,
         attribute_publication_to_profile=True,
@@ -85,7 +85,7 @@ provenance_rdf = provenance_rdf.add((
 np = Nanopub(
     assertion=my_assertion,
     provenance_rdf=provenance_rdf,
-    config=NanopubConf(
+    conf=NanopubConf(
         add_prov_generated_time=True,
         add_pubinfo_generated_time=True,
         attribute_publication_to_profile=True,
@@ -112,7 +112,7 @@ pubinfo_rdf = pubinfo_rdf.add((
 np = Nanopub(
     assertion=my_assertion,
     pubinfo=pubinfo_rdf,
-    config=NanopubConf(
+    conf=NanopubConf(
         add_prov_generated_time=True,
         add_pubinfo_generated_time=True,
         attribute_publication_to_profile=True,

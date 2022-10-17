@@ -13,7 +13,7 @@ class NanopubRetract(Nanopub):
     corresponds to the 'uri' argument.
 
     Args:
-        config: config for the nanopub
+        conf: config for the nanopub
         uri (str): The uri pointing to the to-be-retracted nanopublication
         force (bool): Toggle using force to retract, this will even retract the
             nanopublication if it is signed with a different public key than the one
@@ -36,8 +36,8 @@ class NanopubRetract(Nanopub):
         if not self.profile:
             raise ProfileError("No profile provided, cannot generate a Nanopub to retract another nanopub")
 
-        # if not force:
-        #     self._check_public_keys_match(uri)
+        if not force:
+            self._check_public_keys_match(uri)
         orcid_id = self.profile.orcid_id
         self.assertion.add(
             (URIRef(orcid_id), NPX.retracts, URIRef(uri))
@@ -51,7 +51,7 @@ class NanopubRetract(Nanopub):
             AssertionError: When the nanopublication is signed with a public key that does not
                 match the public key in the profile
         """
-        publication = self.fetch(uri)
+        publication = Nanopub(source_uri=uri)
         their_public_key = publication.signed_with_public_key
         print("KEYS")
         print(their_public_key)

@@ -1,22 +1,30 @@
 # Setup instructions
 
-## Install nanopub library
+## 📥️ Install the nanopub library
 Install using pip:
 ```
 pip install nanopub
 ```
 
-## Setup for users new to python
+## 🐍 Setup for users new to python
 We recommend using [anaconda](https://www.anaconda.com/products/individual) to install python and manage python dependencies
 
-## Setup your profile
+## 👤 Setup your profile
 
 To publish to the nanopub server you need to setup your profile (note that you can use fetch and search functionality without a profile). This allows the nanopub server to identify you.
 
-Run the following interactive command:
+To check if your profile is properly set, run the following command in your terminal:
+
+```bash
+np profile
 ```
+
+To setup your profile, run the following interactive command:
+
+```bash
 np setup
 ```
+
 This will setup the following:
 
 ### Stored profile
@@ -33,7 +41,7 @@ If you don't have an ORCID iD yet, you need to [register](https://orcid.org/regi
 ### Introductory nanopublication
 We encourage you to make use of `np setup`'s option to publish your profile to the nanopub servers. This links your ORCID iD to your RSA key, thereby making all your publications linkable to you. Here is an [example introductory nanopublicaiton](http://purl.org/np/RAy1CYBfBYFd_TFI8Z_jr3taf6fB9u-grqsKyLzTmMvQI). The link to this nanopublication is also stored in your profile.
 
-## Check your profile
+## ☑️ Check your profile
 
 You can check the profile currently used by default by running this command in your terminal:
 

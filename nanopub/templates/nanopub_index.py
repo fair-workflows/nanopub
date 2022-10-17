@@ -14,7 +14,7 @@ class NanopubIndex(Nanopub):
     """Publish a list of nanopub URIs in a Nanopub Index
 
     Args:
-        config: config for the nanopub
+        conf: config for the nanopub
         np_list: List of nanopub URIs
         title: Title of the Nanopub Index
         description: Description of the Nanopub Index

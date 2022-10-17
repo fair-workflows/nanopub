@@ -35,7 +35,7 @@ assertion.add((
 
 np = Nanopub(conf=config, assertion=assertion)
 
-# np = Nanopub(config=config, assertion=assertion)
+# np = Nanopub(conf=config, assertion=assertion)
 
 # np.sign()
 np.publish()

@@ -11,9 +11,8 @@ import requests
 from nanopub import namespaces
 from nanopub.definitions import DUMMY_NANOPUB_URI, NANOPUB_SERVER_LIST, NANOPUB_TEST_SERVER
 from nanopub.nanopub import Nanopub
+from nanopub.nanopub_conf import NanopubConf
 from nanopub.utils import log
-
-# from nanopub.signer import Signer
 
 NANOPUB_GRLC_URLS = [
     "http://grlc.nanopubs.lod.labs.vu.nl/api/local/local/",
@@ -205,12 +204,13 @@ class NanopubClient:
             uri = source
 
         if valid_only:
-            source_publication = self.fetch(uri)
+            source_publication = Nanopub(
+                source_uri=uri,
+                conf=NanopubConf(use_test_server=self.use_test_server)
+            )
             public_key = source_publication.signed_with_public_key
             if public_key is None:
-                raise ValueError(
-                    "The source publication is not signed with a public key"
-                )
+                raise ValueError("The source publication is not signed with a public key")
         else:
             public_key = None
 
@@ -333,25 +333,25 @@ class NanopubClient:
         return parsed
 
 
-    def fetch(self, uri: str):
-        """Fetch nanopublication
+    # def fetch(self, uri: str):
+    #     """Fetch nanopublication
 
-        Download the nanopublication at the specified URI.
+    #     Download the nanopublication at the specified URI.
 
-        Args:
-            uri: The URI of the nanopublication to fetch.
+    #     Args:
+    #         uri: The URI of the nanopublication to fetch.
 
-        Returns:
-            Nanopub: a Nanopub object representing the nanopublication.
-        """
-        r = requests.get(uri + "." + NANOPUB_FETCH_FORMAT)
-        if not r.ok and self.use_test_server:
-            # Let's try the test server
-            nanopub_id = uri.rsplit("/", 1)[-1]
-            uri = NANOPUB_TEST_URL + nanopub_id
-            r = requests.get(uri + "." + NANOPUB_FETCH_FORMAT)
-        r.raise_for_status()
+    #     Returns:
+    #         Nanopub: a Nanopub object representing the nanopublication.
+    #     """
+    #     r = requests.get(uri + "." + NANOPUB_FETCH_FORMAT)
+    #     if not r.ok and self.use_test_server:
+    #         # Let's try the test server
+    #         nanopub_id = uri.rsplit("/", 1)[-1]
+    #         uri = NANOPUB_TEST_URL + nanopub_id
+    #         r = requests.get(uri + "." + NANOPUB_FETCH_FORMAT)
+    #     r.raise_for_status()
 
-        nanopub_rdf = rdflib.ConjunctiveGraph()
-        nanopub_rdf.parse(data=r.text, format=NANOPUB_FETCH_FORMAT)
-        return Nanopub(rdf=nanopub_rdf, source_uri=uri)
+    #     nanopub_rdf = rdflib.ConjunctiveGraph()
+    #     nanopub_rdf.parse(data=r.text, format=NANOPUB_FETCH_FORMAT)
+    #     return Nanopub(rdf=nanopub_rdf, source_uri=uri)

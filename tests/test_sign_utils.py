@@ -2,7 +2,7 @@ from rdflib import BNode, Graph, Literal
 
 from nanopub import Nanopub, namespaces
 from nanopub.client import DUMMY_NAMESPACE
-from nanopub.signer import add_signature
+from nanopub.sign_utils import add_signature
 from tests.conftest import default_config, java_wrap, profile_test
 
 

@@ -13,16 +13,16 @@ nav:
     - What are Nanopublications?: getting-started/what-are-nanopubs.md
     - Setup instructions: getting-started/setup.md
     - The nanopub test server: getting-started/test-server.md
+    - Use the command line interface: getting-started/use-the-cli.md
     - Development: getting-started/development.md
 
   - Publishing:
+    - Set the user profile: publishing/profile.md
     - Publish nanopublications: publishing/publish-nanopublications.md
-    - Using the nanopublication's namespace: publishing/using-publication-namespace.md
-    - Setting publication info and provenance: publishing/setting-subgraphs.md
-    - Retracting a nanopublication: publishing/retraction.md
-    - Using nanopub templates: publishing/templates.md
-    - Handle user profile: publishing/profile.md
-    - Publish with the commandline: publishing/publish-with-cli.md
+    - Use nanopub templates: publishing/templates.md
+    - Use the nanopub's namespace: publishing/using-publication-namespace.md
+    - Set provenance and pubinfo: publishing/setting-subgraphs.md
+    - Retract a nanopublication: publishing/retraction.md
 
   - Searching:
     - Searching: searching/searching.md

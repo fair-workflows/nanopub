@@ -105,11 +105,9 @@ def replace_trusty_in_graph(trusty_artefact: str, dummy_ns: str, graph: Conjunct
 
 
 def publish_graph(g: ConjunctiveGraph, use_server: str = NANOPUB_SERVER_LIST[0]) -> bool:
-    """Publish a nanopub.
-
-    Publish the signed nanopub to the nanopub server we do a simple POST request.
+    """Publish a signed nanopub to the given nanopub server.
     """
-    log.info(f"Publishing to nanopub server {use_server}")
+    log.info(f"Publishing to the nanopub server {use_server}")
     headers = {'Content-Type': 'application/trig'}
     # Used by nanopub-java: {'Content-Type': 'application/x-www-form-urlencoded'}
     data = g.serialize(format="trig")

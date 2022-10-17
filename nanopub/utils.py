@@ -20,24 +20,18 @@ def extract_signature(g: ConjunctiveGraph) -> Optional[Dict]:
 PREFIX npx: <http://purl.org/nanopub/x/>
 
 SELECT DISTINCT ?np ?sigUri ?signature ?pubkey ?algo WHERE {
-GRAPH ?head {
-    ?np a np:Nanopublication ;
-        np:hasAssertion ?assertion ;
-        np:hasProvenance ?provenance ;
-        np:hasPublicationInfo ?pubinfo .
-}
-GRAPH ?assertion {
-    ?assertionS ?assertionP ?assertionO .
-}
-GRAPH ?provenance {
-    ?provenanceS ?provenanceP ?provenanceO .
-}
-GRAPH ?pubinfo {
-    ?sigUri npx:hasSignatureTarget ?np ;
-        npx:hasPublicKey ?pubkey ;
-        npx:hasAlgorithm ?algo ;
-        npx:hasSignature ?signature .
-}
+    GRAPH ?head {
+        ?np a np:Nanopublication ;
+            np:hasAssertion ?assertion ;
+            np:hasProvenance ?provenance ;
+            np:hasPublicationInfo ?pubinfo .
+    }
+    GRAPH ?pubinfo {
+        ?sigUri npx:hasSignatureTarget ?np ;
+            npx:hasPublicKey ?pubkey ;
+            npx:hasAlgorithm ?algo ;
+            npx:hasSignature ?signature .
+    }
 }
 """
     qres = g.query(get_np_query)
@@ -70,21 +64,12 @@ def extract_np_uris(g: ConjunctiveGraph) -> dict:
     get_np_query = """PREFIX np: <http://www.nanopub.org/nschema#>
 
 SELECT DISTINCT ?np ?head ?assertion ?provenance ?pubinfo WHERE {
-GRAPH ?head {
-    ?np a np:Nanopublication ;
-        np:hasAssertion ?assertion ;
-        np:hasProvenance ?provenance ;
-        np:hasPublicationInfo ?pubinfo .
-}
-GRAPH ?assertion {
-    ?assertionS ?assertionP ?assertionO .
-}
-GRAPH ?provenance {
-    ?provenanceS ?provenanceP ?provenanceO .
-}
-GRAPH ?pubinfo {
-    ?pubinfoS ?pubinfoP ?pubinfoO .
-}
+    GRAPH ?head {
+        ?np a np:Nanopublication ;
+            np:hasAssertion ?assertion ;
+            np:hasProvenance ?provenance ;
+            np:hasPublicationInfo ?pubinfo .
+    }
 }
 """
     qres = g.query(get_np_query)

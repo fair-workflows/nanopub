@@ -53,7 +53,7 @@ my_assertion.add((
 
 # 2. Make a Nanopub object with this assertion
 np = Nanopub(
-    config=np_conf,
+    conf=np_conf,
     assertion=my_assertion
 )
 

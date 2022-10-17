@@ -5,7 +5,7 @@ The `nanopub` library provides a high-level, user-friendly python interface for 
 
 Nanopublications are a formalized and machine-readable way of communicating the smallest possible units of publishable information. See the [What are Nanopublications?](getting-started/what-are-nanopubs) page for more information.
 
-## Setup
+## 📦️ Setup
 
 Install using pip:
 
@@ -13,13 +13,7 @@ Install using pip:
 pip install nanopub
 ```
 
-To publish to the nanopub server you need to setup your profile. This allows the nanopub server to identify you. To check if your profile is properly run the following command in your terminal:
-
-```bash
-np profile
-```
-
-To setup a profile run the following interactive command:
+To publish to the nanopub server you need to setup your profile, this allows the nanopub server to identify you. To check if your profile is properly set, run `np profile` in your terminal. If it is not set yet, run the following interactive command to setup your profile:
 
 ```bash
 np setup
@@ -27,39 +21,39 @@ np setup
 
 This will add and store RSA keys to sign your nanopublications, publish a nanopublication with your name and ORCID iD to declare that you are using using these RSA keys, and store your ORCID iD to automatically add as author to the provenance of any nanopublication you will publish using this library.
 
-## Quick Start
+## ⚡️ Quick Start
 
 ### Publishing nanopublications
 
-Use `load_profile()` to load the user profile from `$HOME/.nanopub`, and `use_test_server=True` to point to the test server (remove it to publish to the Nanopublication network)
+Use `load_profile()` to load the user profile from `$HOME/.nanopub`, and `use_test_server` to point to the test server (remove it to publish to the nanopublication network)
 
 ```python
-from rdflib import Graph
+import rdflib
 from nanopub import Nanopub, NanopubConf, load_profile
 
 # 1. Create the config
 np_conf = NanopubConf(
-    use_test_server=True,
     profile=load_profile(),
+    use_test_server=True,
     add_prov_generated_time=True,
     attribute_publication_to_profile=True,
 )
 
 # 2. Construct a desired assertion (a graph of RDF triples) using rdflib
-my_assertion = Graph()
+my_assertion = rdflib.Graph()
 my_assertion.add((
     rdflib.URIRef('www.example.org/timbernerslee'),
     rdflib.RDF.type,
     rdflib.FOAF.Person
 ))
 
-# 2. Make a Nanopub object with this assertion
+# 3. Make a Nanopub object with this assertion
 np = Nanopub(
-    config=np_conf,
+    conf=np_conf,
     assertion=my_assertion
 )
 
-# 3. Publish the Nanopub object
+# 4. Publish the Nanopub object
 np.publish()
 print(np)
 ```

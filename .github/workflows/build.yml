@@ -1,7 +1,4 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
-
-name: Test and update docs
+name: Tests and update docs
 
 on: [push, pull_request]
 
@@ -30,7 +27,7 @@ jobs:
 
       - name: Setup nanopub profile (including RSA keys)
         run: |
-           np setup --orcid_id https://orcid.org/1234-1234-1234-1234 --no-publish --name test --newkeys
+           np setup --orcid_id https://orcid.org/0000-0000-0000-0000 --no-publish --name test --newkeys
 
       - name: Test with pytest
         run: |

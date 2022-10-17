@@ -10,7 +10,7 @@ import typer
 from nanopub import Nanopub, NanopubConf, load_profile
 from nanopub._version import __version__
 from nanopub.definitions import DEFAULT_PROFILE_PATH, USER_CONFIG_DIR
-from nanopub.profile import Profile, ProfileError, generate_keys
+from nanopub.profile import Profile, ProfileError, generate_keyfiles
 from nanopub.templates.nanopub_introduction import NanopubIntroduction
 from nanopub.utils import MalformedNanopubError
 
@@ -92,7 +92,7 @@ def publish(
     test: bool = typer.Option(False, help="Publish to the test server"),
 ):
     if test:
-        print("Publishing to test server")
+        print(" 🧪 Publishing to the test server")
     config = NanopubConf(
         profile=load_profile(),
         use_test_server=test,
@@ -190,7 +190,7 @@ def setup(
             raise typer.Exit(code=1)
         else:
             # JavaWrapper().make_keys(path_name=DEFAULT_KEYS_PATH_PREFIX)
-            generate_keys(USER_CONFIG_DIR)
+            generate_keyfiles(USER_CONFIG_DIR)
             print(f'🔑 Created RSA keys. Your RSA keys are stored in {USER_CONFIG_DIR}')
     else:
         public_key_path, private_key = keypair

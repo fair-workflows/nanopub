@@ -1,10 +1,12 @@
 import os
+from pathlib import Path
 
 import pytest
 from typer.testing import CliRunner
 
 from nanopub.__main__ import cli, validate_orcid_id
 from nanopub._version import __version__
+from nanopub.definitions import DEFAULT_PROFILE_PATH
 from tests.conftest import TEST_RESOURCES_FILEPATH
 
 runner = CliRunner()
@@ -36,14 +38,31 @@ def test_setup():
         "--name", "Python test",
         "--newkeys", "--no-publish"
     ])
-    # assert result.exit_code == 0
+    assert result.exit_code == 1
     assert "Setting up nanopub profile" in result.stdout
+    assert Path(DEFAULT_PROFILE_PATH).exists()
 
 
-def test_sign():
-    sign_file = "./tests/testsuite/valid/plain/simple1.trig"
+def test_profile():
     result = runner.invoke(cli, [
-        "sign", sign_file,
+        "profile",
+    ])
+    assert "User profile in" in result.stdout
+
+
+def test_publish():
+    test_file = "./tests/testsuite/valid/plain/simple1.trig"
+    result = runner.invoke(cli, [
+        "publish", test_file, "--test"
+    ])
+    assert result.exit_code == 0
+    assert "Nanopub published at" in result.stdout
+
+
+def test_sign_with_key():
+    test_file = "./tests/testsuite/valid/plain/simple1.trig"
+    result = runner.invoke(cli, [
+        "sign", test_file,
         "-k", PRIVATE_KEY_PATH,
     ])
     assert result.exit_code == 0

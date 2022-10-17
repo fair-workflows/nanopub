@@ -1,27 +1,31 @@
-# Handle user profile
+# Set the user profile
 
-## Check your profile
+!!! info "Prerequisite for publishing"
 
-You can check the profile currently used by default by running this command in your terminal:
+	Before you can sign and publish you should [setup your profile](/nanopub/getting-started/setup), check if it is properly set by running `np profile` in your terminal.
 
-```bash
-np profile
+## 👤 Use the default user profile
+
+If you have setup a profile on your machine following the [setup instructions](/nanopub/getting-started/setup), you can easily load the default profile (defined in `$HOME/.nanopub/profile.yml`):
+
+```python
+from nanopub import load_profile
+
+p = load_profile()
 ```
 
-## Load from files
+## ✍️ Define the user profile
 
-### Load a profile.yml file
+Otherwise, if you wish to have flexibility when defining the user profile, there are multiple options:
 
-The easiest way to load a nanopub profile is to use the `load_profile()` helper function to load your user profile stored in `$HOME/.nanopub/profile.yml`:
+### Load a profile file
+
+Provide a specific path to a `profile.yml` file when using the `load_profile()` function:
 
 ```bash
 from nanopub import load_profile
 
-# Load from your home folder by default
-p1 = load_profile()
-
-# Or you can provide a specific path
-p2 = load_profile(Path('/path/to/profile.yml'))
+p = load_profile(Path('/path/to/profile.yml'))
 ```
 
 ### Provide the keys filepaths
@@ -40,7 +44,7 @@ p1 = Profile(
 )
 ```
 
-## Provide the keys as strings
+### Provide the keys as strings
 
 If you need to switch between multiple keys you can also provide the private and public keys as string, without needing to store them in files:
 
@@ -55,7 +59,7 @@ p = Profile(
 )
 ```
 
-## Generate new keys for your nanopub profile
+### Generate new keys for your nanopub profile
 
 If you do not provide private and public keys a new key pair will be automatically generated. You can then store it where you want.
 

@@ -36,7 +36,7 @@ np_conf = NanopubConf(
 # And create a nanopub object for this assertion
 np = Nanopub(
     assertion=my_assertion,
-	config=np_conf
+	conf=np_conf
 )
 
 # Let's publish this to the test server
@@ -78,7 +78,7 @@ my_assertion.add((tim, rdflib.RDF.type, rdflib.FOAF.Person) )
 np = Nanopub(
     assertion=my_assertion,
     introduces_concept=tim,
-    config=NanopubConf(
+    conf=NanopubConf(
         profile=load_profile(),
         add_prov_generated_time=True,
         add_pubinfo_generated_time=True,

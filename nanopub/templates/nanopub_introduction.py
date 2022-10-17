@@ -13,7 +13,7 @@ class NanopubIntroduction(Nanopub):
     """Publish a Nanopub introduction to introduce a key pair for an ORCID
 
     Args:
-        config: config for the nanopub
+        conf: config for the nanopub
         host: the service where the keypair are hosted
     """
 
@@ -32,7 +32,7 @@ class NanopubIntroduction(Nanopub):
         if not self.profile:
             raise ProfileError("No profile provided, cannot generate a Nanopub Introduction")
 
-        key_declaration = self._dummy_namespace.keyDeclaration
+        key_declaration = self._namespace.keyDeclaration
         orcid_node = URIRef(self.conf.profile.orcid_id)
 
         self.assertion.add((key_declaration, NPX.declaredBy, orcid_node))

@@ -19,6 +19,7 @@ NANOPUB_SERVER_LIST = [
     'http://server.nanopubs.lod.labs.vu.nl/',
     'http://server.np.dumontierlab.com/',
 ]
+NANOPUB_FETCH_FORMAT = "trig"
 
 DUMMY_NANOPUB_URI = "http://purl.org/nanopub/temp/np"
 DUMMY_NAMESPACE = Namespace(DUMMY_NANOPUB_URI + "#")

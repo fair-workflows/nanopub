@@ -225,7 +225,7 @@ def load_profile(profile_path: Union[Path, str] = DEFAULT_PROFILE_PATH) -> Profi
         raise ProfileError(msg)
 
 
-def generate_keys(path: Path = USER_CONFIG_DIR) -> str:
+def generate_keyfiles(path: Path = USER_CONFIG_DIR) -> str:
     """Generate private/public RSA key pair at the path specified in the profile.yml, to be used to sign nanopubs"""
     if not path.exists():
         path.mkdir()

@@ -5,8 +5,6 @@ from base64 import decodebytes
 from pathlib import Path
 
 import rdflib
-
-# from trustyuri.rdf.RdfHasher import make_hash
 from Crypto.PublicKey import RSA
 from rdflib import ConjunctiveGraph
 
@@ -15,7 +13,7 @@ from nanopub.namespaces import NP
 from nanopub.nanopub import Nanopub
 from nanopub.profile import PROFILE_INSTRUCTIONS_MESSAGE
 
-# Only used in dev or tests when the repo is cloned
+# nanopub-java is only used in dev or tests when the repo is cloned
 NANOPUB_JAVA_SCRIPT = (ROOT_FILEPATH / 'scripts' / 'nanopub-java')
 
 
