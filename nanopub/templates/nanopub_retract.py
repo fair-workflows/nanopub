@@ -51,8 +51,8 @@ class NanopubRetract(Nanopub):
             AssertionError: When the nanopublication is signed with a public key that does not
                 match the public key in the profile
         """
-        publication = Nanopub(source_uri=uri)
-        their_public_key = publication.signed_with_public_key
+        np = Nanopub(uri)
+        their_public_key = np.metadata.public_key
         print("KEYS")
         print(their_public_key)
         print(self.conf.profile.public_key)

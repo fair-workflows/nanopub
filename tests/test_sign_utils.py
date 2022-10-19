@@ -1,4 +1,4 @@
-from rdflib import BNode, Graph, Literal
+from rdflib import Graph, Literal, URIRef
 
 from nanopub import Nanopub, namespaces
 from nanopub.client import DUMMY_NAMESPACE
@@ -7,11 +7,11 @@ from tests.conftest import default_config, java_wrap, profile_test
 
 
 def test_nanopub_sign():
-    expected_np_uri = "http://purl.org/np/RAPPd9CZrgAo_XzrDRfUtXvRYVud2PDRgCN-z7eGhIwpc"
+    expected_np_uri = "http://purl.org/np/RAoXkQkJe_lpMhYW61Y9mqWDHa5MAj1o4pWIiYLmAzY50"
 
     assertion = Graph()
     assertion.add((
-        BNode('test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
+        URIRef('http://test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
     ))
 
     np = Nanopub(

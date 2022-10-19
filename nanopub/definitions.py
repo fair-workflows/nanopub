@@ -26,7 +26,7 @@ DUMMY_NAMESPACE = Namespace(DUMMY_NANOPUB_URI + "#")
 DUMMY_URI = DUMMY_NAMESPACE[""]
 
 NP_TEMP_PREFIX = "http://purl.org/nanopub/temp/"
-FINAL_NANOPUB_URI = "http://purl.org/np/"
+NP_PURL = "http://purl.org/np/"
 
 MAX_NP_PER_INDEX = 1100
 MAX_TRIPLES_PER_NANOPUB = 1200

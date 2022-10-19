@@ -186,7 +186,7 @@ class Nanopub:
             self.update_from_signed(signed_g)
             log.info(f"Signed {self.source_uri}")
         else:
-            raise MalformedNanopubError(f"The nanopub is not valid, cannot sign it")
+            raise MalformedNanopubError("The nanopub is not valid, cannot sign it")
 
 
     def publish(self) -> None:
@@ -220,10 +220,13 @@ class Nanopub:
 
     @property
     def has_valid_signature(self) -> bool:
-        verify_trusty(self._rdf, self.source_uri, self._metadata.namespace)
         verify_signature(self._rdf, self._metadata.namespace)
         return True
 
+    @property
+    def has_valid_trusty(self) -> bool:
+        verify_trusty(self._rdf, self.source_uri, self._metadata.namespace)
+        return True
 
     @property
     def is_valid(self) -> bool:
