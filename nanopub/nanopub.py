@@ -269,9 +269,10 @@ class Nanopub:
         # if len(self._head) != 4:
         #     raise MalformedNanopubError(f"Too many triples in the nanopublication Head graph: {len(self._head)} instead of 4")
 
-        if self._metadata.signature:
-            if self.has_valid_signature is False:
-                raise MalformedNanopubError("The nanopub is not valid")
+        # TODO: add more checks for trusty and signature
+        # if self._metadata.signature:
+        #     if self.has_valid_signature is False:
+        #         raise MalformedNanopubError("The nanopub is not valid")
         return True
 
 
@@ -295,6 +296,9 @@ class Nanopub:
     def pubinfo(self):
         return self._pubinfo
 
+    @property
+    def metadata(self):
+        return self._metadata
 
     @property
     def conf(self):
@@ -566,10 +570,10 @@ class Nanopub:
     #     for s, p, o in rdf:
     #         if isinstance(s, BNode):
     #             rdf.remove((s, p, o))
-    #             s = self._metadata.namespace[str(s)]
+    #             s = self._metadata.namespace[f"_{str(s)}"]
     #             rdf.add((s, p, o))
     #         if isinstance(o, BNode):
     #             rdf.remove((s, p, o))
-    #             o = self._metadata.namespace[str(o)]
+    #             o = self._metadata.namespace[f"_{str(o)}"]
     #             rdf.add((s, p, o))
     #     return rdf

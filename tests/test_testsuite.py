@@ -16,11 +16,11 @@ config_testsuite = NanopubConf(
 )
 
 
-def test_testsuite_sign_valid_plain():
+def test_testsuite_valid_plain():
     test_files = Path("./tests/testsuite/valid/plain").rglob('*')
 
     for test_file in test_files:
-        print(f'✒️ Testing signing valid plain nanopub: {test_file}')
+        print(f'☑️ Testing valid plain nanopub: {test_file}')
         if "/signed." in str(test_file):
             continue
 
@@ -34,23 +34,36 @@ def test_testsuite_sign_valid_plain():
             conf=config_testsuite,
             rdf=np_g
         )
-        # java_np = java_wrap.sign(np)
-        # np.sign()
-        print(np)
-        # assert np.has_valid_signature
         assert np.is_valid
-        # assert np.source_uri == java_np
+
+
+def test_testsuite_valid_signed():
+    test_files = Path("./tests/testsuite/valid/signed").rglob('*')
+
+    for test_file in test_files:
+        print(f'☑️ Testing valid plain nanopub: {test_file}')
+        if "/signed." in str(test_file):
+            continue
+
+        np = Nanopub(
+            conf=config_testsuite,
+            rdf=test_file
+        )
+        assert np.is_valid
+        assert np.metadata.trusty is not None
+        # TODO: we should be able to validate this signature?
+        # assert np.has_valid_signature
 
 
 def test_testsuite_sign_valid():
-    # TODO: remove
     test_files = [
-        # "./tests/testsuite/transform/signed/rsa-key1/simple1.in.trig",
+        "./tests/testsuite/transform/signed/rsa-key1/simple1.in.trig",
         "./tests/testsuite/transform/trusty/aida1.in.trig",
         "./tests/testsuite/transform/trusty/simple1.in.trig",
         "./tests/testsuite/valid/plain/aida1.trig",
         "./tests/testsuite/valid/plain/simple1.nq",
         "./tests/testsuite/valid/plain/simple1.trig",
+        "./tests/testsuite/valid/plain/simple1.xml",
     ]
 
     for test_file in test_files:
@@ -63,26 +76,6 @@ def test_testsuite_sign_valid():
 
         np = Nanopub(
             conf=config_testsuite,
-            rdf=Path(test_file)
-        )
-        java_np = java_wrap.sign(np)
-        np.sign()
-        assert np.has_valid_signature
-        assert np.is_valid
-        assert np.source_uri == java_np
-
-
-def test_testsuite_sign_valid_trix():
-    test_files = [
-        "./tests/testsuite/valid/plain/simple1.xml",
-    ]
-
-    for test_file in test_files:
-        print(f'✒️ Testing signing valid nanopub: {test_file}')
-        np_g = ConjunctiveGraph()
-        np_g.parse(test_file, format="trix")
-        np = Nanopub(
-            conf=config_testsuite,
             rdf=np_g
         )
         java_np = java_wrap.sign(np)
@@ -92,7 +85,7 @@ def test_testsuite_sign_valid_trix():
         assert np.source_uri == java_np
 
 
-def test_testsuite_valid_signed():
+def test_testsuite_valid_signature():
     test_files = [
         "./tests/testsuite/valid/signed/simple1-signed-rsa.trig",
         # "./tests/testsuite/valid/signed/simple1-signed-rsa.trig",
@@ -107,6 +100,7 @@ def test_testsuite_valid_signed():
             rdf=Path(test_file)
         )
         assert np.is_valid
+        assert np.has_valid_signature
 
 
 def test_testsuite_invalid():
@@ -118,21 +112,10 @@ def test_testsuite_invalid():
         "./tests/testsuite/invalid/plain/noinfolink.trig",
         "./tests/testsuite/invalid/plain/noprovlink.trig",
         "./tests/testsuite/invalid/plain/valid_invalid1.trig",
-        # "aaa",
-        # "aaa",
-        # "aaa",
-        # "aaa",
-        # "aaa",
-        # "aaa",
-        # "aaa",
-        # ValueError: RSA key format is not supported:
-        # "./tests/testsuite/invalid/signed/simple1-invalid-rsa.trig",
     ]
-    # java -jar lib/nanopub-1.*-jar-with-dependencies.jar sign tests/testsuite/transform/signed/rsa-key1/simple1.in.trig
 
     for test_file in test_files:
-        print(f'❎ Testing validating signed invalid nanopub: {test_file}')
-
+        print(f'❎ Testing validating invalid nanopub: {test_file}')
         try:
             np = Nanopub(
                 conf=config_testsuite,

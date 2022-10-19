@@ -91,7 +91,6 @@ WHERE {
         np_meta.signature = row.signature
         np_meta.public_key = row.pubkey
         np_meta.algorithm = row.algo
-        print("row.np!!!", row.np)
 
     # Check if the nanopub URI has a trusty artefact:
     separator_char = '/'
@@ -108,9 +107,6 @@ WHERE {
             # TODO: improve as the signed np namespace might be using / or # or .
             np_meta.namespace = Namespace(np_meta.np_uri + '#')
 
-    print("EXTRACT NP URIS")
-    print(np_meta.np_uri)
-    print(np_meta.namespace)
     return np_meta
 
 

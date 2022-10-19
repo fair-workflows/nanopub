@@ -33,6 +33,22 @@ def test_nanopub_sign_uri():
     assert np.source_uri == java_np
 
 
+
+def test_nanopub_sign_uri2():
+    expected_np_uri = "http://purl.org/np/RAoXkQkJe_lpMhYW61Y9mqWDHa5MAj1o4pWIiYLmAzY50"
+    np = Nanopub(
+        conf=default_config,
+    )
+    np.assertion.add((
+        URIRef('http://test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
+    ))
+    java_np = java_wrap.sign(np)
+    np.sign()
+    assert np.has_valid_signature
+    assert np.source_uri == expected_np_uri
+    assert np.source_uri == java_np
+
+
 def test_nanopub_sign_bnode():
     expected_np_uri = "http://purl.org/np/RAPPd9CZrgAo_XzrDRfUtXvRYVud2PDRgCN-z7eGhIwpc"
     assertion = Graph()
