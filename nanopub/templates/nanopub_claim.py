@@ -34,7 +34,7 @@ class NanopubClaim(Nanopub):
         if not self.profile:
             raise ProfileError("No profile provided, cannot generate a Nanopub Claim")
 
-        this_statement = self._namespace.claim
+        this_statement = self._metadata.namespace.claim
         # this_statement = BNode("mystatement")
         self.assertion.add((this_statement, RDF.type, HYCL.Statement))
         self.assertion.add((this_statement, RDFS.label, Literal(claim)))

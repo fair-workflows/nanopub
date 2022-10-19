@@ -16,7 +16,34 @@ config_testsuite = NanopubConf(
 )
 
 
-def test_nanopub_testsuite_sign_valid():
+def test_testsuite_sign_valid_plain():
+    test_files = Path("./tests/testsuite/valid/plain").rglob('*')
+
+    for test_file in test_files:
+        print(f'✒️ Testing signing valid plain nanopub: {test_file}')
+        if "/signed." in str(test_file):
+            continue
+
+        np_g = ConjunctiveGraph()
+        if str(test_file).endswith(".xml"):
+            np_g.parse(test_file, format="trix")
+        else:
+            np_g.parse(test_file)
+
+        np = Nanopub(
+            conf=config_testsuite,
+            rdf=np_g
+        )
+        # java_np = java_wrap.sign(np)
+        # np.sign()
+        print(np)
+        # assert np.has_valid_signature
+        assert np.is_valid
+        # assert np.source_uri == java_np
+
+
+def test_testsuite_sign_valid():
+    # TODO: remove
     test_files = [
         # "./tests/testsuite/transform/signed/rsa-key1/simple1.in.trig",
         "./tests/testsuite/transform/trusty/aida1.in.trig",
@@ -45,7 +72,7 @@ def test_nanopub_testsuite_sign_valid():
         assert np.source_uri == java_np
 
 
-def test_nanopub_testsuite_sign_valid_trix():
+def test_testsuite_sign_valid_trix():
     test_files = [
         "./tests/testsuite/valid/plain/simple1.xml",
     ]
@@ -65,7 +92,7 @@ def test_nanopub_testsuite_sign_valid_trix():
         assert np.source_uri == java_np
 
 
-def test_nanopub_testsuite_valid_signed():
+def test_testsuite_valid_signed():
     test_files = [
         "./tests/testsuite/valid/signed/simple1-signed-rsa.trig",
         # "./tests/testsuite/valid/signed/simple1-signed-rsa.trig",
@@ -82,7 +109,7 @@ def test_nanopub_testsuite_valid_signed():
         assert np.is_valid
 
 
-def test_nanopub_testsuite_invalid():
+def test_testsuite_invalid():
     test_files = [
         "./tests/testsuite/invalid/plain/emptya.trig",
         "./tests/testsuite/invalid/plain/emptyinfo.trig",

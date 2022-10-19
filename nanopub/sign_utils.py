@@ -14,25 +14,25 @@ from nanopub.trustyuri.rdf.RdfPreprocessor import transform
 from nanopub.utils import MalformedNanopubError, extract_signature, log
 
 
-def add_signature(g: ConjunctiveGraph, profile: Profile, dummy_namespace: Namespace) -> ConjunctiveGraph:
+def add_signature(g: ConjunctiveGraph, profile: Profile, dummy_namespace: Namespace, pubinfo_uri: URIRef) -> ConjunctiveGraph:
     """Implementation in python of the process to sign a nanopub with a RSA private key"""
     g.add((
         dummy_namespace["sig"],
         NPX["hasPublicKey"],
         Literal(profile.public_key),
-        dummy_namespace["pubinfo"],
+        pubinfo_uri,
     ))
     g.add((
         dummy_namespace["sig"],
         NPX["hasAlgorithm"],
         Literal("RSA"),
-        dummy_namespace["pubinfo"],
+        pubinfo_uri,
     ))
     g.add((
         dummy_namespace["sig"],
         NPX["hasSignatureTarget"],
         dummy_namespace[""],
-        dummy_namespace["pubinfo"],
+        pubinfo_uri,
     ))
     # Normalize RDF
     quads = RdfUtils.get_quads(g)
@@ -56,7 +56,7 @@ def add_signature(g: ConjunctiveGraph, profile: Profile, dummy_namespace: Namesp
         dummy_namespace["sig"],
         NPX["hasSignature"],
         Literal(signature),
-        dummy_namespace["pubinfo"],
+        pubinfo_uri,
     ))
 
     # Generate the trusty URI
