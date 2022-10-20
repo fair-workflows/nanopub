@@ -13,7 +13,7 @@ from nanopub.utils import log
 
 PROFILE_INSTRUCTIONS_MESSAGE = '''
     Follow these instructions to correctly setup your nanopub profile:
-    https://nanopub.readthedocs.io/en/latest/getting-started/setup.html#setup-your-profile
+    https://fair-workflows.github.io/nanopub/getting-started/setup/#setup-your-profile
 '''
 
 

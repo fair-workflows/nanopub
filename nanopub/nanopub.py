@@ -1,6 +1,6 @@
 """
 This module holds code for representing the RDF of nanopublications, as well as helper functions to
-make handling RDF easier.
+sign, publish, and make handling RDF easier.
 """
 import re
 from copy import deepcopy
@@ -234,7 +234,6 @@ class Nanopub:
             self.sign()
 
 
-
     def store(self, filepath: Path, format: str = 'trig') -> None:
         """Store the Nanopub object at the given path"""
         self._rdf.serialize(filepath, format=format)
@@ -289,10 +288,6 @@ class Nanopub:
                 break
         if not found_pubinfo:
             raise MalformedNanopubError(f"The pubinfo graph should contain at least one triple that has the nanopub URI as subject: \033[1m{np_uri}\033[0m")
-
-        # print(self)
-        # if len(self._head) != 4:
-        #     raise MalformedNanopubError(f"Too many triples in the nanopublication Head graph: {len(self._head)} instead of 4")
 
         # TODO: add more checks for trusty and signature
         # if self._metadata.signature:
@@ -391,13 +386,11 @@ class Nanopub:
     def get_source_uri_from_graph(self) -> Optional[str]:
         """Get the source URI of the nanopublication from the header.
 
-        This is usually something like:
-        http://purl.org/np/RAnksi2yDP7jpe7F6BwWCpMOmzBEcUImkAKUeKEY_2Yus
+        This is usually something like: http://purl.org/np/RAnksi2yDP7jpe7F6BwWCpMOmzBEcUImkAKUeKEY_2Yus
         """
         for s in self._rdf.subjects(rdflib.RDF.type, NP.Nanopublication):
             extract_trusty = re.search(r'^[a-z0-9+.-]+:\/\/[a-zA-Z0-9\/._-]+\/(RA.*)$', str(s), re.IGNORECASE)
             if extract_trusty:
-                # extract_trusty.group(1)
                 return str(s)
         return None
 
@@ -507,7 +500,6 @@ class Nanopub:
         assertion_attributed_to: Optional[str],
         attribute_assertion_to_profile: bool,
         introduces_concept: Optional[BNode],
-        # publication_attributed_to,
     ) -> None:
         """
         Validate arguments method.
@@ -567,18 +559,9 @@ class Nanopub:
                     "npx:introduces predicate, so you cannot also use the "
                     "introduces_concept argument"
                 )
-            # if (None, PROV.wasAttributedTo, None) in self._pubinfo:
-            #     raise MalformedNanopubError(
-            #         "The pubinfo_rdf that you passed should not contain the "
-            #         "prov:wasAttributedTo predicate. If you wish to change "
-            #         "who the publication is attributed to, please use the "
-            #         "publication_attributed_to argument instead. By default "
-            #         "this is the ORCID set in your profile, but you can set "
-            #         "it to another URI if desired."
-            #     )
 
-    # TODO: we might to use it to convert blank nodes directly as URI
-    # instead of having a hack to normalize URIs starting with _
+    # TODO: we might to use it to convert blank nodes directly as URI here
+    # instead of doing it through the get_trustyuri() function
     # def _replace_blank_nodes(self, rdf: ConjunctiveGraph) -> ConjunctiveGraph:
     #     """Replace blank nodes.
     #       Replace any blank nodes in the supplied RDF with a corresponding uri in the

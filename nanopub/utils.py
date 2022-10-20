@@ -11,10 +11,7 @@ log = logging.getLogger()
 
 
 class MalformedNanopubError(ValueError):
-    """
-    Error to be raised if a Nanopub is not formed correctly.
-    """
-
+    """Error to be raised if a Nanopub is not formed correctly."""
 
 
 @dataclass
@@ -37,7 +34,6 @@ class NanopubMetadata:
     trusty: Optional[str] = None
 
     dict = asdict
-
 
 
 def extract_np_metadata(g: ConjunctiveGraph) -> NanopubMetadata:

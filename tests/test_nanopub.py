@@ -12,7 +12,6 @@ def test_nanopub_sign_uri():
     assertion.add((
         URIRef('http://test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
     ))
-
     np = Nanopub(
         conf=default_conf,
         assertion=assertion
@@ -46,7 +45,6 @@ def test_nanopub_sign_bnode():
     assertion.add((
         BNode('test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
     ))
-
     np = Nanopub(
         conf=default_conf,
         assertion=assertion
@@ -65,7 +63,6 @@ def test_nanopub_sign_bnode2():
     assertion.add((
         BNode('test2'), namespaces.HYCL.claims, Literal('This is another test of nanopub-python')
     ))
-
     np = Nanopub(
         conf=default_conf,
         assertion=assertion
@@ -113,7 +110,7 @@ def test_nanopub_retract():
         assertion=assertion
     )
     np.publish()
-
+    # Now retract
     np2 = NanopubRetract(
         uri=np.source_uri,
         conf=default_conf,
@@ -134,7 +131,7 @@ def test_nanopub_update():
         assertion=assertion
     )
     np.publish()
-
+    # Now update
     assertion2 = Graph()
     assertion2.add((
         URIRef('http://test'), namespaces.HYCL.claims, Literal('Another test of nanopub-python')

@@ -33,7 +33,7 @@ NP_URI = DUMMY_NAMESPACE[""]
 
 class NanopubClient:
     """
-    Provides utility functions for searching nanopublications.
+    Provides utility functions for searching published nanopublications.
 
     Args:
         use_test_server (bool): Toggle using the test nanopub server.

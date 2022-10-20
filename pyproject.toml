@@ -64,7 +64,6 @@ doc = [
 ]
 dev = [
     "mypy ==0.971",
-    "uvicorn[standard] >=0.12.0,<0.19.0",
     "pre-commit >=2.17.0,<3.0.0",
     "autoflake >=1.4.0,<2.0.0",
     "types-requests",
@@ -72,8 +71,8 @@ dev = [
 
 
 [project.urls]
-Homepage = "https://github.com/fair-workflows/nanopub"
-Documentation = "https://nanopub.readthedocs.io"
+Homepage = "https://fair-workflows.github.io/nanopub"
+Documentation = "https://fair-workflows.github.io/nanopub"
 History = "https://github.com/fair-workflows/nanopub/releases"
 Tracker = "https://github.com/fair-workflows/nanopub/issues"
 Source = "https://github.com/fair-workflows/nanopub"
@@ -140,7 +139,6 @@ pretty = true
 show_column_numbers = true
 warn_no_return = false
 warn_unused_ignores = true
-exclude = [ "nanopub/publication.py" ]
 
 
 [tool.pytest.ini_options]
