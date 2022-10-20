@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from rdflib import URIRef
 
 from nanopub.namespaces import NPX
@@ -27,13 +29,14 @@ class NanopubRetract(Nanopub):
         uri: str,
         force: bool = False,
     ) -> None:
+        conf = deepcopy(conf)
+        conf.add_prov_generated_time = True
+        conf.add_pubinfo_generated_time = True
+        conf.attribute_publication_to_profile = True
+        conf.attribute_assertion_to_profile = True
         super().__init__(
             conf=conf,
         )
-        self._conf.add_prov_generated_time = True
-        self._conf.add_pubinfo_generated_time = True
-        self._conf.attribute_publication_to_profile = True
-        self._conf.attribute_assertion_to_profile = True
         if not self.profile:
             raise ProfileError("No profile provided, cannot generate a Nanopub to retract another nanopub")
 
