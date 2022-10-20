@@ -419,12 +419,7 @@ class Nanopub:
         s = ""
         if self._source_uri:
             s += f"Nanopub URI: \033[1m{self._source_uri}\033[0m\n"
-        np_serialized = self._rdf.serialize(format='trig')
-        # In rdflib v5, .serialize() returns a bytes object that needs to be decoded.
-        # (rdflib 6+ returns a str)
-        if isinstance(np_serialized, bytes):
-            np_serialized = np_serialized.decode('utf-8')
-        s += np_serialized
+        s += self._rdf.serialize(format='trig')
         return s
 
 

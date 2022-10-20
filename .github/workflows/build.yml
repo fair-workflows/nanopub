@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
         python-version: [3.7, 3.8, 3.9, '3.10']
-        rdflib-version: ['>=5.0.0,<6.0.0', '>6.0.0,<7.0.0']
+        rdflib-version: ['==6.0.2','>6.0.2,<7.0.0']
 
     steps:
       - uses: actions/checkout@v3
@@ -19,7 +19,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies
+      - name: Install dependencies with rdflib ${{ matrix.rdflib-version }}
         env:
           RDFLIB_VERSION: ${{ matrix.rdflib-version }}
         run: |
