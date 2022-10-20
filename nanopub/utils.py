@@ -44,8 +44,7 @@ def extract_np_metadata(g: ConjunctiveGraph) -> NanopubMetadata:
     """Extract a nanopub URI, namespace and head/assertion/prov/pubinfo contexts from a Graph"""
     get_np_query = """prefix np: <http://www.nanopub.org/nschema#>
 
-SELECT DISTINCT ?np ?head ?assertion ?provenance ?pubinfo
-?sigUri ?signature ?pubkey ?algo
+SELECT DISTINCT ?np ?head ?assertion ?provenance ?pubinfo ?sigUri ?signature ?pubkey ?algo
 WHERE {
     GRAPH ?head {
         ?np a np:Nanopublication ;
