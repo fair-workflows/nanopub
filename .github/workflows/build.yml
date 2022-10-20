@@ -9,7 +9,9 @@ jobs:
     strategy:
       matrix:
         python-version: [3.7, 3.8, 3.9, '3.10']
-        rdflib-version: ['==6.0.2','>6.0.2,<7.0.0']
+        rdflib-version:
+          - rdflib==6.0.2
+          - rdflib>6.0.2,<7.0.0
 
     steps:
       - uses: actions/checkout@v3
@@ -19,11 +21,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies with rdflib ${{ matrix.rdflib-version }}
+      - name: Install dependencies with ${{ matrix.rdflib-version }}
         env:
           RDFLIB_VERSION: ${{ matrix.rdflib-version }}
         run: |
-          pip install ".[test,dev]" "rdflib$RDFLIB_VERSION"
+          pip install ".[test,dev]" "$RDFLIB_VERSION"
 
       - name: Lint with flake8, isort and mypy
         run: bash scripts/lint.sh
