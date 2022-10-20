@@ -3,7 +3,7 @@ from rdflib import Graph, Literal, URIRef
 from nanopub import Nanopub, namespaces
 from nanopub.client import DUMMY_NAMESPACE
 from nanopub.sign_utils import add_signature
-from tests.conftest import default_config, java_wrap, profile_test
+from tests.conftest import default_conf, java_wrap, profile_test
 
 
 def test_nanopub_sign():
@@ -15,7 +15,7 @@ def test_nanopub_sign():
     ))
 
     np = Nanopub(
-        conf=default_config,
+        conf=default_conf,
         assertion=assertion
     )
     java_np = java_wrap.sign(np)

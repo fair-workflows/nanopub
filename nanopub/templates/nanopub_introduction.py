@@ -22,13 +22,13 @@ class NanopubIntroduction(Nanopub):
         conf: NanopubConf,
         host: Optional[str] = None,
     ) -> None:
-        conf.add_prov_generated_time = False
-        conf.add_pubinfo_generated_time = True
-        conf.attribute_publication_to_profile = True
-        conf.attribute_assertion_to_profile = True
         super().__init__(
             conf=conf,
         )
+        self._conf.add_prov_generated_time = False
+        self._conf.add_pubinfo_generated_time = True
+        self._conf.attribute_publication_to_profile = True
+        self._conf.attribute_assertion_to_profile = True
         if not self.profile:
             raise ProfileError("No profile provided, cannot generate a Nanopub Introduction")
 

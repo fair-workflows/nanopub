@@ -8,7 +8,7 @@ from nanopub.trustyuri.file import FileHasher
 def process(args):
     filename = args[0]
 
-    with open(filename, "r") as f:
+    with open(filename) as f:
         hashstr = FileHasher.make_hash(f.read())
         ext = ""
         base = filename

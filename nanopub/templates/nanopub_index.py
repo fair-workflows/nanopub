@@ -34,12 +34,12 @@ class NanopubIndex(Nanopub):
         see_also: str = None,
         top_level: bool = False,
     ) -> None:
-        conf.add_prov_generated_time = False
-        conf.add_pubinfo_generated_time = True
-        conf.attribute_publication_to_profile = True
         super().__init__(
             conf=conf,
         )
+        self._conf.add_prov_generated_time = False
+        self._conf.add_pubinfo_generated_time = True
+        self._conf.attribute_publication_to_profile = True
 
         for np in np_list:
             if isinstance(np, Nanopub):

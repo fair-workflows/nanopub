@@ -2,18 +2,9 @@ from pathlib import Path
 
 from rdflib import ConjunctiveGraph
 
-from nanopub import Nanopub, NanopubConf
+from nanopub import Nanopub
 from nanopub.utils import MalformedNanopubError
-from tests.conftest import java_wrap, profile_test
-
-config_testsuite = NanopubConf(
-    add_prov_generated_time=False,
-    add_pubinfo_generated_time=False,
-    attribute_assertion_to_profile=False,
-    attribute_publication_to_profile=False,
-    profile=profile_test,
-    use_test_server=True,
-)
+from tests.conftest import java_wrap, testsuite_conf
 
 
 def test_testsuite_valid_plain():
@@ -31,7 +22,7 @@ def test_testsuite_valid_plain():
             np_g.parse(test_file)
 
         np = Nanopub(
-            conf=config_testsuite,
+            conf=testsuite_conf,
             rdf=np_g
         )
         assert np.is_valid
@@ -46,7 +37,7 @@ def test_testsuite_valid_signed():
             continue
 
         np = Nanopub(
-            conf=config_testsuite,
+            conf=testsuite_conf,
             rdf=test_file
         )
         assert np.is_valid
@@ -63,7 +54,7 @@ def test_testsuite_valid_trusty():
     for test_file in test_files:
         print(f'☑️ Testing valid trusty nanopub: {test_file}')
         np = Nanopub(
-            conf=config_testsuite,
+            conf=testsuite_conf,
             rdf=test_file
         )
         assert np.is_valid
@@ -93,7 +84,7 @@ def test_testsuite_sign_valid():
             np_g.parse(test_file)
 
         np = Nanopub(
-            conf=config_testsuite,
+            conf=testsuite_conf,
             rdf=np_g
         )
         java_np = java_wrap.sign(np)
@@ -115,7 +106,7 @@ def test_testsuite_valid_signature():
     for test_file in test_files:
         print(f'✅ Testing validating signed valid nanopub: {test_file}')
         np = Nanopub(
-            conf=config_testsuite,
+            conf=testsuite_conf,
             rdf=Path(test_file)
         )
         assert np.is_valid
@@ -139,7 +130,7 @@ def test_testsuite_invalid_plain():
         print(f'❎ Testing validating invalid nanopub: {test_file}')
         try:
             np = Nanopub(
-                conf=config_testsuite,
+                conf=testsuite_conf,
                 rdf=Path(test_file)
             )
             np.is_valid

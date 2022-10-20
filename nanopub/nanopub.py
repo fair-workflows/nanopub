@@ -3,6 +3,7 @@ This module holds code for representing the RDF of nanopublications, as well as 
 make handling RDF easier.
 """
 import re
+from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, Union
@@ -47,7 +48,7 @@ class Nanopub:
         self._profile = conf.profile
         self._source_uri = source_uri
         self._concept_uri = None
-        self._conf = conf
+        self._conf = deepcopy(conf)
         self._metadata = NanopubMetadata()
         self._published = False
         if self._conf.use_test_server:
@@ -178,7 +179,7 @@ class Nanopub:
             raise MalformedNanopubError(f"Nanopublication contains {len(self.rdf)} triples, which is more than the {MAX_TRIPLES_PER_NANOPUB} authorized")
         if not self._conf.profile:
             raise ProfileError("Profile not available, cannot sign the nanopub")
-        if self.source_uri:
+        if self._metadata.signature:
             raise MalformedNanopubError(f"The nanopub have already been signed: {self.source_uri}")
 
         if self.is_valid:
@@ -211,6 +212,27 @@ class Nanopub:
             )
             self.concept_uri = concept_uri
             log.info(f"Published concept to {concept_uri}")
+
+
+    def update(self, publish=True) -> None:
+        """Re-publish an updated Nanopub object"""
+        self._pubinfo.add((
+            URIRef(self.source_uri),
+            NPX.supersedes,
+            URIRef(self.source_uri),
+        ))
+        self._pubinfo.remove((
+            self._metadata.sig_uri,
+            None,
+            None,
+        ))
+        self._metadata = extract_np_metadata(self._rdf)
+        print(self._metadata)
+        if publish:
+            self.publish()
+        else:
+            self.sign()
+
 
 
     def store(self, filepath: Path, format: str = 'trig') -> None:

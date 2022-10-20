@@ -7,3 +7,4 @@ from .templates.nanopub_index import NanopubIndex, create_nanopub_index
 from .templates.nanopub_introduction import NanopubIntroduction
 from .templates.nanopub_claim import NanopubClaim
 from .templates.nanopub_retract import NanopubRetract
+from .templates.nanopub_update import NanopubUpdate

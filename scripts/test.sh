@@ -3,6 +3,6 @@
 set -e
 set -x
 
-# bash ./scripts/lint.sh
+bash ./scripts/lint.sh
 
-pytest -s --cov=nanopub --cov-report=term-missing:skip-covered ${@}
+pytest --cov=nanopub --cov-report=term-missing:skip-covered ${@}

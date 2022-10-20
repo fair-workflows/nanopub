@@ -1,4 +1,7 @@
-from rdflib import URIRef
+from pathlib import Path
+from typing import Union
+
+from rdflib import ConjunctiveGraph, Graph, URIRef
 
 from nanopub.namespaces import NPX
 from nanopub.nanopub import Nanopub
@@ -7,8 +10,9 @@ from nanopub.profile import ProfileError
 from nanopub.utils import MalformedNanopubError
 
 
-class NanopubRetract(Nanopub):
-    """Retract a nanopublication.
+# TODO: improve to better inherit from the nanopub we want to update
+class NanopubUpdate(Nanopub):
+    """Update a nanopublication.
 
     Publish a retraction nanpublication that declares retraction of the nanopublication that
     corresponds to the 'uri' argument.
@@ -26,9 +30,17 @@ class NanopubRetract(Nanopub):
         conf: NanopubConf,
         uri: str,
         force: bool = False,
+        assertion: Graph = Graph(),
+        provenance: Graph = Graph(),
+        pubinfo: Graph = Graph(),
+        rdf: Union[ConjunctiveGraph, Path] = None,
     ) -> None:
         super().__init__(
             conf=conf,
+            assertion=assertion,
+            provenance=provenance,
+            pubinfo=pubinfo,
+            rdf=rdf,
         )
         self._conf.add_prov_generated_time = True
         self._conf.add_pubinfo_generated_time = True
@@ -39,9 +51,9 @@ class NanopubRetract(Nanopub):
 
         if not force:
             self._check_public_keys_match(uri)
-        orcid_id = self.profile.orcid_id
-        self.assertion.add(
-            (URIRef(orcid_id), NPX.retracts, URIRef(uri))
+
+        self.pubinfo.add(
+            (self._metadata.namespace[""], NPX.supersedes, URIRef(uri))
         )
 
 
@@ -66,5 +78,5 @@ class NanopubRetract(Nanopub):
         if np.metadata.public_key != self._conf.profile.public_key is None:
             raise AssertionError(
                 "The public key in your profile does not match the public key"
-                "that the publication that you want to retract is signed with."
+                "that the publication that you want to update is signed with."
             )

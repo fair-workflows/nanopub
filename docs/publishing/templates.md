@@ -4,21 +4,6 @@ The nanopub library provides a few objects to easily publish specific types of n
 
 You can also easily create your own template by inheriting from the `Nanopub` class.
 
-## 💬 Claim
-
-Publish a simple [HYCL](http://purl.org/petapico/o/hycl) claim:
-
-```python
-from nanopub import NanopubConf, NanopubClaim
-
-np_conf = NanopubConf(profile=load_profile(), use_test_server=True)
-
-np = NanopubClaim(
-	claim='All cats are grey',
-    conf=np_conf,
-)
-np.publish()
-```
 
 ## 🗂️ Nanopub index
 
@@ -62,6 +47,44 @@ np_conf = NanopubConf(profile=load_profile(), use_test_server=True)
 np = NanopubIntroduction(
     conf=np_conf,
     host=None,
+)
+np.publish()
+```
+
+## 📝 Update a published nanopub
+
+To update a nanopub content, provide the URI to the nanopub to update, and the new assertion graph. You can also provide the pubinfo, provenance and complete RDF (like for the `Nanopub` object).
+
+```python
+from nanopub import NanopubConf
+from nanopub.templates import NanopubIntroduction
+
+np_conf = NanopubConf(profile=load_profile())
+
+assertion = Graph()
+assertion.add((
+    BNode('test'), namespaces.HYCL.claims, Literal('This is the updated nanopublication assertion')
+))
+np = NanopubUpdate(
+    uri="http://purl.org/np/RAfk_zBYDerxd6ipfv8fAcQHEzgZcVylMTEkiLlMzsgwQ",
+    conf=np_conf,
+    assertion=assertion,
+)
+np.sign()
+```
+
+## 💬 Claim
+
+Publish a simple [HYCL](http://purl.org/petapico/o/hycl) claim:
+
+```python
+from nanopub import NanopubConf, NanopubClaim
+
+np_conf = NanopubConf(profile=load_profile(), use_test_server=True)
+
+np = NanopubClaim(
+	claim='All cats are grey',
+    conf=np_conf,
 )
 np.publish()
 ```

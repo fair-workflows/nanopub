@@ -40,8 +40,6 @@ class NanopubMetadata:
 
 
 
-
-
 def extract_np_metadata(g: ConjunctiveGraph) -> NanopubMetadata:
     """Extract a nanopub URI, namespace and head/assertion/prov/pubinfo contexts from a Graph"""
     get_np_query = """PREFIX np: <http://www.nanopub.org/nschema#>
@@ -109,7 +107,7 @@ WHERE {
     return np_meta
 
 
-
+# TODO: remove to only use extract_np_metadata()
 def extract_signature(g: ConjunctiveGraph) -> Optional[Dict]:
     """Extract a nanopub signature from a Graph"""
     get_np_query = """PREFIX np: <http://www.nanopub.org/nschema#>

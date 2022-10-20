@@ -12,7 +12,7 @@ def transform(args):
     filename = args[0]
     baseuristr = args[1]
 
-    with open(filename, "r") as f:
+    with open(filename) as f:
         rdfFormat = RdfUtils.get_format(filename)
         cg = ConjunctiveGraph()
         cg.parse(data=f.read(), format=rdfFormat)
