@@ -18,7 +18,7 @@ from nanopub.namespaces import HYCL, NP, NPX, NTEMPLATE, ORCID, PAV
 from nanopub.nanopub_conf import NanopubConf
 from nanopub.profile import ProfileError
 from nanopub.sign_utils import add_signature, publish_graph, verify_signature, verify_trusty
-from nanopub.utils import MalformedNanopubError, NanopubMetadata, extract_np_metadata, extract_signature, log
+from nanopub.utils import MalformedNanopubError, NanopubMetadata, extract_np_metadata, log
 
 
 class Nanopub:
@@ -404,9 +404,9 @@ class Nanopub:
 
     @property
     def signed_with_public_key(self) -> Optional[str]:
-        np_sig = extract_signature(self._rdf)
-        if np_sig and "public_key" in np_sig.keys():
-            return np_sig["public_key"]
+        np_sig = extract_np_metadata(self._rdf)
+        if np_sig.public_key:
+            return np_sig.public_key
         return None
 
 
@@ -417,9 +417,14 @@ class Nanopub:
 
     def __str__(self) -> str:
         s = ""
-        if self.source_uri:
-            s += f"Nanopub URI: \033[1m{self.source_uri}\033[0m\n"
-        s += self._rdf.serialize(format="trig")
+        if self._source_uri:
+            s += f"Nanopub URI: \033[1m{self._source_uri}\033[0m\n"
+        np_serialized = self._rdf.serialize(format='trig')
+        # In rdflib v5, .serialize() returns a bytes object that needs to be decoded.
+        # (rdflib 6+ returns a str)
+        if isinstance(np_serialized, bytes):
+            np_serialized = np_serialized.decode('utf-8')
+        s += np_serialized
         return s
 
 

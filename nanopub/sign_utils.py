@@ -11,7 +11,7 @@ from nanopub.namespaces import NPX
 from nanopub.profile import Profile
 from nanopub.trustyuri.rdf import RdfHasher, RdfUtils
 from nanopub.trustyuri.rdf.RdfPreprocessor import transform
-from nanopub.utils import MalformedNanopubError, extract_signature, log
+from nanopub.utils import MalformedNanopubError, extract_np_metadata, log
 
 
 def add_signature(g: ConjunctiveGraph, profile: Profile, dummy_namespace: Namespace, pubinfo_uri: URIRef) -> ConjunctiveGraph:
@@ -135,8 +135,8 @@ def verify_trusty(g: ConjunctiveGraph, source_uri: str, source_namespace: Namesp
 def verify_signature(g: ConjunctiveGraph, source_namespace: Namespace) -> bool:
     """Verify RSA signature in a nanopub Graph"""
     # Get signature and public key from the triples
-    np_sig = extract_signature(g)
-    if not np_sig:
+    np_sig = extract_np_metadata(g)
+    if not np_sig.signature:
         raise MalformedNanopubError("No Signature found in the nanopublication RDF")
 
     # Normalize RDF
@@ -148,11 +148,11 @@ def verify_signature(g: ConjunctiveGraph, source_namespace: Namespace) -> bool:
     )
 
     # Verify signature using the normalized RDF
-    key = RSA.import_key(decodebytes(str(np_sig["public_key"]).encode()))
+    key = RSA.import_key(decodebytes(str(np_sig.public_key).encode()))
     hash_value = SHA256.new(normed_rdf.encode())
     verifier = PKCS1_v1_5.new(key)
     try:
-        verifier.verify(hash_value, decodebytes(np_sig["signature"].encode()))
+        verifier.verify(hash_value, decodebytes(np_sig.signature.encode()))
         return True
     except Exception as e:
         raise MalformedNanopubError(e)

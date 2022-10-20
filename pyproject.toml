@@ -32,7 +32,7 @@ classifiers = [
 dynamic = ["version"]
 
 dependencies = [
-    "rdflib <7.0.0,>=6.0.0",
+    "rdflib <7.0.0,>=5.0.0",
     "requests",
     "typer",
     "yatiml",

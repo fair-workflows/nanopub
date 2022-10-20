@@ -1,7 +1,7 @@
 import logging
 import re
 from dataclasses import asdict, dataclass
-from typing import Dict, Optional
+from typing import Optional
 
 from rdflib import ConjunctiveGraph, Namespace, URIRef
 
@@ -105,49 +105,3 @@ WHERE {
             np_meta.namespace = Namespace(np_meta.np_uri + '#')
 
     return np_meta
-
-
-# TODO: remove to only use extract_np_metadata()
-def extract_signature(g: ConjunctiveGraph) -> Optional[Dict]:
-    """Extract a nanopub signature from a Graph"""
-    get_np_query = """PREFIX np: <http://www.nanopub.org/nschema#>
-PREFIX npx: <http://purl.org/nanopub/x/>
-
-SELECT DISTINCT ?np ?sigUri ?signature ?pubkey ?algo WHERE {
-    GRAPH ?head {
-        ?np a np:Nanopublication ;
-            np:hasAssertion ?assertion ;
-            np:hasProvenance ?provenance ;
-            np:hasPublicationInfo ?pubinfo .
-    }
-    GRAPH ?pubinfo {
-        ?sigUri npx:hasSignatureTarget ?np ;
-            npx:hasPublicKey ?pubkey ;
-            npx:hasAlgorithm ?algo ;
-            npx:hasSignature ?signature .
-    }
-}
-"""
-    qres = g.query(get_np_query)
-    if len(qres) < 1:
-        raise MalformedNanopubError(
-            "\033[1mNo signature\033[0m has been found in the provided RDF. "
-        )
-    if len(qres) > 1:
-        signatures_found: list = []
-        for row in qres:
-            signatures_found.append(row.signature)
-        raise MalformedNanopubError(
-            f"\033[1mMultiple signatures\033[0m are defined in this graph: {', '.join(signatures_found)}"
-        )
-
-    np_sig: Optional[Dict] = None
-    for row in qres:
-        np_sig = {}
-        np_sig['signature'] = row.signature
-        np_sig['public_key'] = row.pubkey
-        np_sig['algorithm'] = row.algo
-        np_sig['sig_uri'] = row.sigUri
-        np_sig['np_uri'] = row.np
-
-    return np_sig
