@@ -131,6 +131,12 @@ The tests use the [```nanopub-java```](https://github.com/Nanopublication/nanopu
 	hatch run test
 	```
 
+	You can also run only a specific test:
+
+	```bash
+	hatch run test tests/test_nanopub.py::test_nanopub_sign_uri
+	```
+
 
 ## 📖 Generate docs
 
