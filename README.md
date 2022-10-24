@@ -1,3 +1,4 @@
+[![nanopub](https://img.shields.io/badge/rsd-nanopub-00a3e3.svg)](https://www.research-software.nl/software/nanopub)
 ![Build Status](https://github.com/fair-workflows/nanopub/workflows/Python%20application/badge.svg)
 [![Documentation Status](https://readthedocs.org/projects/nanopub/badge/?version=latest)](https://nanopub.readthedocs.io/en/latest/?badge=latest)
 [![Coverage Status](https://coveralls.io/repos/github/fair-workflows/nanopub/badge.svg?branch=main)](https://coveralls.io/github/fair-workflows/nanopub?branch=main)
