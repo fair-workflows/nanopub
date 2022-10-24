@@ -12,8 +12,7 @@ To publish an index of nanopublications. Note that a nanopub cannot contain more
 For this we will use the `create_nanopub_index()` function instead of directly instantiating a `NanopubIndex`
 
 ```bash
-from nanopub import NanopubConf
-from nanopub.templates import NanopubIndex
+from nanopub import create_nanopub_index, NanopubConf
 
 np_conf = NanopubConf(profile=load_profile(), use_test_server=True)
 
@@ -30,8 +29,8 @@ np_list = create_nanopub_index(
     see_also="https://github.com/fair-workflows/nanopub",
 )
 for np in np_list:
-	print(np)
 	np.publish()
+	print(np)
 ```
 
 ## 👤 ORCID introduction
@@ -39,8 +38,7 @@ for np in np_list:
 To publish a nanopublication introducing a keypair for an ORCID.
 
 ```python
-from nanopub import NanopubConf
-from nanopub.templates import NanopubIntroduction
+from nanopub import NanopubConf, NanopubIntroduction
 
 np_conf = NanopubConf(profile=load_profile(), use_test_server=True)
 
@@ -56,8 +54,7 @@ np.publish()
 To update a nanopub content, provide the URI to the nanopub to update, and the new assertion graph. You can also provide the pubinfo, provenance and complete RDF (like for the `Nanopub` object).
 
 ```python
-from nanopub import NanopubConf
-from nanopub.templates import NanopubIntroduction
+from nanopub import NanopubConf, NanopubUpdate
 
 np_conf = NanopubConf(profile=load_profile())
 
