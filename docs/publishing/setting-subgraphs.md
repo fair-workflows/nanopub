@@ -78,7 +78,7 @@ my_assertion.add((rdflib.term.BNode('timbernserslee'), rdflib.RDF.type, rdflib.F
 provenance_rdf = rdflib.Graph()
 provenance_rdf = provenance_rdf.add((
     BNode('timbernserslee'),
-	namespaces.PROV.actedOnBehalfOf,
+    namespaces.PROV.actedOnBehalfOf,
     BNode('markzuckerberg')
 ))
 

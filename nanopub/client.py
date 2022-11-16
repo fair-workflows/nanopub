@@ -9,24 +9,17 @@ import rdflib
 import requests
 
 from nanopub import namespaces
-from nanopub.definitions import DUMMY_NANOPUB_URI, NANOPUB_SERVER_LIST, NANOPUB_TEST_SERVER
+from nanopub.definitions import (
+    DUMMY_NANOPUB_URI,
+    NANOPUB_GRLC_URLS,
+    NANOPUB_SERVER_LIST,
+    NANOPUB_TEST_GRLC_URL,
+    NANOPUB_TEST_SERVER,
+)
 from nanopub.nanopub import Nanopub
 from nanopub.nanopub_conf import NanopubConf
 from nanopub.utils import log
 
-NANOPUB_GRLC_URLS = [
-    "http://grlc.nanopubs.lod.labs.vu.nl/api/local/local/",
-    "http://130.60.24.146:7881/api/local/local/",
-    "https://openphacts.cs.man.ac.uk/nanopub/grlc/api/local/local/",
-    "http://grlc.np.dumontierlab.com/api/local/local/"
-    # These servers do currently not support
-    # find_valid_signed_nanopubs_with_pattern (2020-12-21)
-    # "https://grlc.nanopubs.knows.idlab.ugent.be/api/local/local/",
-    # "http://grlc.np.scify.org/api/local/local/",
-]
-NANOPUB_TEST_GRLC_URL = "http://test-grlc.nanopubs.lod.labs.vu.nl/api/local/local/"
-NANOPUB_FETCH_FORMAT = "trig"
-NANOPUB_TEST_URL = "http://test-server.nanopubs.lod.labs.vu.nl/"
 DUMMY_NAMESPACE = rdflib.Namespace(DUMMY_NANOPUB_URI + "#")
 NP_URI = DUMMY_NAMESPACE[""]
 
@@ -331,27 +324,3 @@ class NanopubClient:
             parsed["label"] = result["label"]["value"]
         parsed["date"] = result["date"]["value"]
         return parsed
-
-
-    # def fetch(self, uri: str):
-    #     """Fetch nanopublication
-
-    #     Download the nanopublication at the specified URI.
-
-    #     Args:
-    #         uri: The URI of the nanopublication to fetch.
-
-    #     Returns:
-    #         Nanopub: a Nanopub object representing the nanopublication.
-    #     """
-    #     r = requests.get(uri + "." + NANOPUB_FETCH_FORMAT)
-    #     if not r.ok and self.use_test_server:
-    #         # Let's try the test server
-    #         nanopub_id = uri.rsplit("/", 1)[-1]
-    #         uri = NANOPUB_TEST_URL + nanopub_id
-    #         r = requests.get(uri + "." + NANOPUB_FETCH_FORMAT)
-    #     r.raise_for_status()
-
-    #     nanopub_rdf = rdflib.ConjunctiveGraph()
-    #     nanopub_rdf.parse(data=r.text, format=NANOPUB_FETCH_FORMAT)
-    #     return Nanopub(rdf=nanopub_rdf, source_uri=uri)

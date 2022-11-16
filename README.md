@@ -10,7 +10,7 @@
 # nanopub
 The ```nanopub``` library provides a high-level, user-friendly python interface for searching, publishing and retracting nanopublications.
 
-Nanopublications are a formalized and machine-readable way of communicating the smallest possible units of publishable information. See [the documentation](https://nanopub.readthedocs.io/en/latest/getting-started/what-are-nanopubs.html) for more information.
+Nanopublications are a formalized and machine-readable way of communicating the smallest possible units of publishable information. See [the documentation](https://fair-workflows.github.io/nanopub/getting-started/what-are-nanopubs) for more information.
 
 # Documentation
 
@@ -39,7 +39,7 @@ from nanopub import Nanopub, NanopubConf, load_profile
 # 1. Create the config
 np_conf = NanopubConf(
     use_test_server=True,
-    profile=load_profile(),
+    profile=load_profile(), # Loads the user profile that was created with `np setup`
     add_prov_generated_time=True,
     attribute_publication_to_profile=True,
 )

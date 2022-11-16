@@ -6,7 +6,7 @@ from nanopub import NanopubConf, NanopubRetract
 np_conf = NanopubConf(profile=load_profile(), use_test_server=True)
 
 np = NanopubRetract(
-	'http://purl.org/np/RAfk_zBYDerxd6ipfv8fAcQHEzgZcVylMTEkiLlMzsgwQ',
+    'http://purl.org/np/RAfk_zBYDerxd6ipfv8fAcQHEzgZcVylMTEkiLlMzsgwQ',
     np_conf,
 )
 np.publish()
@@ -30,7 +30,7 @@ By default we do not retract nanopublications that are not yours (i.e. signed wi
 We can use `force=True` to override this behavior:
 ```python
 np = NanopubRetract(
-	'http://purl.org/np/RAfk_zBYDerxd6ipfv8fAcQHEzgZcVylMTEkiLlMzsgwQ',
+    'http://purl.org/np/RAfk_zBYDerxd6ipfv8fAcQHEzgZcVylMTEkiLlMzsgwQ',
     np_conf,
     force=True
 )

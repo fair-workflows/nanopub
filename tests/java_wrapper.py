@@ -91,8 +91,3 @@ class JavaWrapper:
     def _get_signed_file(self, unsigned_file: str):
         unsigned_path = Path(unsigned_file)
         return str(unsigned_path.parent / f'signed.{unsigned_path.name}')
-
-
-    # def make_keys(self, path_name='~/.nanopub/id'):
-    #     """Use nanopub-java to make the RSA keys in ~/.nanopub/id_rsa"""
-    #     self._run_command(f'{NANOPUB_JAVA_SCRIPT} mkkeys -a RSA -f {path_name}')

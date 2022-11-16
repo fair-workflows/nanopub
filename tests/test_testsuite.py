@@ -98,7 +98,6 @@ def test_testsuite_sign_valid():
 def test_testsuite_valid_signature():
     test_files = [
         "./tests/testsuite/valid/signed/simple1-signed-rsa.trig",
-        # "./tests/testsuite/valid/signed/simple1-signed-rsa.trig",
         # "./tests/testsuite/valid/signed/simple1-signed-dsa.trig",
     ]
     # java -jar lib/nanopub-1.38-jar-with-dependencies.jar sign tests/testsuite/transform/signed/rsa-key1/simple1.in.trig
@@ -116,15 +115,6 @@ def test_testsuite_valid_signature():
 
 def test_testsuite_invalid_plain():
     test_files = Path("./tests/testsuite/invalid/plain").rglob('*')
-    # test_files = [
-    #     "./tests/testsuite/invalid/plain/emptya.trig",
-    #     "./tests/testsuite/invalid/plain/emptyinfo.trig",
-    #     "./tests/testsuite/invalid/plain/emptyprov.trig",
-    #     "./tests/testsuite/invalid/plain/extragraph.trig",
-    #     "./tests/testsuite/invalid/plain/noinfolink.trig",
-    #     "./tests/testsuite/invalid/plain/noprovlink.trig",
-    #     "./tests/testsuite/invalid/plain/valid_invalid1.trig",
-    # ]
 
     for test_file in test_files:
         print(f'❎ Testing validating invalid nanopub: {test_file}')

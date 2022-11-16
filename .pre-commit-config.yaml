@@ -43,17 +43,6 @@ repos:
     hooks:
     -   id: isort
         name: 🔄 Formatting imports with isort (python)
-    # -   id: isort
-    #     name: isort (cython)
-    #     types: [cython]
-    # -   id: isort
-    #     name: isort (pyi)
-    #     types: [pyi]
-# -   repo: https://github.com/psf/black
-#     rev: 22.8.0
-#     hooks:
-#     -   id: black
-#         name: ✒️  Formatting code with Black
 ci:
     autofix_commit_msg: 🎨 [pre-commit.ci] Auto format from pre-commit.com hooks
     autoupdate_commit_msg: ⬆ [pre-commit.ci] pre-commit autoupdate

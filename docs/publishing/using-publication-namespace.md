@@ -1,5 +1,5 @@
 # Using the nanopublication's namespace
-In a nanopublication you often want to refer to a concept that is not defined somewhere on the WWW. In that case it makes sense to make use of the namespace of the nanopublication itself, see for example this assertion that uses `nanopub-uri#timbernerslee` to refer to the concept Tim Berner's Lee.
+In a nanopublication you often want to refer to a concept that is not defined somewhere on the WWW. In that case it makes sense to make use of the namespace of the nanopublication itself, see for example this assertion that uses `nanopub-uri#timbernerslee` to refer to the concept Tim Berners Lee.
 ```turtle
 @prefix sub: <http://purl.org/np/RA_j6TPcnoQJ_XkISjugTgaRsFGLhpbZCC3mE7fXs0REI#> .
 

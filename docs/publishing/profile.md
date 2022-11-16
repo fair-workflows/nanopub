@@ -22,7 +22,7 @@ Otherwise, if you wish to have flexibility when defining the user profile, there
 
 Provide a specific path to a `profile.yml` file when using the `load_profile()` function:
 
-```bash
+```python
 from nanopub import load_profile
 
 p = load_profile(Path('/path/to/profile.yml'))
@@ -32,7 +32,7 @@ p = load_profile(Path('/path/to/profile.yml'))
 
 If you need to switch between multiple keys it can be convenient to be able to define the profile directly in your code, you can do so with the `Profile` class:
 
-```bash
+```python
 from pathlib import Path
 from nanopub import Profile
 
@@ -63,7 +63,7 @@ p = Profile(
 
 If you do not provide private and public keys a new key pair will be automatically generated. You can then store it where you want.
 
-```bash
+```python
 from nanopub import Profile
 
 p = Profile(

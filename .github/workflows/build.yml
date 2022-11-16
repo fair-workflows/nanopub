@@ -64,8 +64,7 @@ jobs:
           pip install ".[doc]"
 
       - name: Deploy mkdocs on GitHub Pages
-        run: |
-          git pull
-          mkdocs gh-deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdocs gh-deploy
