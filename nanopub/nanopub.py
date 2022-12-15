@@ -13,7 +13,7 @@ import requests
 from rdflib import BNode, ConjunctiveGraph, Graph, URIRef
 from rdflib.namespace import DC, DCTERMS, FOAF, PROV, RDF, XSD
 
-from nanopub.definitions import DUMMY_NANOPUB_URI, MAX_TRIPLES_PER_NANOPUB, NANOPUB_FETCH_FORMAT, NANOPUB_TEST_SERVER
+from nanopub.definitions import MAX_TRIPLES_PER_NANOPUB, NANOPUB_FETCH_FORMAT, NANOPUB_TEST_SERVER
 from nanopub.namespaces import HYCL, NP, NPX, NTEMPLATE, ORCID, PAV
 from nanopub.nanopub_conf import NanopubConf
 from nanopub.profile import ProfileError
@@ -47,7 +47,8 @@ class Nanopub:
     ) -> None:
         self._profile = conf.profile
         self._source_uri = source_uri
-        self._concept_uri = None
+        self._introduces_concept = introduces_concept
+        self._concept_uri: Optional[str] = None
         self._conf = deepcopy(conf)
         self._metadata = NanopubMetadata()
         self._published = False
@@ -199,19 +200,12 @@ class Nanopub:
         log.info(f'Published {self.source_uri} to {self._conf.use_server}')
         self.published = True
 
-        if self.introduces_concept:
-            concept_uri = str(self.introduces_concept)
-            # Replace the DUMMY_NANOPUB_URI with the actually published nanopub uri. This is
-            # necessary if a blank node was passed as introduces_concept. In that case the
-            # Nanopub.from_assertion method replaces the blank node with the base nanopub's URI
-            # and appends a fragment, given by the 'name' of the blank node. For example, if a
-            # blank node with name 'step' was passed as introduces_concept, the concept will be
+        if self._introduces_concept:
+            # introduces_concept is always a blank node.
+            # If a blank node with name 'step' was passed as introduces_concept, the concept will be
             # published with a URI that looks like [published nanopub URI]#step.
-            concept_uri = concept_uri.replace(
-                DUMMY_NANOPUB_URI, self.source_uri
-            )
-            self.concept_uri = concept_uri
-            log.info(f"Published concept to {concept_uri}")
+            self._concept_uri = f"{self.source_uri}#{str(self._introduces_concept)}"
+            log.info(f"Published concept to {self._concept_uri}")
 
 
     def update(self, publish=True) -> None:
