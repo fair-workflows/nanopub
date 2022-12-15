@@ -210,7 +210,7 @@ class Nanopub:
             concept_uri = concept_uri.replace(
                 DUMMY_NANOPUB_URI, self.source_uri
             )
-            self.concept_uri = concept_uri
+            self._concept_uri = concept_uri
             log.info(f"Published concept to {concept_uri}")
 
 
