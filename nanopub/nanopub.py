@@ -13,7 +13,7 @@ import requests
 from rdflib import BNode, ConjunctiveGraph, Graph, URIRef
 from rdflib.namespace import DC, DCTERMS, FOAF, PROV, RDF, XSD
 
-from nanopub.definitions import DUMMY_NANOPUB_URI, MAX_TRIPLES_PER_NANOPUB, NANOPUB_FETCH_FORMAT, NANOPUB_TEST_SERVER
+from nanopub.definitions import MAX_TRIPLES_PER_NANOPUB, NANOPUB_FETCH_FORMAT, NANOPUB_TEST_SERVER
 from nanopub.namespaces import HYCL, NP, NPX, NTEMPLATE, ORCID, PAV
 from nanopub.nanopub_conf import NanopubConf
 from nanopub.profile import ProfileError
@@ -201,18 +201,19 @@ class Nanopub:
         self.published = True
 
         if self._introduces_concept:
-            concept_uri = str(self._introduces_concept)
+            # concept_uri = str(self._introduces_concept)
             # Replace the DUMMY_NANOPUB_URI with the actually published nanopub uri. This is
             # necessary if a blank node was passed as introduces_concept. In that case the
             # Nanopub.from_assertion method replaces the blank node with the base nanopub's URI
             # and appends a fragment, given by the 'name' of the blank node. For example, if a
             # blank node with name 'step' was passed as introduces_concept, the concept will be
             # published with a URI that looks like [published nanopub URI]#step.
-            concept_uri = concept_uri.replace(
-                DUMMY_NANOPUB_URI, self.source_uri
-            )
-            self._concept_uri = concept_uri
-            log.info(f"Published concept to {concept_uri}")
+            # concept_uri = concept_uri.replace(
+            #     DUMMY_NANOPUB_URI, self.source_uri
+            # )
+            # NOTE: introduces_concept is always a blank node
+            self._concept_uri = f"{self.source_uri}#{str(self._introduces_concept)}"
+            log.info(f"Published concept to {self._concept_uri}")
 
 
     def update(self, publish=True) -> None:
