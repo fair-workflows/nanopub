@@ -1,6 +1,0 @@
-[run]
-source=nanopub
-branch=true
-
-[report]
-omit=nanopub/templates/*

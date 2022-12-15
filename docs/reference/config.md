@@ -1,0 +1,3 @@
+# NanopubConf
+
+::: nanopub.NanopubConf

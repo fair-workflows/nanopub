@@ -1,38 +1,43 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
-
-name: Python application
+name: Tests and update docs
 
 on: [push, pull_request]
 
 jobs:
-  build:
+
+  tests:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8, 3.9, '3.10']
+        rdflib-version:
+          - rdflib==6.0.2
+          - rdflib>6.0.2,<7.0.0
+
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
         with:
-          python-version: 3.7
-      - name: Display Python version
-        run: python -c "import sys; print(sys.version)"
-      - name: Install dependencies
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies with ${{ matrix.rdflib-version }}
+        env:
+          RDFLIB_VERSION: ${{ matrix.rdflib-version }}
         run: |
-          python -m pip install --upgrade pip
-          pip install .
-          pip install -r requirements-dev.txt
-      - name: Lint with flake8
-        run: |
-          flake8 . --count --show-source --statistics
-      - name: Test with pytest - No RSA key tests
-        run: |
-           pytest --no_rsa_key -m 'no_rsa_key'
+          pip install ".[test,dev]" "$RDFLIB_VERSION"
+
+      - name: Lint with flake8, isort and mypy
+        run: bash scripts/lint.sh
+
       - name: Setup nanopub profile (including RSA keys)
         run: |
-           setup_nanopub_profile --orcid_id https://orcid.org/1234-1234-1234-1234 --no-publish --name test --newkeys
+          np setup --orcid-id https://orcid.org/0000-0000-0000-0000 --no-publish --name test --newkeys
+
       - name: Test with pytest
         run: |
           pytest --cov
+
       - name: Publish coverage to Coveralls
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
@@ -40,7 +45,26 @@ jobs:
         run: |
           coverage xml
           coveralls
-      - name: Build Sphinx docs
+
+
+  build-docs:
+    needs: [ tests ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+
+      - name: Install dependencies
         run: |
-          cd docs
-          make html
+          pip install ".[doc]"
+
+      - name: Deploy mkdocs on GitHub Pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdocs gh-deploy

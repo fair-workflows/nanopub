@@ -80,12 +80,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 * `.zenodo.json` for linking to zenodo
-* `pubkey` option to methods of `NanopubClient` that allows searching for publications 
+* `pubkey` option to methods of `NanopubClient` that allows searching for publications
     signed with the given pubkey. For these methods:
     - `find_nanopubs_with_text`
     - `find_nanopubs_with_pattern`
     - `find_things`
-* `filter_retracted` option to methods of `NanopubClient` that allows searching for publications 
+* `filter_retracted` option to methods of `NanopubClient` that allows searching for publications
     that are note retracted. For these methods:
     - `find_nanopubs_with_text`
     - `find_nanopubs_with_pattern`
@@ -117,12 +117,12 @@ NB: All changes before [1.0.0] are collapsed in here (even though there were mul
     * Publish a `Publication` object with `publish` method
   * Retracting:
     * Publish a retraction of an existing nanopublication created by this user (i.e. signed with same RSA key)
-  
+
   * Test server functionality
     * Client can optionally be set to publish to (and fetch from) the nanopub test servers only.
 
 - `nanopub.publication` module
-  * `Publication` class to represent a nanopublication. 
+  * `Publication` class to represent a nanopublication.
   Includes `from_assertion` class method to construct a Publication object
   from an assertion graph
   * `replace_in_rdf` helper method to replace values in RDF

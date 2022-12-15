@@ -1,0 +1,3 @@
+# Nanopub
+
+::: nanopub.Nanopub
