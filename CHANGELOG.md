@@ -4,6 +4,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2022-12-15
+Massive overhaul of the nanopub library with backwards incompatible changes.
+### Changed
+* The documentation website has been updated to use mkdocs
+* The doc website is now published to GitHub Pages via the build.yml workflow if the tests pass.
+* Profile private key can be now be loaded from a string instead of only a Path. This can be convenient if someone wants to load keys from anywhere else than a local file (e.g. network). There are still helpers functions to easily load from the profile.yml file.
+* The private and public key are now optional, a new keypair will be generated if the private key is missing. And the public key can be generated from the private key automatically if it is missing (orcid_id, name are still mandatory)
+* There is now a NanopubConfig object to hold the various arguments used to define the nanopub server where it will be published and which infos to attach to a nanopub.
+* Signing is now done in python, removing the dependency on java
+* java_wrapper is moved to the tests so it can still be used to compare signed nanopubs when testing
+* The Publication class has been renamed to Nanopub. That makes a lot of "Nanopub" in the code, but it is more consistent and easier to remember
+* Signing is now done directly on the Nanopub object (we don't use the client anymore for this): np.sign() and the np object is updated with the signed RDF (cf. the new doc below to see complete examples). This is convenient because it allows to define Templates for common nanopublications by inhereting the main Nanopub object, cf. existing template: Nanopub intro, Nanopub Index, Claim, Retract, Update
+* The NanopubClient object is now mainly used for search functions (through the grlc API), no changes there
+* The setup_nanopub_profile CLI was changed to a new CLI with multiple actions:
+  * np setup prompt the existing CLI workflow to setup your nanopub profile
+  * np profile check the current user profile used by the nanopub library (~/.nanopub/profile.yml)
+  * np sign nanopub.trig to sign a nanopub file
+  * np publish signed.nanopub.trig to publish a nanopub file (signed or not)
+  * np check signed.nanopub.trig to check if a signed nanopub file is valid
+* Changed the uses of print() to use python logging (which enable users of the library to configure the level of logs they want, setting to INFO will show all existing prints)
+* A battery of tests was added using the same testsuite as nanopub-java to make sure the nanopubs signed with python are valid and follows the same standards: https://github.com/vemonet/nanopub/blob/sign-in-python/tests/test_testsuite.py#L10
+* Most of the existing tests for the client search have been kept
+* Updated the build.yml workflow to tests with all python versions from 3.7 to 3.10
+* Linting now also check types with mypy (not strict)
+* The setup.py + all files for python dev config such as .flake8 have been merged in 1 pyproject.tml file using the hatch build backend
+* Updated the setup for development, it does not require any tool that is not built in python: only venv ands pip are required (or you can use hatch to handle install and virtual envs for you). Checkout the development docs page for the complete instructions.
+
 ## [1.2.11] - 2022-09-27
 ### Added
 * Support for rdflib v6
