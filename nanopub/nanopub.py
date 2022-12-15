@@ -47,7 +47,8 @@ class Nanopub:
     ) -> None:
         self._profile = conf.profile
         self._source_uri = source_uri
-        self._concept_uri = None
+        self._introduces_concept = introduces_concept
+        self._concept_uri: Optional[str] = None
         self._conf = deepcopy(conf)
         self._metadata = NanopubMetadata()
         self._published = False
@@ -199,8 +200,8 @@ class Nanopub:
         log.info(f'Published {self.source_uri} to {self._conf.use_server}')
         self.published = True
 
-        if self.introduces_concept:
-            concept_uri = str(self.introduces_concept)
+        if self._introduces_concept:
+            concept_uri = str(self._introduces_concept)
             # Replace the DUMMY_NANOPUB_URI with the actually published nanopub uri. This is
             # necessary if a blank node was passed as introduces_concept. In that case the
             # Nanopub.from_assertion method replaces the blank node with the base nanopub's URI
