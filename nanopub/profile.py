@@ -64,7 +64,7 @@ class Profile:
 
         if not public_key:
             log.info('Public key not provided when loading the Nanopub profile, generating it from the provided private key')
-            key = RSA.importKey(decodebytes(self._private_key.encode()))
+            key = RSA.import_key(decodebytes(self._private_key.encode()))
             self._public_key = key.publickey().export_key().decode('utf-8')
         else:
             if isinstance(public_key, Path):

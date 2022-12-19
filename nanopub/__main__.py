@@ -47,7 +47,8 @@ def profile():
         p = load_profile()
         print(f' 👤 User profile in \033[1m{DEFAULT_PROFILE_PATH}\033[0m')
         print(str(p))
-    except ProfileError:
+    except ProfileError as e:
+        print(e)
         print(f" ⚠️  No profile could be loaded from {DEFAULT_PROFILE_PATH}")
         print(" ℹ️  Use \033[1mnp setup\033[0m to setup your nanopub profile locally with the interactive CLI")
 

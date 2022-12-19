@@ -38,7 +38,7 @@ class JavaWrapper:
             self.private_key = str(private_key_path)
 
             public_key_path = os.path.join(keys_dir, "id_rsa.pub")
-            key = RSA.importKey(decodebytes(private_key.encode()))
+            key = RSA.import_key(decodebytes(private_key.encode()))
             public_key = key.publickey().export_key().decode('utf-8').replace("-----BEGIN PUBLIC KEY-----\n", "").replace("-----END PUBLIC KEY-----", "")
             with open(public_key_path, "w") as f:
                 f.write(public_key)

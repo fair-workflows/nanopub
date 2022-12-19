@@ -45,7 +45,7 @@ def add_signature(g: ConjunctiveGraph, profile: Profile, dummy_namespace: Namesp
     # print(f"NORMED RDF STARTS\n{normed_rdf}\nNORMED RDF ENDS")
 
     # Sign the normalized RDF with the private RSA key
-    private_key = RSA.importKey(decodebytes(profile.private_key.encode()))
+    private_key = RSA.import_key(decodebytes(profile.private_key.encode()))
     signer = PKCS1_v1_5.new(private_key)
     signature_b = signer.sign(SHA256.new(normed_rdf.encode()))
     signature = encodebytes(signature_b).decode().replace("\n", "")
