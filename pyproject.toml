@@ -93,7 +93,7 @@ post-install-commands = [
 [tool.hatch.envs.default.scripts]
 dev = "./scripts/dev.sh"
 test = "./scripts/test.sh {args}"
-docs = "./scripts/docs.sh"
+docs = "./scripts/docs.sh {args}"
 format = "./scripts/format.sh"
 lint = "./scripts/lint.sh"
 
