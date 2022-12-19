@@ -215,7 +215,8 @@ def load_profile(profile_path: Union[Path, str] = DEFAULT_PROFILE_PATH) -> Profi
         A Profile containing the data from the configuration file.
 
     Raises:
-        yatiml.RecognitionError: If there is an error in the file.
+        yatiml.RecognitionError: If there is an
+            error in the file.
     """
     try:
         return _load_profile(Path(profile_path))

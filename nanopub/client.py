@@ -1,4 +1,5 @@
-"""This module includes a client for the nanopub server.
+"""
+This module includes a client for the nanopub server.
 """
 
 import random
@@ -64,10 +65,10 @@ class NanopubClient:
                 retracted. Default is True, returning only publications that are not retracted.
 
         Yields:
-            dicts depicting matching nanopublications.
-            Each dict holds: 'np': the nanopublication uri,
-            'date': date of creation of the nanopublication,
-            'description': A description of the nanopublication (if found in RDF).
+            results (dict): dicts depicting matching nanopublications.
+                Each dict holds: 'np': the nanopublication uri,
+                'date': date of creation of the nanopublication,
+                'description': A description of the nanopublication (if found in RDF).
 
         """
         if len(text) == 0:
@@ -103,10 +104,10 @@ class NanopubClient:
                 retracted. Default is True, returning only publications that are not retracted.
 
         Yields:
-            dicts depicting matching nanopublications.
-            Each dict holds: 'np': the nanopublication uri,
-            'date': date of creation of the nanopublication,
-            'description': A description of the nanopublication (if found in RDF).
+            results (dict): dicts depicting matching nanopublications.
+                Each dict holds: 'np': the nanopublication uri,
+                'date': date of creation of the nanopublication,
+                'description': A description of the nanopublication (if found in RDF).
 
         """
         params = {}
@@ -145,10 +146,10 @@ class NanopubClient:
                 retracted. Default is True, returning only publications that are not retracted.
 
         Yields:
-            dicts depicting matching nanopublications.
-            Each dict holds: 'np': the nanopublication uri,
-            'date': date of creation of the nanopublication,
-            'description': A description of the nanopublication (if found in RDF).
+            results (dict): dicts depicting matching nanopublications.
+                Each dict holds: 'np': the nanopublication uri,
+                'date': date of creation of the nanopublication,
+                'description': A description of the nanopublication (if found in RDF).
 
         """
         if searchterm == "":

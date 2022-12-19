@@ -86,10 +86,12 @@ plugins:
     default_handler: python
     handlers:
       python:
-        rendering:
+        options:
           show_source: true
-    watch:
-      - nanopub
+
+watch:
+  - nanopub
+  - docs
 
 
 # Styled blocks: https://squidfunk.github.io/mkdocs-material/reference/admonitions/#supported-types
