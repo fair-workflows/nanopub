@@ -1,3 +1,7 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "nanopub"
 description = "Python client for Nanopublications"
@@ -74,20 +78,16 @@ Tracker = "https://github.com/fair-workflows/nanopub/issues"
 Source = "https://github.com/fair-workflows/nanopub"
 
 
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
 
 # ENVIRONMENTS AND SCRIPTS
 [tool.hatch.envs.default]
 features = [
-  "test",
-  "doc",
-  "dev",
+    "test",
+    "doc",
+    "dev",
 ]
 post-install-commands = [
-  "pre-commit install",
+    "pre-commit install",
 ]
 
 [tool.hatch.envs.default.scripts]
