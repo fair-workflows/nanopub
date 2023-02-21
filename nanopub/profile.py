@@ -105,7 +105,8 @@ class Profile:
         Returns:
             The path where the profile was stored.
         """
-        Path(folder).mkdir(parents=True, exist_ok=True)
+        folder = Path(folder)
+        folder.mkdir(parents=True, exist_ok=True)
         private_key_path = folder / "id_rsa"
         public_key_path = folder / "id_rsa.pub"
         profile_path = folder / "profile.yml"
