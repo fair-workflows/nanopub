@@ -105,7 +105,7 @@ class Profile:
         Returns:
             The path where the profile was stored.
         """
-        folder.mkdir(parents=True, exist_ok=True)
+        Path(folder).mkdir(parents=True, exist_ok=True)
         private_key_path = folder / "id_rsa"
         public_key_path = folder / "id_rsa.pub"
         profile_path = folder / "profile.yml"
@@ -228,8 +228,8 @@ def load_profile(profile_path: Union[Path, str] = DEFAULT_PROFILE_PATH) -> Profi
 
 def generate_keyfiles(path: Path = USER_CONFIG_DIR) -> str:
     """Generate private/public RSA key pair at the path specified in the profile.yml, to be used to sign nanopubs"""
-    if not path.exists():
-        path.mkdir()
+    if not Path(path).exists():
+        Path(path).mkdir()
 
     key = RSA.generate(2048)
     private_key_str = key.export_key('PEM', pkcs=8).decode('utf-8')
