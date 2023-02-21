@@ -1,6 +1,7 @@
 """
 This module holds objects and functions to load a nanopub user profile.
 """
+import os
 from base64 import decodebytes
 from pathlib import Path
 from typing import Optional, Union
@@ -107,9 +108,9 @@ class Profile:
         """
         folder = Path(folder)
         folder.mkdir(parents=True, exist_ok=True)
-        private_key_path = folder / "id_rsa"
-        public_key_path = folder / "id_rsa.pub"
-        profile_path = folder / "profile.yml"
+        private_key_path = os.path.join(folder, "id_rsa")
+        public_key_path = os.path.join(folder, "id_rsa.pub")
+        profile_path = os.path.join(folder, "profile.yml")
 
         # Store keys
         if not private_key_path.exists():
