@@ -113,10 +113,10 @@ class Profile:
         profile_path = os.path.join(folder, "profile.yml")
 
         # Store keys
-        if not private_key_path.exists():
+        if not os.path.exists(private_key_path):
             with open(private_key_path, "w") as f:
                 f.write(self.private_key + '\n')
-        if not public_key_path.exists():
+        if not os.path.exists(public_key_path):
             with open(public_key_path, "w") as f:
                 f.write(self.public_key)
 

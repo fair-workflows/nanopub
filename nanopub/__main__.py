@@ -164,7 +164,7 @@ def setup(
         prompt = ('📬️ Would you like to publish your profile to the nanopub servers? '
                   'This links your ORCID iD to your RSA key, thereby making all your '
                   'publications linkable to you')
-        publish_resp = typer.prompt(prompt, type=Path, default="")
+        publish_resp = typer.prompt(prompt, type=str, default="")
         if publish_resp and publish_resp.lower().startswith("y"):
             publish = True
         else:
@@ -172,13 +172,15 @@ def setup(
 
     if not keypair and not newkeys:
         prompt = '🔓️ Provide the path to your public RSA key: ' \
-                 f'Leave empty for using the one in {USER_CONFIG_DIR}'
-        public_key = typer.prompt(prompt, type=Path, default="")
+                'Leave empty for using the one in: '
+        public_key = typer.prompt(prompt, type=Path,
+                                  default=DEFAULT_PUBLIC_KEY_PATH)
         if not public_key:
             keypair = None
         else:
             prompt = '🔑 Provide the path to your private RSA key: '
-            private_key = typer.prompt(prompt, type=Path)
+            private_key = typer.prompt(prompt, type=Path,
+                                       default=DEFAULT_PRIVATE_KEY_PATH)
             keypair = public_key, private_key
 
     if not keypair:
@@ -195,8 +197,10 @@ def setup(
         public_key_path, private_key = keypair
 
         # Copy the keypair to the default location
-        shutil.copy(public_key_path, USER_CONFIG_DIR / PUBLIC_KEY_FILE)
-        shutil.copy(private_key, USER_CONFIG_DIR / PRIVATE_KEY_FILE)
+        if not os.path.exists(DEFAULT_PUBLIC_KEY_PATH):
+            shutil.copy(public_key_path, USER_CONFIG_DIR / PUBLIC_KEY_FILE)
+        if not os.path.exists(DEFAULT_PRIVATE_KEY_PATH):
+            shutil.copy(private_key, USER_CONFIG_DIR / PRIVATE_KEY_FILE)
 
         print(f'🚚 Your RSA keys have been copied to {USER_CONFIG_DIR}')
 
