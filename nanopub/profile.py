@@ -63,24 +63,22 @@ class Profile:
         else:
             self._private_key = private_key
 
-        if not public_key:
+        if not public_key and private_key:
             log.info('Public key not provided when loading the Nanopub profile, generating it from the provided private key')
-            key = RSA.import_key(decodebytes(self._private_key.encode()))
-            self._public_key = key.publickey().export_key().decode('utf-8')
-        else:
-            if isinstance(public_key, Path):
-                try:
-                    with open(public_key) as f:
-                        self._public_key = f.read().strip()
-                except FileNotFoundError:
-                    raise ProfileError(
-                        f'Private key file {public_key} for nanopub not found.\n'
-                        f'Maybe your nanopub profile was not set up yet or not set up '
-                        f'correctly. \n{PROFILE_INSTRUCTIONS_MESSAGE}'
-                    )
-            else:
-                self._public_key = public_key
-
+            key = RSA.import_key(decodebytes(private_key.encode()))
+            self._public_key = format_key(key.publickey().export_key().decode('utf-8'))
+        elif isinstance(public_key, Path):
+            try:
+                with open(public_key) as f:
+                    self._public_key = f.read().strip()
+            except FileNotFoundError:
+                raise ProfileError(
+                    f'Private key file {public_key} for nanopub not found.\n'
+                    f'Maybe your nanopub profile was not set up yet or not set up '
+                    f'correctly. \n{PROFILE_INSTRUCTIONS_MESSAGE}'
+                )
+        elif public_key:
+            self._public_key = public_key
 
     def generate_keys(self) -> str:
         """Generate private/public RSA key pair at the path specified in the profile.yml, to be used to sign nanopubs"""
@@ -88,11 +86,8 @@ class Profile:
         private_key_str = key.export_key('PEM', pkcs=8).decode('utf-8')
         public_key_str = key.publickey().export_key().decode('utf-8')
 
-        # Format private and public keys to remove header/footer and all newlines, as this is required by nanopub-java
-        private_key_str = private_key_str.replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "").replace("\n", "").strip()
-        public_key_str = public_key_str.replace("-----BEGIN PUBLIC KEY-----", "").replace("-----END PUBLIC KEY-----", "").replace("\n", "").strip()
-        self._private_key = private_key_str
-        self._public_key = public_key_str
+        self._private_key = format_key(private_key_str)
+        self._public_key = format_key(public_key_str)
         log.info(f"Public/private RSA key pair has been generated for {self.orcid_id} ({self.name})")
         return public_key_str
 
@@ -253,3 +248,11 @@ def generate_keyfiles(path: Path = USER_CONFIG_DIR) -> str:
     public_key_file.close()
     log.info(f"Public/private RSA key pair has been generated in {private_path} and {public_path}")
     return public_key_str
+
+def format_key(key):
+    """Format private and public keys to remove header/footer and all newlines, as this is required by nanopub-java"""
+    if key.startswith("-----BEGIN PRIVATE KEY-----"):
+        key = key.replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "")
+    if key.startswith("-----BEGIN PUBLIC KEY-----"):
+        key = key.replace("-----BEGIN PUBLIC KEY-----", "").replace("-----END PUBLIC KEY-----", "")
+    return key.replace("\n", "").strip()
