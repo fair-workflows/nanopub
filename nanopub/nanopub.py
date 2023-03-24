@@ -186,7 +186,7 @@ class Nanopub:
 
         if self.is_valid:
             self._replace_blank_nodes(self._rdf)
-            signed_g = add_signature(self.rdf, self._conf.profile, self._metadata.namespace, URIRef(str(self._pubinfo.identifier)))
+            signed_g = add_signature(self.rdf, self._conf.profile, self._metadata.namespace, self._pubinfo)
             self.update_from_signed(signed_g)
             log.info(f"Signed {self.source_uri}")
         else:
@@ -572,7 +572,7 @@ class Nanopub:
         nanopublication's URI), but it should still lie within the space of the nanopub.
         Furthermore, the URI the nanopub is published to is not known ahead of time.
         """
-        bnode_map = {}
+        bnode_map: dict = {}
         for s, p, o, c in g.quads():
             if isinstance(s, BNode):
                 g.remove((s, p, o, c))

@@ -221,10 +221,10 @@ def test_specific_file():
     from rdflib import Namespace
     from rdflib.namespace import DCTERMS, PROV
     np_conf = NanopubConf(profile=profile_test, use_test_server=True)
-    np_conf.add_prov_generated_time=True,
-    np_conf.add_pubinfo_generated_time=True,
-    np_conf.attribute_assertion_to_profile=True,
-    np_conf.attribute_publication_to_profile=True,
+    np_conf.add_prov_generated_time = True,
+    np_conf.add_pubinfo_generated_time = True,
+    np_conf.attribute_assertion_to_profile = True,
+    np_conf.attribute_publication_to_profile = True,
 
     with open('./tests/resources/many_bnodes_with_annotations.json') as f:
         nanopub_rdf = json.loads(f.read())

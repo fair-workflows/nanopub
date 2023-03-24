@@ -24,7 +24,7 @@ def test_nanopub_sign():
         np.rdf,
         profile_test,
         DUMMY_NAMESPACE,
-        DUMMY_NAMESPACE.pubinfo
+        np.pubinfo
     )
     np.update_from_signed(signed_g)
     assert np.source_uri == expected_np_uri

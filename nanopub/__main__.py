@@ -172,7 +172,7 @@ def setup(
 
     if not keypair and not newkeys:
         prompt = '🔓️ Provide the path to your public RSA key: ' \
-                'Leave empty for using the one in: '
+            'Leave empty for using the one in: '
         public_key = typer.prompt(prompt, type=Path,
                                   default=DEFAULT_PUBLIC_KEY_PATH)
         if not public_key:

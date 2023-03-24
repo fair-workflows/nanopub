@@ -92,7 +92,7 @@ class Profile:
         return public_key_str
 
 
-    def store(self, folder: Path = USER_CONFIG_DIR) -> Path:
+    def store(self, folder: Path = USER_CONFIG_DIR) -> str:
         """Stores the nanopub user profile. By default the profile is stored in `HOME_DIR/.nanopub/profile.yaml`.
 
         Args:
@@ -248,6 +248,7 @@ def generate_keyfiles(path: Path = USER_CONFIG_DIR) -> str:
     public_key_file.close()
     log.info(f"Public/private RSA key pair has been generated in {private_path} and {public_path}")
     return public_key_str
+
 
 def format_key(key):
     """Format private and public keys to remove header/footer and all newlines, as this is required by nanopub-java"""

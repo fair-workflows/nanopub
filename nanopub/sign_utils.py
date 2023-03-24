@@ -4,7 +4,7 @@ import requests
 from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
-from rdflib import BNode, ConjunctiveGraph, Literal, Namespace, URIRef
+from rdflib import BNode, ConjunctiveGraph, Graph, Literal, Namespace, URIRef
 
 from nanopub.definitions import NANOPUB_SERVER_LIST, NP_PURL, NP_TEMP_PREFIX
 from nanopub.namespaces import NPX
@@ -14,25 +14,25 @@ from nanopub.trustyuri.rdf.RdfPreprocessor import transform
 from nanopub.utils import MalformedNanopubError, extract_np_metadata, log
 
 
-def add_signature(g: ConjunctiveGraph, profile: Profile, dummy_namespace: Namespace, pubinfo_uri: URIRef) -> ConjunctiveGraph:
+def add_signature(g: ConjunctiveGraph, profile: Profile, dummy_namespace: Namespace, pubinfo_g: Graph) -> ConjunctiveGraph:
     """Implementation in python of the process to sign a nanopub with a RSA private key"""
     g.add((
         dummy_namespace["sig"],
         NPX["hasPublicKey"],
         Literal(profile.public_key),
-        pubinfo_uri,
+        pubinfo_g,
     ))
     g.add((
         dummy_namespace["sig"],
         NPX["hasAlgorithm"],
         Literal("RSA"),
-        pubinfo_uri,
+        pubinfo_g,
     ))
     g.add((
         dummy_namespace["sig"],
         NPX["hasSignatureTarget"],
         dummy_namespace[""],
-        pubinfo_uri,
+        pubinfo_g,
     ))
     # Normalize RDF
     quads = RdfUtils.get_quads(g)
@@ -56,7 +56,7 @@ def add_signature(g: ConjunctiveGraph, profile: Profile, dummy_namespace: Namesp
         dummy_namespace["sig"],
         NPX["hasSignature"],
         Literal(signature),
-        pubinfo_uri,
+        pubinfo_g,
     ))
 
     # Generate the trusty URI
@@ -92,14 +92,14 @@ def replace_trusty_in_graph(trusty_artefact: str, dummy_ns: str, graph: Conjunct
             g = c.identifier
         else:
             raise Exception("Found a nquads without graph when replacing dummy URIs with trusty URIs. Something went wrong.")
-        new_g = URIRef(transform(g, trusty_artefact, dummy_ns, bnodemap))
+        new_g = Graph(identifier=str(transform(g, trusty_artefact, dummy_ns, bnodemap)))
         new_s = URIRef(transform(s, trusty_artefact, dummy_ns, bnodemap))
         new_p = URIRef(transform(p, trusty_artefact, dummy_ns, bnodemap))
         new_o = o
         if isinstance(o, URIRef) or isinstance(o, BNode):
             new_o = URIRef(transform(o, trusty_artefact, dummy_ns, bnodemap))
 
-        graph.remove((s, p, o, g))
+        graph.remove((s, p, o, c))
         graph.add((new_s, new_p, new_o, new_g))
     return graph
 
