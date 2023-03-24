@@ -3,7 +3,7 @@ from rdflib import BNode, Graph, Literal, URIRef
 
 from nanopub import Nanopub, NanopubClaim, NanopubConf, NanopubRetract, NanopubUpdate, create_nanopub_index, namespaces
 from nanopub.templates.nanopub_introduction import NanopubIntroduction
-from tests.conftest import default_conf, java_wrap, skip_if_nanopub_server_unavailable, profile_test
+from tests.conftest import default_conf, java_wrap, profile_test, skip_if_nanopub_server_unavailable
 
 
 def test_nanopub_sign_uri():
@@ -217,6 +217,7 @@ def test_unvalid_fetch():
 def test_specific_file():
     """Test to sign a complex file with many blank nodes"""
     import json
+
     from rdflib import Namespace
     from rdflib.namespace import DCTERMS, PROV
     np_conf = NanopubConf(profile=profile_test, use_test_server=True)
