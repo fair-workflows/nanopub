@@ -223,7 +223,6 @@ class Nanopub:
             None,
         ))
         self._metadata = extract_np_metadata(self._rdf)
-        print(self._metadata)
         if publish:
             self.publish()
         else:

@@ -92,7 +92,9 @@ def replace_trusty_in_graph(trusty_artefact: str, dummy_ns: str, graph: Conjunct
             g = c.identifier
         else:
             raise Exception("Found a nquads without graph when replacing dummy URIs with trusty URIs. Something went wrong.")
-        new_g = Graph(identifier=str(transform(g, trusty_artefact, dummy_ns, bnodemap)))
+        # new_g = Graph(identifier=str(transform(g, trusty_artefact, dummy_ns, bnodemap)))
+        # Fails and make the nanopub empty
+        new_g = URIRef(transform(g, trusty_artefact, dummy_ns, bnodemap))
         new_s = URIRef(transform(s, trusty_artefact, dummy_ns, bnodemap))
         new_p = URIRef(transform(p, trusty_artefact, dummy_ns, bnodemap))
         new_o = o
@@ -100,7 +102,8 @@ def replace_trusty_in_graph(trusty_artefact: str, dummy_ns: str, graph: Conjunct
             new_o = URIRef(transform(o, trusty_artefact, dummy_ns, bnodemap))
 
         graph.remove((s, p, o, c))
-        graph.add((new_s, new_p, new_o, new_g))
+        graph.add((new_s, new_p, new_o, new_g))  # type: ignore
+
     return graph
 
 
