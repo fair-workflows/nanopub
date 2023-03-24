@@ -88,6 +88,20 @@ class JavaWrapper:
         return source_uri
 
 
+    def check_trusty_with_signature(self, np: Nanopub) -> str:
+        tmp_dir = tempfile.mkdtemp()
+        np_file = os.path.join(tmp_dir, "signed.trig")
+        with open(np_file, "w") as f:
+            f.write(np.rdf.serialize(format="trig"))
+        np_file = str(np_file)
+
+        cmd = f'{NANOPUB_JAVA_SCRIPT} check {np_file}'
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+        print(str(result.stdout))
+        return "1 trusty with signature" in str(result.stdout)
+
+
+
     def _get_signed_file(self, unsigned_file: str):
         unsigned_path = Path(unsigned_file)
         return str(unsigned_path.parent / f'signed.{unsigned_path.name}')

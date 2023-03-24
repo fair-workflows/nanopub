@@ -1,0 +1,142 @@
+{
+    "@context": {
+        "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+        "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+        "biolink": "https://w3id.org/biolink/vocab/",
+        "infores": "https://w3id.org/biolink/infores/",
+        "dct": "http://purl.org/dc/terms/"
+    },
+    "@graph": [
+        {
+        "@id": "https://w3id.org/biolink/infores/knowledge-collaboratory",
+        "@type": "biolink:InformationResource",
+        "biolink:category": "biolink:InformationResource",
+        "biolink:id": "infores:knowledge-collaboratory"
+        },
+        {
+        "@id": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=f9641190-9151-4f7e-89ff-1e7a818c30ee",
+        "@type": "biolink:Publication",
+        "biolink:category": "biolink:Publication",
+        "biolink:id": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=f9641190-9151-4f7e-89ff-1e7a818c30ee"
+        },
+        {
+        "@type": "biolink:Association",
+        "biolink:category": "biolink:Association",
+        "rdf:subject": {
+            "@id": "http://identifiers.org/pubchem.compound/68617"
+        },
+        "rdf:predicate": {
+            "@id": "https://w3id.org/biolink/vocab/treats"
+        },
+        "rdf:object": {
+            "@id": "http://purl.obolibrary.org/obo/MONDO_0008187"
+        },
+        "biolink:id": "collaboratory:PUBCHEM.COMPOUND:68617-biolink:treats-MONDO:0008187",
+        "biolink:aggregator_knowledge_source": {
+            "@id": "infores:knowledge-collaboratory"
+        },
+        "https://w3id.org/biolink/vocab/publications": {
+            "@id": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=f9641190-9151-4f7e-89ff-1e7a818c30ee"
+        }
+        },
+        {
+        "@id": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=f9641190-9151-4f7e-89ff-1e7a818c30ee",
+        "@type": "biolink:Publication",
+        "biolink:category": "biolink:Publication",
+        "biolink:id": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=f9641190-9151-4f7e-89ff-1e7a818c30ee"
+        },
+        {
+        "@type": "biolink:Association",
+        "biolink:category": "biolink:Association",
+        "rdf:subject": {
+            "@id": "http://identifiers.org/pubchem.compound/68617"
+        },
+        "rdf:predicate": {
+            "@id": "https://w3id.org/biolink/vocab/treats"
+        },
+        "rdf:object": {
+            "@id": "http://identifiers.org/umls/C2188188"
+        },
+        "biolink:id": "collaboratory:PUBCHEM.COMPOUND:68617-biolink:treats-UMLS:C2188188",
+        "biolink:aggregator_knowledge_source": {
+            "@id": "infores:knowledge-collaboratory"
+        },
+        "https://w3id.org/biolink/vocab/publications": {
+            "@id": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=f9641190-9151-4f7e-89ff-1e7a818c30ee"
+        }
+        },
+        {
+        "@id": "http://identifiers.org/pubchem.compound/68617",
+        "@type": "biolink:ChemicalEntity",
+        "biolink:id": "PUBCHEM.COMPOUND:68617",
+        "biolink:category": "biolink:ChemicalEntity",
+        "rdfs:label": "Sertraline"
+        },
+        {
+        "@id": "http://purl.obolibrary.org/obo/MONDO_0008187",
+        "@type": "biolink:DiseaseOrPhenotypicFeature",
+        "biolink:id": "MONDO:0008187",
+        "biolink:category": "biolink:DiseaseOrPhenotypicFeature",
+        "rdfs:label": "panic disorder"
+        },
+        {
+        "@id": "http://identifiers.org/umls/C2188188",
+        "@type": "biolink:DiseaseOrPhenotypicFeature",
+        "biolink:id": "UMLS:C2188188",
+        "biolink:category": "biolink:DiseaseOrPhenotypicFeature",
+        "rdfs:label": "agoraphobia"
+        }
+    ],
+    "@annotations": {
+        "@context": {
+        "tao": "http://pubannotation.org/ontology/tao.owl#",
+        "rdfs": "http://www.w3.org/2000/01/rdf-schema#"
+        },
+        "@graph": [
+        {
+            "@id": "http://purl.org/nanopub/temp/np#document",
+            "@type": "tao:document_text",
+            "tao:has_value": "Sertraline tablets are indicated for the treatment of panic disorder in adults, with or without agoraphobia, as defined in DSM-IV.",
+            "rdfs:seeAlso": {
+            "@id": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=f9641190-9151-4f7e-89ff-1e7a818c30ee"
+            }
+        },
+        {
+            "@type": "tao:text_span",
+            "tao:begins_at": 0,
+            "tao:ends_at": 10,
+            "tao:has_value": "Sertraline",
+            "tao:denotes": {
+            "@id": "http://identifiers.org/pubchem.compound/68617"
+            },
+            "tao:part_of": {
+            "@id": "http://purl.org/nanopub/temp/np#document"
+            }
+        },
+        {
+            "@type": "tao:text_span",
+            "tao:begins_at": 54,
+            "tao:ends_at": 68,
+            "tao:has_value": "panic disorder",
+            "tao:denotes": {
+            "@id": "http://purl.obolibrary.org/obo/MONDO_0008187"
+            },
+            "tao:part_of": {
+            "@id": "http://purl.org/nanopub/temp/np#document"
+            }
+        },
+        {
+            "@type": "tao:text_span",
+            "tao:begins_at": 96,
+            "tao:ends_at": 107,
+            "tao:has_value": "agoraphobia",
+            "tao:denotes": {
+            "@id": "http://identifiers.org/umls/C2188188"
+            },
+            "tao:part_of": {
+            "@id": "http://purl.org/nanopub/temp/np#document"
+            }
+        }
+        ]
+    }
+}
