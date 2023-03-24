@@ -102,7 +102,7 @@ def replace_trusty_in_graph(trusty_artefact: str, dummy_ns: str, graph: Conjunct
             new_o = URIRef(transform(o, trusty_artefact, dummy_ns, bnodemap))
 
         graph.remove((s, p, o, c))
-        graph.add((new_s, new_p, new_o, new_g))
+        graph.add((new_s, new_p, new_o, new_g))  # type: ignore
 
     return graph
 
