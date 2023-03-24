@@ -231,10 +231,10 @@ def test_specific_file():
 
     annotations_rdf = nanopub_rdf["@annotations"]
     del nanopub_rdf["@annotations"]
-    nanopub_rdf = json.dumps(nanopub_rdf)
+    nanopub_rdf = str(json.dumps(nanopub_rdf))
 
     g = Graph()
-    g.parse(data=str(nanopub_rdf), format="json-ld")
+    g.parse(data=nanopub_rdf, format="json-ld")
 
     np = Nanopub(
         assertion=g,
@@ -242,7 +242,7 @@ def test_specific_file():
     )
     source = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=f9641190-9151-4f7e-89ff-1e7a818c30ee"
     if annotations_rdf:
-        np.provenance.parse(data=str(annotations_rdf), format="json-ld")
+        np.provenance.parse(data=str(json.dumps(annotations_rdf)), format="json-ld")
     if source:
         np.provenance.add((np.assertion.identifier, PROV.hadPrimarySource, URIRef(source)))
 
