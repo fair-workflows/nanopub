@@ -9,7 +9,7 @@ from typing import Optional, Union
 import yatiml
 from Crypto.PublicKey import RSA
 
-from nanopub.definitions import DEFAULT_PROFILE_PATH, USER_CONFIG_DIR, RSA_KEY_SIZE
+from nanopub.definitions import DEFAULT_PROFILE_PATH, RSA_KEY_SIZE, USER_CONFIG_DIR
 from nanopub.utils import log
 
 PROFILE_INSTRUCTIONS_MESSAGE = '''
