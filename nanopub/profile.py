@@ -9,7 +9,7 @@ from typing import Optional, Union
 import yatiml
 from Crypto.PublicKey import RSA
 
-from nanopub.definitions import DEFAULT_PROFILE_PATH, USER_CONFIG_DIR
+from nanopub.definitions import DEFAULT_PROFILE_PATH, USER_CONFIG_DIR, RSA_KEY_SIZE
 from nanopub.utils import log
 
 PROFILE_INSTRUCTIONS_MESSAGE = '''
@@ -82,7 +82,7 @@ class Profile:
 
     def generate_keys(self) -> str:
         """Generate private/public RSA key pair at the path specified in the profile.yml, to be used to sign nanopubs"""
-        key = RSA.generate(2048)
+        key = RSA.generate(RSA_KEY_SIZE)
         private_key_str = key.export_key('PEM', pkcs=8).decode('utf-8')
         public_key_str = key.publickey().export_key().decode('utf-8')
 
@@ -228,7 +228,7 @@ def generate_keyfiles(path: Path = USER_CONFIG_DIR) -> str:
     if not Path(path).exists():
         Path(path).mkdir()
 
-    key = RSA.generate(2048)
+    key = RSA.generate(RSA_KEY_SIZE)
     private_key_str = key.export_key('PEM', pkcs=8).decode('utf-8')
     public_key_str = key.publickey().export_key().decode('utf-8')
 

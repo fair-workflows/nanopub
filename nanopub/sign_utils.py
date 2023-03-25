@@ -112,11 +112,10 @@ def publish_graph(g: ConjunctiveGraph, use_server: str = NANOPUB_SERVER_LIST[0])
     """
     log.info(f"Publishing to the nanopub server {use_server}")
     headers = {'Content-Type': 'application/trig'}
-    # Used by nanopub-java: {'Content-Type': 'application/x-www-form-urlencoded'}
+    # NOTE: nanopub-java uses {'Content-Type': 'application/x-www-form-urlencoded'}
     data = g.serialize(format="trig")
-    r = requests.post(use_server, headers=headers, data=data.encode('utf-8'))
+    r = requests.post(use_server, headers=headers, data=data)
     r.raise_for_status()
-    # if r.status_code == 201:
     return True
 
 

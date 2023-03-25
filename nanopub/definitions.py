@@ -31,6 +31,7 @@ NP_PURL = "http://purl.org/np/"
 MAX_NP_PER_INDEX = 1100
 MAX_TRIPLES_PER_NANOPUB = 1200
 
+RSA_KEY_SIZE = 2048
 
 NANOPUB_GRLC_URLS = [
     "http://grlc.nanopubs.lod.labs.vu.nl/api/local/local/",
