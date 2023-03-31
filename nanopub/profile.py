@@ -232,9 +232,8 @@ def generate_keyfiles(path: Path = USER_CONFIG_DIR) -> str:
     private_key_str = key.export_key('PEM', pkcs=8).decode('utf-8')
     public_key_str = key.publickey().export_key().decode('utf-8')
 
-    # Format private and public keys to remove header/footer and all newlines, as this is required by nanopub-java
-    private_key_str = private_key_str.replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "").replace("\n", "").strip()
-    public_key_str = public_key_str.replace("-----BEGIN PUBLIC KEY-----", "").replace("-----END PUBLIC KEY-----", "").replace("\n", "").strip()
+    private_key_str = format_key(private_key_str)
+    public_key_str = format_key(public_key_str)
     private_path = path / "id_rsa"
     public_path = path / "id_rsa.pub"
 
