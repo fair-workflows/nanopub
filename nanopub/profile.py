@@ -64,7 +64,7 @@ class Profile:
             self._private_key = private_key
 
         if not public_key and private_key:
-            log.info('Public key not provided when loading the Nanopub profile, generating it from the provided private key')
+            log.info('The public key was not provided when loading the Nanopub profile, generating it from the provided private key')
             key = RSA.import_key(decodebytes(self._private_key.encode()))
             self._public_key = format_key(key.publickey().export_key().decode('utf-8'))
         elif isinstance(public_key, Path):
@@ -249,7 +249,7 @@ def generate_keyfiles(path: Path = USER_CONFIG_DIR) -> str:
     return public_key_str
 
 
-def format_key(key):
+def format_key(key: str) -> str:
     """Format private and public keys to remove header/footer and all newlines, as this is required by nanopub-java"""
     if key.startswith("-----BEGIN PRIVATE KEY-----"):
         key = key.replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "")
