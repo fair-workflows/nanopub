@@ -1,6 +1,6 @@
 # The nanopub test server
 Throughout this documentation we make use of the
-[nanopub test server](http://test-server.nanopubs.lod.labs.vu.nl/)
+[nanopub test server](https://np.test.knowledgepixels.com/)
 by setting `use_test_server=True` when instantiating `NanopubConf` or `NanopubClient`:
 ```python
 from nanopub import NanopubClient, NanopubConf
@@ -8,7 +8,7 @@ from nanopub import NanopubClient, NanopubConf
 client = NanopubClient(use_test_server=True)
 np_conf = NanopubConf(use_test_server=True)
 ```
-This will search and fetch from, and publish to the [nanopub test server](http://test-server.nanopubs.lod.labs.vu.nl/).
+This will search and fetch from, and publish to the [nanopub test server](https://np.test.knowledgepixels.com/).
 
 When learning about nanopub using the testserver is a good idea, because:
 * You are free to experiment with publishing without polluting the production server.
@@ -25,6 +25,6 @@ A manual workaround is:
 1. Open [http://purl.org/np/RA71u9tYPd7ZQifE_6hXjqVim6pkweuvjoi-8ehvLvzg8](http://purl.org/np/RA71u9tYPd7ZQifE_6hXjqVim6pkweuvjoi-8ehvLvzg8)
  in your browser
 2. Notice that the URL changed to [http://server.nanopubs.lod.labs.vu.nl/RA71u9tYPd7ZQifE_6hXjqVim6pkweuvjoi-8ehvLvzg8](http://server.nanopubs.lod.labs.vu.nl/RA71u9tYPd7ZQifE_6hXjqVim6pkweuvjoi-8ehvLvzg8).
-3. Replace 'server' with 'test-server': [http://test-server.nanopubs.lod.labs.vu.nl/RA71u9tYPd7ZQifE_6hXjqVim6pkweuvjoi-8ehvLvzg8](http://test-server.nanopubs.lod.labs.vu.nl/RA71u9tYPd7ZQifE_6hXjqVim6pkweuvjoi-8ehvLvzg8).
+3. Replace 'server' with 'test-server': [https://np.test.knowledgepixels.com/RA71u9tYPd7ZQifE_6hXjqVim6pkweuvjoi-8ehvLvzg8](https://np.test.knowledgepixels.com/RA71u9tYPd7ZQifE_6hXjqVim6pkweuvjoi-8ehvLvzg8).
 
 > **NB**: `NanopubClient.fetch()` does this for you if `use_test_server=True`.

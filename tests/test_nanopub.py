@@ -171,8 +171,8 @@ def test_nanopub_index():
     np_list = create_nanopub_index(
         conf=default_conf,
         np_list=[
-            "https://purl.org/np/RAD28Nl4h_mFH92bsHUrtqoU4C6DCYy_BRTvpimjVFgJo",
-            "https://purl.org/np/RAEhbEJ1tdhPqM6gNPScX9vIY1ZtUzOz7woeJNzB3sh3E",
+            "https://purl.org/np/RA5cwuR2b7Or9Pkb50nhPcHa2-cD0-gEPb2B3Ly5IxyuA",
+            "https://purl.org/np/RAj1G7tgntNvXEgaMDmrc3rhxLekjZX6qsPIaEjUJ49NU",
         ],
         title="My nanopub index",
         description="This is my nanopub index",
@@ -190,9 +190,9 @@ def test_nanopub_index():
 def test_nanopub_fetch():
     """Check that creating Nanopub from source URI (fetch) works for a few known nanopub URIs."""
     known_nps = [
-        'http://purl.org/np/RANGY8fx_EYVeZzJOinH9FoY-WrQBerKKUy2J9RCDWH6U',
-        'http://purl.org/np/RAABh3eQwmkdflVp50zYavHUK0NgZE2g2ewS2j4Ur6FHI',
-        'http://purl.org/np/RA8to60YFWSVCh2n_iyHZ2yiYEt-hX_DdqbWa5yI9r-gI'
+        'http://purl.org/np/RA5cwuR2b7Or9Pkb50nhPcHa2-cD0-gEPb2B3Ly5IxyuA',
+        'http://purl.org/np/RAj1G7tgntNvXEgaMDmrc3rhxLekjZX6qsPIaEjUJ49NU',
+        'http://purl.org/np/RAj75Z7QMYNalgNiMG9IthMuj18VuJbto9sC8Jl6lp9WM'
     ]
     for np_uri in known_nps:
         np = Nanopub(
