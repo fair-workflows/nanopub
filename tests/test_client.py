@@ -1,5 +1,5 @@
 import pytest
-from rdflib import FOAF, RDF, URIRef
+from rdflib import RDF, URIRef
 
 from nanopub import NanopubClient
 from nanopub.definitions import TEST_RESOURCES_FILEPATH
