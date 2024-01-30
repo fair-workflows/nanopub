@@ -43,6 +43,7 @@ def test_testsuite_valid_signed():
         assert np.is_valid
         assert np.metadata.trusty is not None
         assert np.metadata.signature is not None
+        assert java_wrap.check_trusty_with_signature(np)
         # TODO: we should be able to validate this signature?
         # assert np.has_valid_signature
 
@@ -92,6 +93,7 @@ def test_testsuite_sign_valid():
         assert np.has_valid_signature
         assert np.has_valid_trusty
         assert np.is_valid
+        assert java_wrap.check_trusty_with_signature(np)
         assert np.source_uri == java_np
 
 
@@ -111,6 +113,7 @@ def test_testsuite_valid_signature():
         assert np.is_valid
         assert np.has_valid_signature
         assert np.has_valid_trusty
+        assert java_wrap.check_trusty_with_signature(np)
 
 
 def test_testsuite_invalid_plain():

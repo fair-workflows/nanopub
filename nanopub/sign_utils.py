@@ -4,7 +4,7 @@ import requests
 from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
-from rdflib import BNode, ConjunctiveGraph, Literal, Namespace, URIRef
+from rdflib import BNode, ConjunctiveGraph, Graph, Literal, Namespace, URIRef
 
 from nanopub.definitions import NANOPUB_SERVER_LIST, NP_PURL, NP_TEMP_PREFIX
 from nanopub.namespaces import NPX
@@ -14,25 +14,25 @@ from nanopub.trustyuri.rdf.RdfPreprocessor import transform
 from nanopub.utils import MalformedNanopubError, extract_np_metadata, log
 
 
-def add_signature(g: ConjunctiveGraph, profile: Profile, dummy_namespace: Namespace, pubinfo_uri: URIRef) -> ConjunctiveGraph:
+def add_signature(g: ConjunctiveGraph, profile: Profile, dummy_namespace: Namespace, pubinfo_g: Graph) -> ConjunctiveGraph:
     """Implementation in python of the process to sign a nanopub with a RSA private key"""
     g.add((
         dummy_namespace["sig"],
         NPX["hasPublicKey"],
         Literal(profile.public_key),
-        pubinfo_uri,
+        pubinfo_g,
     ))
     g.add((
         dummy_namespace["sig"],
         NPX["hasAlgorithm"],
         Literal("RSA"),
-        pubinfo_uri,
+        pubinfo_g,
     ))
     g.add((
         dummy_namespace["sig"],
         NPX["hasSignatureTarget"],
         dummy_namespace[""],
-        pubinfo_uri,
+        pubinfo_g,
     ))
     # Normalize RDF
     quads = RdfUtils.get_quads(g)
@@ -45,7 +45,7 @@ def add_signature(g: ConjunctiveGraph, profile: Profile, dummy_namespace: Namesp
     # print(f"NORMED RDF STARTS\n{normed_rdf}\nNORMED RDF ENDS")
 
     # Sign the normalized RDF with the private RSA key
-    private_key = RSA.importKey(decodebytes(profile.private_key.encode()))
+    private_key = RSA.import_key(decodebytes(profile.private_key.encode()))
     signer = PKCS1_v1_5.new(private_key)
     signature_b = signer.sign(SHA256.new(normed_rdf.encode()))
     signature = encodebytes(signature_b).decode().replace("\n", "")
@@ -56,7 +56,7 @@ def add_signature(g: ConjunctiveGraph, profile: Profile, dummy_namespace: Namesp
         dummy_namespace["sig"],
         NPX["hasSignature"],
         Literal(signature),
-        pubinfo_uri,
+        pubinfo_g,
     ))
 
     # Generate the trusty URI
@@ -92,6 +92,8 @@ def replace_trusty_in_graph(trusty_artefact: str, dummy_ns: str, graph: Conjunct
             g = c.identifier
         else:
             raise Exception("Found a nquads without graph when replacing dummy URIs with trusty URIs. Something went wrong.")
+        # new_g = Graph(identifier=str(transform(g, trusty_artefact, dummy_ns, bnodemap)))
+        # Fails and make the nanopub empty
         new_g = URIRef(transform(g, trusty_artefact, dummy_ns, bnodemap))
         new_s = URIRef(transform(s, trusty_artefact, dummy_ns, bnodemap))
         new_p = URIRef(transform(p, trusty_artefact, dummy_ns, bnodemap))
@@ -99,8 +101,9 @@ def replace_trusty_in_graph(trusty_artefact: str, dummy_ns: str, graph: Conjunct
         if isinstance(o, URIRef) or isinstance(o, BNode):
             new_o = URIRef(transform(o, trusty_artefact, dummy_ns, bnodemap))
 
-        graph.remove((s, p, o, g))
-        graph.add((new_s, new_p, new_o, new_g))
+        graph.remove((s, p, o, c))
+        graph.add((new_s, new_p, new_o, new_g))  # type: ignore
+
     return graph
 
 
@@ -109,11 +112,10 @@ def publish_graph(g: ConjunctiveGraph, use_server: str = NANOPUB_SERVER_LIST[0])
     """
     log.info(f"Publishing to the nanopub server {use_server}")
     headers = {'Content-Type': 'application/trig'}
-    # Used by nanopub-java: {'Content-Type': 'application/x-www-form-urlencoded'}
+    # NOTE: nanopub-java uses {'Content-Type': 'application/x-www-form-urlencoded'}
     data = g.serialize(format="trig")
-    r = requests.post(use_server, headers=headers, data=data)
+    r = requests.post(use_server, headers=headers, data=data.encode('utf-8'))
     r.raise_for_status()
-    # if r.status_code == 201:
     return True
 
 

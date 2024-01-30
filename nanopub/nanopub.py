@@ -92,6 +92,7 @@ class Nanopub:
         self._assertion += assertion
         self._provenance += provenance
         self._pubinfo += pubinfo
+        self._bnode_count = 0
 
         # Concatenate prefixes declarations from all provided graphs in the main graph
         for user_rdf in [assertion, provenance, pubinfo]:
@@ -157,7 +158,7 @@ class Nanopub:
         g.bind("orcid", ORCID)
         g.bind("ntemplate", NTEMPLATE)
         g.bind("foaf", FOAF)
-        # g = self._replace_blank_nodes(g)
+        g = self._replace_blank_nodes(g)
         return g
 
 
@@ -184,7 +185,8 @@ class Nanopub:
             raise MalformedNanopubError(f"The nanopub have already been signed: {self.source_uri}")
 
         if self.is_valid:
-            signed_g = add_signature(self.rdf, self._conf.profile, self._metadata.namespace, URIRef(str(self._pubinfo.identifier)))
+            self._replace_blank_nodes(self._rdf)
+            signed_g = add_signature(self.rdf, self._conf.profile, self._metadata.namespace, self._pubinfo)
             self.update_from_signed(signed_g)
             log.info(f"Signed {self.source_uri}")
         else:
@@ -221,7 +223,6 @@ class Nanopub:
             None,
         ))
         self._metadata = extract_np_metadata(self._rdf)
-        print(self._metadata)
         if publish:
             self.publish()
         else:
@@ -361,6 +362,8 @@ class Nanopub:
     @property
     def namespace(self):
         return self._metadata.namespace
+
+
 
     @property
     def introduces_concept(self):
@@ -554,28 +557,44 @@ class Nanopub:
                     "introduces_concept argument"
                 )
 
-    # TODO: we might to use it to convert blank nodes directly as URI here
-    # instead of doing it through the get_trustyuri() function
-    # def _replace_blank_nodes(self, rdf: ConjunctiveGraph) -> ConjunctiveGraph:
-    #     """Replace blank nodes.
-    #       Replace any blank nodes in the supplied RDF with a corresponding uri in the
-    #     dummy_namespace.'Blank nodes' here refers specifically to rdflib.term.BNode objects. When
-    #     publishing, the dummy_namespace is replaced with the URI of the actual nanopublication.
-    #       For example, if the nanopub's URI is www.purl.org/ABC123 then the blank node will be
-    #     replaced with a concrete URIRef of the form www.purl.org/ABC123#blanknodename where
-    #     'blanknodename' is the name of the rdflib.term.BNode object.
-    #       This is to solve the problem that a user may wish to use the nanopublication to introduce
-    #     a new concept. This new concept needs its own URI (it cannot simply be given the
-    #     nanopublication's URI), but it should still lie within the space of the nanopub.
-    #     Furthermore, the URI the nanopub is published to is not known ahead of time.
-    #     """
-    #     for s, p, o in rdf:
-    #         if isinstance(s, BNode):
-    #             rdf.remove((s, p, o))
-    #             s = self._metadata.namespace[f"_{str(s)}"]
-    #             rdf.add((s, p, o))
-    #         if isinstance(o, BNode):
-    #             rdf.remove((s, p, o))
-    #             o = self._metadata.namespace[f"_{str(o)}"]
-    #             rdf.add((s, p, o))
-    #     return rdf
+
+    def _replace_blank_nodes(self, g: ConjunctiveGraph) -> ConjunctiveGraph:
+        """Replace blank nodes.
+          Replace any blank nodes in the supplied RDF with a corresponding uri in the
+        dummy_namespace.'Blank nodes' here refers specifically to rdflib.term.BNode objects. When
+        publishing, the dummy_namespace is replaced with the URI of the actual nanopublication.
+          For example, if the nanopub's URI is www.purl.org/ABC123 then the blank node will be
+        replaced with a concrete URIRef of the form www.purl.org/ABC123#blanknodename where
+        'blanknodename' is the name of the rdflib.term.BNode object.
+          This is to solve the problem that a user may wish to use the nanopublication to introduce
+        a new concept. This new concept needs its own URI (it cannot simply be given the
+        nanopublication's URI), but it should still lie within the space of the nanopub.
+        Furthermore, the URI the nanopub is published to is not known ahead of time.
+        """
+        bnode_map: dict = {}
+        for s, p, o, c in g.quads():
+            if isinstance(s, BNode):
+                g.remove((s, p, o, c))
+                if str(s) not in bnode_map:
+                    if re.match(r'^[Na-zA-Z0-9]{33}$', str(s)):
+                        # Unnamed BNode looks like N2c21867a547345d9b8a203a7c1cd7e0c
+                        self._bnode_count += 1
+                        bnode_map[str(s)] = self._bnode_count
+                    else:
+                        bnode_map[str(s)] = str(s)
+                s = self._metadata.namespace[f"_{bnode_map[str(s)]}"]
+                g.add((s, p, o, c))
+
+            if isinstance(o, BNode):
+                g.remove((s, p, o, c))
+                if str(o) not in bnode_map:
+                    # if str(o).startswith("N") and len(str(o)) == 33:
+                    if re.match(r'^[Na-zA-Z0-9]{33}$', str(s)):
+                        self._bnode_count += 1
+                        bnode_map[str(o)] = self._bnode_count
+                    else:
+                        bnode_map[str(o)] = str(o)
+                o = self._metadata.namespace[f"_{bnode_map[str(o)]}"]
+
+                g.add((s, p, o, c))
+        return g

@@ -53,13 +53,13 @@ theme:
       scheme: default
       primary: light blue
       toggle:
-        icon: material/toggle-switch-off-outline
+        icon: material/weather-night
         name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
       primary: light blue
       toggle:
-        icon: material/toggle-switch
+        icon: material/weather-sunny
         name: Switch to light mode
   features:
     - content.code.annotate
@@ -86,10 +86,12 @@ plugins:
     default_handler: python
     handlers:
       python:
-        rendering:
+        options:
           show_source: true
-    watch:
-      - nanopub
+
+watch:
+  - nanopub
+  - docs
 
 
 # Styled blocks: https://squidfunk.github.io/mkdocs-material/reference/admonitions/#supported-types

@@ -8,7 +8,7 @@ TEST_RESOURCES_FILEPATH = TESTS_FILEPATH / "resources"
 USER_CONFIG_DIR = Path.home() / ".nanopub"
 DEFAULT_PROFILE_PATH = USER_CONFIG_DIR / "profile.yml"
 
-NANOPUB_TEST_SERVER = 'http://test-server.nanopubs.lod.labs.vu.nl/'
+NANOPUB_TEST_SERVER = 'https://np.test.knowledgepixels.com/'
 # List of servers: https://monitor.petapico.org/.csv
 NANOPUB_SERVER_LIST = [
     'https://np.petapico.org/',
@@ -31,6 +31,7 @@ NP_PURL = "http://purl.org/np/"
 MAX_NP_PER_INDEX = 1100
 MAX_TRIPLES_PER_NANOPUB = 1200
 
+RSA_KEY_SIZE = 2048
 
 NANOPUB_GRLC_URLS = [
     "http://grlc.nanopubs.lod.labs.vu.nl/api/local/local/",
@@ -42,4 +43,4 @@ NANOPUB_GRLC_URLS = [
     # "https://grlc.nanopubs.knows.idlab.ugent.be/api/local/local/",
     # "http://grlc.np.scify.org/api/local/local/",
 ]
-NANOPUB_TEST_GRLC_URL = "http://test-grlc.nanopubs.lod.labs.vu.nl/api/local/local/"
+NANOPUB_TEST_GRLC_URL = "https://grlc.test.nps.knowledgepixels.com/api/local/local/"

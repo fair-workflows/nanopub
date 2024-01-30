@@ -38,7 +38,7 @@ class JavaWrapper:
             self.private_key = str(private_key_path)
 
             public_key_path = os.path.join(keys_dir, "id_rsa.pub")
-            key = RSA.importKey(decodebytes(private_key.encode()))
+            key = RSA.import_key(decodebytes(private_key.encode()))
             public_key = key.publickey().export_key().decode('utf-8').replace("-----BEGIN PUBLIC KEY-----\n", "").replace("-----END PUBLIC KEY-----", "")
             with open(public_key_path, "w") as f:
                 f.write(public_key)
@@ -86,6 +86,20 @@ class JavaWrapper:
             )
         )[0])
         return source_uri
+
+
+    def check_trusty_with_signature(self, np: Nanopub) -> str:
+        tmp_dir = tempfile.mkdtemp()
+        np_file = os.path.join(tmp_dir, "signed.trig")
+        with open(np_file, "w") as f:
+            f.write(np.rdf.serialize(format="trig"))
+        np_file = str(np_file)
+
+        cmd = f'{NANOPUB_JAVA_SCRIPT} check {np_file}'
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+        print(str(result.stdout))
+        return "1 trusty with signature" in str(result.stdout)
+
 
 
     def _get_signed_file(self, unsigned_file: str):

@@ -1,7 +1,7 @@
 import logging
 import re
 from dataclasses import asdict, dataclass
-from typing import Optional
+from typing import Any, Optional
 
 from rdflib import ConjunctiveGraph, Namespace, URIRef
 
@@ -58,7 +58,7 @@ WHERE {
     }
 }
 """
-    qres = g.query(get_np_query)
+    qres: Any = g.query(get_np_query)
     if len(qres) < 1:
         raise MalformedNanopubError(
             "\033[1mNo nanopublication\033[0m has been found in the provided RDF. "

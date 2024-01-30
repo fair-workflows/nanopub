@@ -2,4 +2,4 @@
 
 set -e
 
-mkdocs serve -a localhost:8001
+mkdocs serve -a localhost:8001 ${@}

@@ -1,6 +1,7 @@
 """
 This module holds objects and functions to load a nanopub user profile.
 """
+import os
 from base64 import decodebytes
 from pathlib import Path
 from typing import Optional, Union
@@ -8,7 +9,7 @@ from typing import Optional, Union
 import yatiml
 from Crypto.PublicKey import RSA
 
-from nanopub.definitions import DEFAULT_PROFILE_PATH, USER_CONFIG_DIR
+from nanopub.definitions import DEFAULT_PROFILE_PATH, RSA_KEY_SIZE, USER_CONFIG_DIR
 from nanopub.utils import log
 
 PROFILE_INSTRUCTIONS_MESSAGE = '''
@@ -62,41 +63,36 @@ class Profile:
         else:
             self._private_key = private_key
 
-        if not public_key:
-            log.info('Public key not provided when loading the Nanopub profile, generating it from the provided private key')
-            key = RSA.importKey(decodebytes(self._private_key.encode()))
-            self._public_key = key.publickey().export_key().decode('utf-8')
-        else:
-            if isinstance(public_key, Path):
-                try:
-                    with open(public_key) as f:
-                        self._public_key = f.read().strip()
-                except FileNotFoundError:
-                    raise ProfileError(
-                        f'Private key file {public_key} for nanopub not found.\n'
-                        f'Maybe your nanopub profile was not set up yet or not set up '
-                        f'correctly. \n{PROFILE_INSTRUCTIONS_MESSAGE}'
-                    )
-            else:
-                self._public_key = public_key
-
+        if not public_key and private_key:
+            log.info('The public key was not provided when loading the Nanopub profile, generating it from the provided private key')
+            key = RSA.import_key(decodebytes(self._private_key.encode()))
+            self._public_key = format_key(key.publickey().export_key().decode('utf-8'))
+        elif isinstance(public_key, Path):
+            try:
+                with open(public_key) as f:
+                    self._public_key = f.read().strip()
+            except FileNotFoundError:
+                raise ProfileError(
+                    f'Private key file {public_key} for nanopub not found.\n'
+                    f'Maybe your nanopub profile was not set up yet or not set up '
+                    f'correctly. \n{PROFILE_INSTRUCTIONS_MESSAGE}'
+                )
+        elif public_key:
+            self._public_key = public_key
 
     def generate_keys(self) -> str:
         """Generate private/public RSA key pair at the path specified in the profile.yml, to be used to sign nanopubs"""
-        key = RSA.generate(2048)
+        key = RSA.generate(RSA_KEY_SIZE)
         private_key_str = key.export_key('PEM', pkcs=8).decode('utf-8')
         public_key_str = key.publickey().export_key().decode('utf-8')
 
-        # Format private and public keys to remove header/footer and all newlines, as this is required by nanopub-java
-        private_key_str = private_key_str.replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "").replace("\n", "").strip()
-        public_key_str = public_key_str.replace("-----BEGIN PUBLIC KEY-----", "").replace("-----END PUBLIC KEY-----", "").replace("\n", "").strip()
-        self._private_key = private_key_str
-        self._public_key = public_key_str
+        self._private_key = format_key(private_key_str)
+        self._public_key = format_key(public_key_str)
         log.info(f"Public/private RSA key pair has been generated for {self.orcid_id} ({self.name})")
         return public_key_str
 
 
-    def store(self, folder: Path = USER_CONFIG_DIR) -> Path:
+    def store(self, folder: Path = USER_CONFIG_DIR) -> str:
         """Stores the nanopub user profile. By default the profile is stored in `HOME_DIR/.nanopub/profile.yaml`.
 
         Args:
@@ -105,16 +101,17 @@ class Profile:
         Returns:
             The path where the profile was stored.
         """
+        folder = Path(folder)
         folder.mkdir(parents=True, exist_ok=True)
-        private_key_path = folder / "id_rsa"
-        public_key_path = folder / "id_rsa.pub"
-        profile_path = folder / "profile.yml"
+        private_key_path = os.path.join(folder, "id_rsa")
+        public_key_path = os.path.join(folder, "id_rsa.pub")
+        profile_path = os.path.join(folder, "profile.yml")
 
         # Store keys
-        if not private_key_path.exists():
+        if not os.path.exists(private_key_path):
             with open(private_key_path, "w") as f:
                 f.write(self.private_key + '\n')
-        if not public_key_path.exists():
+        if not os.path.exists(public_key_path):
             with open(public_key_path, "w") as f:
                 f.write(self.public_key)
 
@@ -215,7 +212,8 @@ def load_profile(profile_path: Union[Path, str] = DEFAULT_PROFILE_PATH) -> Profi
         A Profile containing the data from the configuration file.
 
     Raises:
-        yatiml.RecognitionError: If there is an error in the file.
+        yatiml.RecognitionError: If there is an
+            error in the file.
     """
     try:
         return _load_profile(Path(profile_path))
@@ -227,16 +225,15 @@ def load_profile(profile_path: Union[Path, str] = DEFAULT_PROFILE_PATH) -> Profi
 
 def generate_keyfiles(path: Path = USER_CONFIG_DIR) -> str:
     """Generate private/public RSA key pair at the path specified in the profile.yml, to be used to sign nanopubs"""
-    if not path.exists():
-        path.mkdir()
+    if not Path(path).exists():
+        Path(path).mkdir()
 
-    key = RSA.generate(2048)
+    key = RSA.generate(RSA_KEY_SIZE)
     private_key_str = key.export_key('PEM', pkcs=8).decode('utf-8')
     public_key_str = key.publickey().export_key().decode('utf-8')
 
-    # Format private and public keys to remove header/footer and all newlines, as this is required by nanopub-java
-    private_key_str = private_key_str.replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "").replace("\n", "").strip()
-    public_key_str = public_key_str.replace("-----BEGIN PUBLIC KEY-----", "").replace("-----END PUBLIC KEY-----", "").replace("\n", "").strip()
+    private_key_str = format_key(private_key_str)
+    public_key_str = format_key(public_key_str)
     private_path = path / "id_rsa"
     public_path = path / "id_rsa.pub"
 
@@ -250,3 +247,12 @@ def generate_keyfiles(path: Path = USER_CONFIG_DIR) -> str:
     public_key_file.close()
     log.info(f"Public/private RSA key pair has been generated in {private_path} and {public_path}")
     return public_key_str
+
+
+def format_key(key: str) -> str:
+    """Format private and public keys to remove header/footer and all newlines, as this is required by nanopub-java"""
+    if key.startswith("-----BEGIN PRIVATE KEY-----"):
+        key = key.replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "")
+    if key.startswith("-----BEGIN PUBLIC KEY-----"):
+        key = key.replace("-----BEGIN PUBLIC KEY-----", "").replace("-----END PUBLIC KEY-----", "")
+    return key.replace("\n", "").strip()
