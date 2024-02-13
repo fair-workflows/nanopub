@@ -68,6 +68,7 @@ print(np)
 from nanopub import NanopubClient
 
 # Search for all nanopublications containing the text 'fair'
+client = NanopubClient()
 results = client.find_nanopubs_with_text('fair')
 print(results)
 ```
