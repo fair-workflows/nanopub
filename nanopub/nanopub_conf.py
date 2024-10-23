@@ -1,7 +1,7 @@
 from dataclasses import asdict, dataclass
 from typing import Optional
 
-from nanopub.definitions import NANOPUB_SERVER_LIST
+from nanopub.definitions import NANOPUB_SERVER_LIST, BLAZEGRAPH_SERVER
 from nanopub.profile import Profile
 
 
@@ -23,6 +23,9 @@ class NanopubConf:
     """
 
     profile: Optional[Profile] = None
+
+    publish_to_blazegraph: bool = False
+    blazegraph_server: str = BLAZEGRAPH_SERVER
 
     use_test_server: bool = False
     use_server: str = NANOPUB_SERVER_LIST[0]

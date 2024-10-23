@@ -8,6 +8,8 @@ TEST_RESOURCES_FILEPATH = TESTS_FILEPATH / "resources"
 USER_CONFIG_DIR = Path.home() / ".nanopub"
 DEFAULT_PROFILE_PATH = USER_CONFIG_DIR / "profile.yml"
 
+BLAZEGRAPH_SERVER = 'http://localhost:9999/blazegraph/namespace/kb/sparql'
+
 NANOPUB_TEST_SERVER = 'https://np.test.knowledgepixels.com/'
 # List of servers: https://monitor.petapico.org/.csv
 NANOPUB_SERVER_LIST = [

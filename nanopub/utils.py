@@ -7,7 +7,16 @@ from rdflib import ConjunctiveGraph, Namespace, URIRef
 
 from nanopub.definitions import DUMMY_NAMESPACE, DUMMY_URI
 
-log = logging.getLogger()
+logging.basicConfig(
+    filename='app.log',
+    filemode='a',
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+
+log = logging.getLogger(__name__)
+
+log.info("Logger initialized. Starting the application.")
 
 
 class MalformedNanopubError(ValueError):
