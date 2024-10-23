@@ -194,11 +194,11 @@ class Nanopub:
 
 
     def publish(self) -> None:
-        """Publish a Nanopub object"""
+        """Publish a Nanopub object & optionally update the blazegraph sparql endpoint"""
         if not self.source_uri:
             self.sign()
 
-        publish_graph(self.rdf, use_server=self._conf.use_server)
+        publish_graph(self.rdf, use_server=self._conf.use_server, publish_to_blazegraph=self._conf.publish_to_blazegraph, blazegraph_server=self._conf.blazegraph_server)
         log.info(f'Published {self.source_uri} to {self._conf.use_server}')
         self.published = True
 

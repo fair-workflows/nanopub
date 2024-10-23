@@ -6,7 +6,7 @@ from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
 from rdflib import BNode, ConjunctiveGraph, Graph, Literal, Namespace, URIRef
 
-from nanopub.definitions import NANOPUB_SERVER_LIST, NP_PURL, NP_TEMP_PREFIX
+from nanopub.definitions import NANOPUB_SERVER_LIST, NP_PURL, NP_TEMP_PREFIX, BLAZEGRAPH_SERVER
 from nanopub.namespaces import NPX
 from nanopub.profile import Profile
 from nanopub.trustyuri.rdf import RdfHasher, RdfUtils
@@ -107,7 +107,7 @@ def replace_trusty_in_graph(trusty_artefact: str, dummy_ns: str, graph: Conjunct
     return graph
 
 
-def publish_graph(g: ConjunctiveGraph, use_server: str = NANOPUB_SERVER_LIST[0]) -> bool:
+def publish_graph(g: ConjunctiveGraph, use_server: str = NANOPUB_SERVER_LIST[0], publish_to_blazegraph: bool = False, blazegraph_server: str = BLAZEGRAPH_SERVER) -> bool:
     """Publish a signed nanopub to the given nanopub server.
     """
     log.info(f"Publishing to the nanopub server {use_server}")
@@ -115,6 +115,16 @@ def publish_graph(g: ConjunctiveGraph, use_server: str = NANOPUB_SERVER_LIST[0])
     # NOTE: nanopub-java uses {'Content-Type': 'application/x-www-form-urlencoded'}
     data = g.serialize(format="trig")
     r = requests.post(use_server, headers=headers, data=data.encode('utf-8'))
+    """
+        Update your blazegraph sparql endpoint with the same signed nanopub.
+    """ 
+    # NOTE: by-default, it updates the locally-run blazegraph sparql endpoint at port 9999 
+    if publish_to_blazegraph:
+        headers = {'Content-Type': 'application/x-trig'}
+        r = requests.post(blazegraph_server, headers=headers, data=data)
+        log.info(f"Publishing to the blazegraph server {blazegraph_server}")
+        log.info(f"Status code: {r.status_code}")
+        log.info(f"Response Content: {r.text}")
     r.raise_for_status()
     return True
 
