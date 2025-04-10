@@ -129,7 +129,7 @@ class NanopubClient:
     def find_things(
         self,
         type: str,
-        searchterm: str = " ",
+        searchterm: str = "*:*",
         pubkey: str = None,
         filter_retracted: bool = True,
     ):
