@@ -12,10 +12,10 @@ import requests
 from nanopub import namespaces
 from nanopub.definitions import (
     DUMMY_NANOPUB_URI,
-    NANOPUB_GRLC_URLS,
-    NANOPUB_SERVER_LIST,
-    NANOPUB_TEST_GRLC_URL,
-    NANOPUB_TEST_SERVER,
+    NANOPUB_QUERY_URLS,
+    NANOPUB_REGISTRY_URLS,
+    TEST_NANOPUB_QUERY_URL,
+    TEST_NANOPUB_REGISTRY_URL,
 )
 from nanopub.nanopub import Nanopub
 from nanopub.nanopub_conf import NanopubConf
@@ -37,17 +37,17 @@ class NanopubClient:
     def __init__(
         self,
         use_test_server=False,
-        use_server=NANOPUB_SERVER_LIST[0],
+        use_server=NANOPUB_REGISTRY_URLS[0],
     ):
         self.use_test_server = use_test_server
         if use_test_server:
-            self.grlc_urls = [NANOPUB_TEST_GRLC_URL]
-            self.use_server = NANOPUB_TEST_SERVER
+            self.grlc_urls = [TEST_NANOPUB_QUERY_URL]
+            self.use_server = TEST_NANOPUB_REGISTRY_URL
         else:
-            self.grlc_urls = NANOPUB_GRLC_URLS
+            self.grlc_urls = NANOPUB_QUERY_URLS
             self.use_server = use_server
-            if use_server not in NANOPUB_SERVER_LIST:
-                log.warn(f"{use_server} is not in our list of nanopub servers. {', '.join(NANOPUB_SERVER_LIST)}\nMake sure you are using an existing Nanopub server.")
+            if use_server not in NANOPUB_REGISTRY_URLS:
+                log.warn(f"{use_server} is not in our list of nanopub servers. {', '.join(NANOPUB_REGISTRY_URLS)}\nMake sure you are using an existing Nanopub server.")
 
 
     def find_nanopubs_with_text(
@@ -73,12 +73,12 @@ class NanopubClient:
         """
         if len(text) == 0:
             return []
-        endpoint = "find_signed_nanopubs_with_text"
-        params = {"text": text, "graphpred": "", "month": "", "day": "", "year": ""}
+        endpoint = "RAMJaSqIk4-qgCud7Kf-ltdE3i8DVP239uQv-BiTGvwUU/fulltext-search-on-labels-all"
+        params = {"query": text}
         if pubkey:
             params["pubkey"] = pubkey
         if filter_retracted:
-            endpoint = "find_valid_signed_nanopubs_with_text"
+            endpoint = "RAWruhiSmyzgZhVRs8QY8YQPAgHzTfl7anxII1de-yaCs/fulltext-search-on-labels"
         return self._search(endpoint=endpoint, params=params)
 
 
@@ -111,7 +111,7 @@ class NanopubClient:
 
         """
         params = {}
-        endpoint = "find_signed_nanopubs_with_pattern"
+        endpoint = "RAuE9jU8LLwco-iJHiNjzQgEHfx5j-XkbzlutT59cQYiU/find_nanopubs_with_pattern"
         if subj:
             params["subj"] = subj
         if pred:
@@ -121,7 +121,7 @@ class NanopubClient:
         if pubkey:
             params["pubkey"] = pubkey
         if filter_retracted:
-            endpoint = "find_valid_signed_nanopubs_with_pattern"
+            endpoint = "RAIDPTdWRrYy-TOcdEVmGi7JHwn8fBriVphmsCy3mn4r0/find_valid_nanopubs_with_pattern"
 
         yield from self._search(endpoint=endpoint, params=params)
 
@@ -154,14 +154,14 @@ class NanopubClient:
         """
         if searchterm == "":
             raise ValueError(f"Searchterm can not be an empty string: {searchterm}")
-        endpoint = "find_signed_things"
+        endpoint = "RA99xFu2qrCrpOYc1zc7h0SYV4m6Z4OE530dguEhYeoOM/find-things"
         params = dict()
         params["type"] = type
-        params["searchterm"] = searchterm
+        params["query"] = searchterm
         if pubkey:
             params["pubkey"] = pubkey
         if filter_retracted:
-            endpoint = "find_valid_signed_things"
+            endpoint = "RARqGauUpDMEA1o4KBSKC8AeP694qJjpbf7x7FOWHDfM8/find-valid-things"
 
         yield from self._search(endpoint=endpoint, params=params)
 

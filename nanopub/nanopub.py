@@ -13,7 +13,7 @@ import requests
 from rdflib import BNode, ConjunctiveGraph, Graph, URIRef
 from rdflib.namespace import DC, DCTERMS, FOAF, PROV, RDF, XSD
 
-from nanopub.definitions import MAX_TRIPLES_PER_NANOPUB, NANOPUB_FETCH_FORMAT, NANOPUB_TEST_SERVER
+from nanopub.definitions import MAX_TRIPLES_PER_NANOPUB, NANOPUB_FETCH_FORMAT, TEST_NANOPUB_REGISTRY_URL
 from nanopub.namespaces import HYCL, NP, NPX, NTEMPLATE, ORCID, PAV
 from nanopub.nanopub_conf import NanopubConf
 from nanopub.profile import ProfileError
@@ -53,8 +53,8 @@ class Nanopub:
         self._metadata = NanopubMetadata()
         self._published = False
         if self._conf.use_test_server:
-            self._conf.use_server = NANOPUB_TEST_SERVER
-        if self._conf.use_server == NANOPUB_TEST_SERVER:
+            self._conf.use_server = TEST_NANOPUB_REGISTRY_URL
+        if self._conf.use_server == TEST_NANOPUB_REGISTRY_URL:
             self._conf.use_test_server = True
 
         # Get the nanopub RDF depending on how it is provided:
@@ -64,7 +64,7 @@ class Nanopub:
             r = requests.get(source_uri + "." + NANOPUB_FETCH_FORMAT)
             if not r.ok and self._conf.use_test_server:
                 nanopub_id = source_uri.rsplit("/", 1)[-1]
-                uri_test = NANOPUB_TEST_SERVER + nanopub_id
+                uri_test = TEST_NANOPUB_REGISTRY_URL + nanopub_id
                 r = requests.get(uri_test + "." + NANOPUB_FETCH_FORMAT)
             r.raise_for_status()
             self._rdf = self._preformat_graph(ConjunctiveGraph())

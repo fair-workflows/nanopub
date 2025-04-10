@@ -5,7 +5,7 @@ import pytest
 import requests
 
 from nanopub import NanopubConf, load_profile
-from nanopub.client import NANOPUB_TEST_GRLC_URL
+from nanopub.client import TEST_NANOPUB_QUERY_URL
 from nanopub.definitions import TEST_RESOURCES_FILEPATH
 from tests.java_wrapper import JavaWrapper
 
@@ -22,7 +22,7 @@ def pytest_configure(config):
 
 skip_if_nanopub_server_unavailable = (
     pytest.mark.skipif(
-        requests.get(NANOPUB_TEST_GRLC_URL).status_code != 200,
+        requests.get(TEST_NANOPUB_QUERY_URL).status_code != 200,
         reason='Nanopub server is unavailable'
     )
 )

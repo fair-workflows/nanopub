@@ -6,7 +6,7 @@ from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
 from rdflib import BNode, ConjunctiveGraph, Graph, Literal, Namespace, URIRef
 
-from nanopub.definitions import NANOPUB_SERVER_LIST, NP_PURL, NP_TEMP_PREFIX
+from nanopub.definitions import NANOPUB_REGISTRY_URLS, NP_PURL, NP_TEMP_PREFIX
 from nanopub.namespaces import NPX
 from nanopub.profile import Profile
 from nanopub.trustyuri.rdf import RdfHasher, RdfUtils
@@ -107,7 +107,7 @@ def replace_trusty_in_graph(trusty_artefact: str, dummy_ns: str, graph: Conjunct
     return graph
 
 
-def publish_graph(g: ConjunctiveGraph, use_server: str = NANOPUB_SERVER_LIST[0]) -> bool:
+def publish_graph(g: ConjunctiveGraph, use_server: str = NANOPUB_REGISTRY_URLS[0]) -> bool:
     """Publish a signed nanopub to the given nanopub server.
     """
     log.info(f"Publishing to the nanopub server {use_server}")
