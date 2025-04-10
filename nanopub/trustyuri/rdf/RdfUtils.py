@@ -4,7 +4,7 @@ from rdflib.graph import ConjunctiveGraph, Graph
 from rdflib.term import BNode, URIRef
 from rdflib.util import guess_format
 
-from nanopub.definitions import NP_PURL, NP_TEMP_PREFIX
+from nanopub.definitions import NP_PREFIX, NP_TEMP_PREFIX
 
 
 def get_trustyuri(resource, baseuri, hashstr, bnodemap):
@@ -18,7 +18,7 @@ def get_trustyuri(resource, baseuri, hashstr, bnodemap):
     # Extract the trusty artefact if present, or remove the trailing / if trusty not present
     prefix = "/".join(baseuri.split('/')[:-1]) + '/'
     if str(baseuri).startswith(NP_TEMP_PREFIX):
-        prefix = NP_PURL
+        prefix = NP_PREFIX
     if isinstance(resource, URIRef):
         suffix = get_suffix(resource, baseuri)
         if get_str(resource).decode('utf-8') == np_uri:

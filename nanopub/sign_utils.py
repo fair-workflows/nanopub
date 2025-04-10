@@ -6,7 +6,7 @@ from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
 from rdflib import BNode, ConjunctiveGraph, Graph, Literal, Namespace, URIRef
 
-from nanopub.definitions import NANOPUB_REGISTRY_URLS, NP_PURL, NP_TEMP_PREFIX
+from nanopub.definitions import NANOPUB_REGISTRY_URLS, NP_PREFIX, NP_TEMP_PREFIX
 from nanopub.namespaces import NPX
 from nanopub.profile import Profile
 from nanopub.trustyuri.rdf import RdfHasher, RdfUtils
@@ -77,7 +77,7 @@ def replace_trusty_in_graph(trusty_artefact: str, dummy_ns: str, graph: Conjunct
     if str(dummy_ns).startswith(NP_TEMP_PREFIX):
         # Replace with http://purl.org/np/ if the http://purl.org/nanopub/temp/
         # prefix is used in the dummy nanopub URI
-        np_uri = NP_PURL + trusty_artefact
+        np_uri = NP_PREFIX + trusty_artefact
     else:
         np_uri = dummy_ns + trusty_artefact
 
