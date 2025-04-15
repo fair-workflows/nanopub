@@ -139,3 +139,6 @@ dmypy.json
 
 # Vim
 *.swp
+
+# Eclipse
+*.project
