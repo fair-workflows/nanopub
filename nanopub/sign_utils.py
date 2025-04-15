@@ -82,7 +82,7 @@ def replace_trusty_in_graph(trusty_artefact: str, dummy_ns: str, graph: Conjunct
         np_uri = dummy_ns + trusty_artefact
 
     graph.bind("this", Namespace(np_uri))
-    graph.bind("sub", Namespace(np_uri + "#"))
+    graph.bind("sub", Namespace(np_uri + "/"))
     graph.bind("", None, replace=True)
 
     # Iterate quads in the graph, and replace by the transformed value

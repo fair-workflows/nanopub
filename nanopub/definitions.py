@@ -18,7 +18,7 @@ NANOPUB_REGISTRY_URLS = [
 NANOPUB_FETCH_FORMAT = "trig"
 
 DUMMY_NANOPUB_URI = "http://purl.org/nanopub/temp/np"
-DUMMY_NAMESPACE = Namespace(DUMMY_NANOPUB_URI + "#")
+DUMMY_NAMESPACE = Namespace(DUMMY_NANOPUB_URI + "/")
 DUMMY_URI = DUMMY_NAMESPACE[""]
 
 NP_TEMP_PREFIX = "http://purl.org/nanopub/temp/"

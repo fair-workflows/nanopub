@@ -27,7 +27,7 @@ def get_trustyuri(resource, baseuri, hashstr, bnodemap):
             return str(resource)
         if suffix is None or suffix == "":
             return str(f"{prefix}{hashstr}")
-        return str(f"{prefix}{hashstr}#{suffix}")
+        return str(f"{prefix}{hashstr}/{suffix}")
     if isinstance(resource, BNode):
         # NOTE: bnodes are replaced in nanopub.py by _replace_blank_nodes() most of the time
         bnode_unnamed = re.match(r'^[a-zA-Z0-9]{33}$', str(resource))

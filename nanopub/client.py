@@ -21,7 +21,7 @@ from nanopub.nanopub import Nanopub
 from nanopub.nanopub_conf import NanopubConf
 from nanopub.utils import log
 
-DUMMY_NAMESPACE = rdflib.Namespace(DUMMY_NANOPUB_URI + "#")
+DUMMY_NAMESPACE = rdflib.Namespace(DUMMY_NANOPUB_URI + "/")
 NP_URI = DUMMY_NAMESPACE[""]
 
 
