@@ -269,40 +269,30 @@ class NanopubClient:
             JSONDecodeError: in case response can't be serialized as JSON, this can happen due to a
                 virtuoso error.
         """
-        has_results = True
-        page_number = 1
-        query_url = None
-        while has_results:
-            params["page"] = page_number
-            # First try different servers
-            if query_url is None:
-                r, query_url = self._query_api_try_servers(params, endpoint)
-            # If we have found a Nanopub Query server we should use that for further queries (so
-            # pagination works properly)
-            else:
-                r = self._query_api(params, endpoint, query_url)
-                r.raise_for_status()
+        # First try different servers
+        r, query_url = self._query_api_try_servers(params, endpoint)
+        # If we have found a Nanopub Query server we should use that for further queries (so
+        # pagination works properly)
+        r = self._query_api(params, endpoint, query_url)
+        r.raise_for_status()
 
-            # Check if JSON was actually returned. HTML can be returned instead
-            # if e.g. virtuoso errors on the backend (due to spaces in the search
-            # string, for example).
-            try:
-                results = r.json()
-            except ValueError as e:
-                # Try to give a more understandable error to user when the response
-                # is not JSON...
-                raise ValueError(
-                    "The server returned HTML instead of the requested JSON. "
-                    "This is usually caused by the triple store (e.g. virtuoso) "
-                    "throwing an error for the given search query."
-                ) from e
+        # Check if JSON was actually returned. HTML can be returned instead
+        # if e.g. virtuoso errors on the backend (due to spaces in the search
+        # string, for example).
+        try:
+            results = r.json()
+        except ValueError as e:
+            # Try to give a more understandable error to user when the response
+            # is not JSON...
+            raise ValueError(
+                "The server returned HTML instead of the requested JSON. "
+                "This is usually caused by the triple store (e.g. virtuoso) "
+                "throwing an error for the given search query."
+            ) from e
 
-            bindings = results["results"]["bindings"]
-            if not bindings:
-                has_results = False
-            page_number += page_number
-            for result in bindings:
-                yield self._parse_search_result(result)
+        bindings = results["results"]["bindings"]
+        for result in bindings:
+            yield self._parse_search_result(result)
 
 
     @staticmethod
