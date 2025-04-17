@@ -1,5 +1,5 @@
 # Searching the nanopub server
-The `NanopubClient` provides methods for searching the nanopub server. It provides an (incomplete) mapping to the [nanopub server grlc endpoint](http://grlc.nanopubs.lod.labs.vu.nl/api/local/local).
+The `NanopubClient` provides methods for searching the nanopub server. It provides an (incomplete) mapping to [Nanopub Query endpoints](https://query.knowledgepixels.com/).
 
 ## Text search
 Search for all nanopublications containing some text using `NanopubClient.find_nanopubs_with_text()`

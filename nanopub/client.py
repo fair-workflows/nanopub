@@ -41,10 +41,10 @@ class NanopubClient:
     ):
         self.use_test_server = use_test_server
         if use_test_server:
-            self.grlc_urls = [TEST_NANOPUB_QUERY_URL]
+            self.query_urls = [TEST_NANOPUB_QUERY_URL]
             self.use_server = TEST_NANOPUB_REGISTRY_URL
         else:
-            self.grlc_urls = NANOPUB_QUERY_URLS
+            self.query_urls = NANOPUB_QUERY_URLS
             self.use_server = use_server
             if use_server not in NANOPUB_REGISTRY_URLS:
                 log.warn(f"{use_server} is not in our list of nanopub servers. {', '.join(NANOPUB_REGISTRY_URLS)}\nMake sure you are using an existing Nanopub server.")
@@ -218,40 +218,40 @@ class NanopubClient:
 
 
     @staticmethod
-    def _query_grlc(params: dict, endpoint: str, grlc_url: str) -> requests.Response:
-        """Query a specific nanopub server grlc endpoint."""
+    def _query_api(params: dict, endpoint: str, query_url: str) -> requests.Response:
+        """Query a specific Nanopub Query endpoint."""
         headers = {"Accept": "application/json"}
-        url = grlc_url + endpoint
+        url = query_url + endpoint
         return requests.get(url, params=params, headers=headers)
 
 
-    def _query_grlc_try_servers(
+    def _query_api_try_servers(
         self, params: dict, endpoint: str
     ) -> Tuple[requests.Response, str]:
-        """Query the nanopub server grlc endpoint.
+        """Query the Nanopub Query endpoint.
 
-        Query a nanopub grlc server endpoint (for example: find_text). Try several of the nanopub
-        garlic servers.
+        Query a Nanopub Query endpoint (for example: 'RARqGauUpDMEA1o4KBSKC8AeP694qJjpbf7x7FOWHDfM8/find-valid-things').
+        Try several of the Nanopub Query servers.
 
         Returns:
-            tuple of: r: request response, grlc_url: url of the grlc server used.
+            tuple of: r: request response, query_url: url of the Nanopub Query server used.
         """
         r = None
-        random.shuffle(self.grlc_urls)  # To balance load across servers
-        for grlc_url in self.grlc_urls:
-            r = self._query_grlc(params, endpoint, grlc_url)
+        random.shuffle(self.query_urls)  # To balance load across servers
+        for query_url in self.query_urls:
+            r = self._query_api(params, endpoint, query_url)
             if r.status_code == 502:  # Server is likely down
                 warnings.warn(
-                    f"Could not get response from {grlc_url}, trying other servers"
+                    f"Could not get response from {query_url}, trying other servers"
                 )
             else:
                 r.raise_for_status()  # For non-502 errors we don't want to try other servers
-                return r, grlc_url
+                return r, query_url
         resp = ""
         if r:
             resp = f" Last response: {r.status_code}:{r.reason}"
         raise requests.HTTPError(
-            f"Could not get response from any of the nanopub grlc "
+            f"Could not get response from any of the Nanopub Query servers "
             f"endpoints.{resp}"
         )
 
@@ -271,16 +271,16 @@ class NanopubClient:
         """
         has_results = True
         page_number = 1
-        grlc_url = None
+        query_url = None
         while has_results:
             params["page"] = page_number
             # First try different servers
-            if grlc_url is None:
-                r, grlc_url = self._query_grlc_try_servers(params, endpoint)
-            # If we have found a grlc server we should use that for further queries (so
+            if query_url is None:
+                r, query_url = self._query_api_try_servers(params, endpoint)
+            # If we have found a Nanopub Query server we should use that for further queries (so
             # pagination works properly)
             else:
-                r = self._query_grlc(params, endpoint, grlc_url)
+                r = self._query_api(params, endpoint, query_url)
                 r.raise_for_status()
 
             # Check if JSON was actually returned. HTML can be returned instead
