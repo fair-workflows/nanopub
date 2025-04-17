@@ -8,9 +8,10 @@ from tests.conftest import skip_if_nanopub_server_unavailable
 client = NanopubClient(use_test_server=True)
 prod_client = NanopubClient(use_test_server=False)
 
-PUBKEY = 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCuZe/66Yn1/kZ+TrhkAUez7n3x/dbukNAxprC2I4n/' \
-    'by5dAgSHvnRm7zhEeDyFFHXNm2PBqj3uLOEM6m2lWDsCmTHojgLUBpvhCzvziSjAzBJ4loLaax+Nt1hSY2/' \
-    'MNB0xJKtxQz7xe8gPf6iyckD/H7Mwa9mx5ncYRzg5XUlvvQIDAQAB'
+PUBKEY = 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCFJNRSo0AhDh7EfwM3nZXQbACb8v6F7tKGOj4Mnc/' \
+    'VuEu0CqzwyomaSvXmfwIKeHmCGCdIrL7tMes3U3K7qJ6c3m5j9U1SDBA+d6UDGvBKSN4X8vvRHzH+PNZyeg' \
+    'n3Wu+liXjq+4bnGdTdhPRdRFO9DjSb+rpAfaH21md4qRhCewIDAQAB'
+
 
 NANOPUB_SAMPLE_SIGNED = str(TEST_RESOURCES_FILEPATH / 'nanopub_sample_signed.trig')
 
@@ -23,7 +24,7 @@ class TestNanopubClient:
         """
         Check that Nanopub text search is returning results for a few common search terms
         """
-        searches = ['citation', 'comment']
+        searches = ['comment', 'test']
 
         for search in searches:
             results = list(client.find_nanopubs_with_text(search))
@@ -34,7 +35,7 @@ class TestNanopubClient:
     @pytest.mark.flaky(max_runs=10)
     @skip_if_nanopub_server_unavailable
     def test_find_nanopubs_with_text_pubkey(self):
-        results = list(client.find_nanopubs_with_text('comment', pubkey=PUBKEY))
+        results = list(client.find_nanopubs_with_text('user', pubkey=PUBKEY))
         assert len(results) > 0
 
         results = list(client.find_nanopubs_with_text('comment', pubkey='wrong'))
@@ -47,7 +48,7 @@ class TestNanopubClient:
         production nanopub server
         """
         prod_client = NanopubClient()
-        searches = ['citation', "chemical"]
+        searches = ['comment', 'test']
         for search in searches:
             results = list(prod_client.find_nanopubs_with_text(search))
             assert len(results) > 0
@@ -59,9 +60,7 @@ class TestNanopubClient:
         Check that text search that triggers a virtuoso error is handled correctly. In such a
         case HTML is returned by the server rather than JSON.
         """
-        results = client.find_nanopubs_with_text(
-            'a string that is not in any of the nanopublications'
-            ' and that virtuoso does not like')
+        results = client.find_nanopubs_with_text('\n abcdefghijklmnopqrs')
 
         with pytest.raises(ValueError):
             list(results)
@@ -73,8 +72,8 @@ class TestNanopubClient:
             Check that Nanopub pattern search is returning results
         """
         searches = [
-            ('', RDF.type, URIRef("http://www.w3.org/ns/oa#Annotation")),
-            ('https://w3id.org/np/RAj75Z7QMYNalgNiMG9IthMuj18VuJbto9sC8Jl6lp9WM#_1', '', '')
+            ('', RDF.type, URIRef("http://www.w3.org/2002/07/owl#Thing")),
+            ('https://w3id.org/np/RAO0soO0mUWTqqMaz1QcGbdIt90MJ55RXJck8w8wGGc0U', '', '')
         ]
 
         for subj, pred, obj in searches:
@@ -89,7 +88,7 @@ class TestNanopubClient:
             Check that Nanopub pattern search is returning results
         """
         subj, pred, obj = (
-            'https://w3id.org/np/RAj75Z7QMYNalgNiMG9IthMuj18VuJbto9sC8Jl6lp9WM#_1', '', '')
+            'https://w3id.org/np/RAQUd7PYws4Hh5pCpvLRbHfh0piLS5PyfOQXnSGD5JctY', '', '')
         results = list(client.find_nanopubs_with_pattern(subj=subj, pred=pred, obj=obj,
                                                          pubkey=PUBKEY))
         assert len(results) > 0
@@ -113,16 +112,16 @@ class TestNanopubClient:
         with pytest.raises(Exception):
             list(prod_client.find_things(type='http://purl.org/net/p-plan#Plan', searchterm=''))
 
-    @pytest.mark.flaky(max_runs=10)
-    @skip_if_nanopub_server_unavailable
-    def test_find_things_pubkey(self):
-        things_pubkey = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCoZmUKAHAF0CY2sKahOanR1V8wP62NOw3G0wcVLULWxqXB/gcW25bGPcA5RKoiuhT6dUbfcRXm" \
-            "wLknE29h6KWfKYLtNaqdrHbjSnNC65dNmNxCNp0i6ZLZRh51mxw9IPJHZrDqQ9bcLwm9d1G1fDKasA+h1vrF3Hv1YrQsF9aW1QIDAQAB"
-        results = list(prod_client.find_things(type='http://purl.org/net/p-plan#Plan', pubkey=things_pubkey))
-        assert len(results) > 0
+    # TODO: filtering by pubkey does not seem to be working on the production server
+    # @pytest.mark.flaky(max_runs=10)
+    # @skip_if_nanopub_server_unavailable
+    # def test_find_things_pubkey(self):
+    #     things_pubkey = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCoZmUKAHAF0CY2sKahOanR1V8wP62NOw3G0wcVLULWxqXB/        gcW25bGPcA5RKoiuhT6dUbfcRXmwLknE29h6KWfKYLtNaqdrHbjSnNC65dNmNxCNp0i6ZLZRh51mxw9IPJHZrDqQ9bcLwm9d1G1fDKasA+h1vrF3Hv1YrQsF9aW1QIDAQAB"
+    #     results = list(prod_client.find_things(type='http://purl.org/net/p-plan#Step', pubkey=things_pubkey))
+    #     assert len(results) > 0
 
-        results = list(prod_client.find_things(type='http://purl.org/net/p-plan#Plan', pubkey='wrong'))
-        assert len(results) == 0
+    #     results = list(prod_client.find_things(type='http://purl.org/net/p-plan#Step', pubkey='wrong'))
+    #     assert len(results) == 0
 
     @pytest.mark.flaky(max_runs=10)
     @skip_if_nanopub_server_unavailable
