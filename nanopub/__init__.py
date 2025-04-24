@@ -1,5 +1,6 @@
 from ._version import __version__
 from .nanopub_conf import NanopubConf
+from .fdo_nanopub import FDONanopub
 from .client import NanopubClient
 from .profile import Profile, load_profile, generate_keyfiles
 from .nanopub import Nanopub
