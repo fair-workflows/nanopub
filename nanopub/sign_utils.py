@@ -34,6 +34,12 @@ def add_signature(g: ConjunctiveGraph, profile: Profile, dummy_namespace: Namesp
         dummy_namespace[""],
         pubinfo_g,
     ))
+    g.add((
+        dummy_namespace["sig"],
+        NPX["signedBy"],
+        URIRef(profile.orcid_id),
+        pubinfo_g,
+    ))
     # Normalize RDF
     quads = RdfUtils.get_quads(g)
     normed_rdf = RdfHasher.normalize_quads(
