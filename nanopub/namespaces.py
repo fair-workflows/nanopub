@@ -26,3 +26,9 @@ PAV = Namespace("http://purl.org/pav/")
 
 PMID = Namespace("http://www.ncbi.nlm.nih.gov/pubmed/")
 """PubMed namespace"""
+
+HDL = Namespace("https://hdl.handle.net/")
+"""Handle namespace"""
+
+FDOF = Namespace("https://w3id.org/fdof/ontology#")
+"""FAIR Digital Object Framework namespace"""
