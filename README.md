@@ -9,11 +9,11 @@
 # nanopub
 The ```nanopub``` library provides a high-level, user-friendly python interface for searching, publishing and retracting nanopublications.
 
-Nanopublications are a formalized and machine-readable way of communicating the smallest possible units of publishable information. See [the documentation](https://fair-workflows.github.io/nanopub/getting-started/what-are-nanopubs) for more information.
+Nanopublications are a formalized and machine-readable way of communicating the smallest possible units of publishable information. See [the documentation](https://nanopublication.github.io/nanopub-py/getting-started/what-are-nanopubs) for more information.
 
 # Documentation
 
-Checkout the **[user documentation 📖 ](https://fair-workflows.github.io/nanopub)**
+Checkout the **[user documentation 📖 ](https://nanopublication.github.io/nanopub-py)**
 
 # Setup
 Install using pip:
@@ -89,4 +89,4 @@ for s, p, o in publication.assertion:
 
 ## Development
 
-See the [development page](https://fair-workflows.github.io/nanopub/getting-started/development/) on the documentation website.
+See the [development page](https://nanopublication.github.io/nanopub-py/getting-started/development/) on the documentation website.
