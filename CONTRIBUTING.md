@@ -30,10 +30,10 @@ The sections below outline the steps in each case.
 1. (**important**) announce your plan to the rest of the community _before you start working_. This announcement should be in the form of a (new) issue;
 1. (**important**) wait until some kind of consensus is reached about your idea being a good idea;
 1. if needed, fork the repository to your own Github profile and create your own feature branch off of the latest master commit. While working on your feature branch, make sure to stay up to date with the master branch by pulling in changes, possibly from the 'upstream' repository (follow the instructions [here](https://help.github.com/articles/configuring-a-remote-for-a-fork/) and [here](https://help.github.com/articles/syncing-a-fork/));
-1. visit the **[development page](https://fair-workflows.github.io/nanopub/getting-started/development/)** on the documentation website for more details on the development workflow.
+1. visit the **[development page](https://nanopublication.github.io/nanopub-py/getting-started/development/)** on the documentation website for more details on the development workflow.
 
 1. make sure the existing tests still work by running ``pytest``. Note that any pull requests to the nanopub repository on github will automatically trigger running of the test suite;
-1. check that the code is in accordance with the PEP8 style guide (cf. [development page](https://fair-workflows.github.io/nanopub/getting-started/development/) to run the lint script with `flake8` and `mypy`)
+1. check that the code is in accordance with the PEP8 style guide (cf. [development page](https://nanopublication.github.io/nanopub-py/getting-started/development/) to run the lint script with `flake8` and `mypy`)
 1. add your own tests (if necessary);
 1. update or expand the documentation;
 1. [push](http://rogerdudler.github.io/git-guide/) your feature branch to (your fork of) the nanopub repository on GitHub;
