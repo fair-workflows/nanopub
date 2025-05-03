@@ -1,8 +1,9 @@
 import pytest
 import rdflib
 from rdflib import RDF, RDFS
-from nanopub.namespaces import HDL, FDOF, NPX
-from nanopub.fdo_nanopub import FDONanopub, to_hdl_uri 
+
+from nanopub.fdo_nanopub import FDONanopub, to_hdl_uri
+from nanopub.namespaces import FDOF, HDL, NPX
 
 FAKE_HANDLE = "21.T11966/test"
 FAKE_URI = HDL[FAKE_HANDLE]
