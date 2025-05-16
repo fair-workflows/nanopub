@@ -20,6 +20,7 @@ class FDONanopub(Nanopub):
     FDO_STATUS_HANDLE = HDL["21.T11966/143d58e30d417a2cb75d"]
     FDO_PROFILE_HANDLE = HDL["21.T11966/4ee0ae648b243f49850f"]
     FDO_SERVICE_HANDLE = HDL["21.T11966/b5b58656b1fa5aff0505"]
+    FDO_PROFILE_HANDLE= HDL['21.T11966/FdoProfile']
 
     def __init__(self, fdo_id: rdflib.URIRef | str, label: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
