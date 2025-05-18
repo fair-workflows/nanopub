@@ -54,7 +54,7 @@ class FDONanopub(Nanopub):
 
     def add_fdo_service(self, service_uri: rdflib.URIRef):
         service_uri = to_hdl_uri(service_uri)  
-        self.assertion.add((self.fdo_uri, self.FDO_SERVICE_HANDLE, service_uri))
+        self.assertion.add((self.fdo_uri, self.FDO_SERVICE_HANDLE, rdflib.Literal(service_uri)))
         self.pubinfo.add((self.FDO_SERVICE_HANDLE, RDFS.label, rdflib.Literal("FdoService")))
 
     def add_attribute(self, attr_HANDLE: rdflib.URIRef, value: rdflib.Literal):
