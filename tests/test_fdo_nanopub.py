@@ -46,7 +46,7 @@ def test_add_fdo_service(service_uri):
     fdo = FDONanopub(FAKE_HANDLE, FAKE_LABEL)
     uri = to_hdl_uri(service_uri)
     fdo.add_fdo_service(service_uri)
-    assert (fdo.fdo_uri, fdo.FDO_SERVICE_HANDLE, uri) in fdo.assertion
+    assert (fdo.fdo_uri, fdo.FDO_SERVICE_HANDLE, rdflib.Literal(uri)) in fdo.assertion
     assert (fdo.FDO_SERVICE_HANDLE, RDFS.label, rdflib.Literal("FdoService")) in fdo.pubinfo
 
 @pytest.mark.parametrize("attr_HANDLE", [FAKE_HANDLE, HDL[FAKE_HANDLE]])
