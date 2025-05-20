@@ -2,7 +2,7 @@ from .nanopub import Nanopub
 import rdflib
 from rdflib.namespace import RDF, RDFS, XSD
 from nanopub.namespaces import HDL, FDOF, NPX
-from nanopub.constants import FDO_PROFILE_HANDLE_URI, FDO_TYPE_HANDLE_URI, FDO_STATUS_HANDLE_URI, FDO_SERVICE_HANDLE_URI, DATA_REF_HANDLE_URI
+from nanopub.constants import FDO_PROFILE_HANDLE_URI, FDO_TYPE_HANDLE_URI, FDO_STATUS_HANDLE_URI, FDO_SERVICE_HANDLE_URI, FDO_DATA_REF_HANDLE_URI
 
 def to_hdl_uri(value):
     if isinstance(value, rdflib.URIRef): 
@@ -17,7 +17,7 @@ class FDONanopub(Nanopub):
     EXPERIMENTAL: This class is experimental and may change or be removed in future versions.
     """
     
-    def __init__(self, fdo_id: rdflib.URIRef | str, label: str, fdo_profile: str, *args, **kwargs):
+    def __init__(self, fdo_id: rdflib.URIRef | str, label: str, fdo_profile: str = None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fdo_uri = to_hdl_uri(fdo_id)  
         self.fdo_profile = fdo_profile
@@ -41,8 +41,8 @@ class FDONanopub(Nanopub):
 
     def add_fdo_data_ref(self, target_uri: rdflib.URIRef):
         target_uri = to_hdl_uri(target_uri)  
-        self.assertion.add((self.fdo_uri, DATA_REF_HANDLE_URI, target_uri))
-        self.pubinfo.add((DATA_REF_HANDLE_URI, RDFS.label, rdflib.Literal("DataRef")))
+        self.assertion.add((self.fdo_uri, FDO_DATA_REF_HANDLE_URI, target_uri))
+        self.pubinfo.add((FDO_DATA_REF_HANDLE_URI, RDFS.label, rdflib.Literal("DataRef")))
 
     def add_fdo_type(self, type_json: str):
         self.assertion.add((self.fdo_uri, FDO_TYPE_HANDLE_URI, rdflib.Literal(type_json, datatype=XSD.string)))
