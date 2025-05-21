@@ -2,7 +2,7 @@ from .nanopub import Nanopub
 import rdflib
 from rdflib.namespace import RDF, RDFS, XSD
 from nanopub.namespaces import HDL, FDOF, NPX
-from nanopub.constants import FDO_PROFILE_HANDLE_URI, FDO_TYPE_HANDLE_URI, FDO_STATUS_HANDLE_URI, FDO_SERVICE_HANDLE_URI, FDO_DATA_REF_HANDLE_URI
+from nanopub.constants import FDO_PROFILE_HANDLE, FDO_DATA_REF_HANDLE
 
 def to_hdl_uri(value):
     if isinstance(value, rdflib.URIRef): 
@@ -36,26 +36,13 @@ class FDONanopub(Nanopub):
 
     def add_fdo_profile(self, profile_uri: rdflib.URIRef):
         profile_uri = to_hdl_uri(profile_uri)
-        self.assertion.add((self.fdo_uri, FDO_PROFILE_HANDLE_URI, rdflib.Literal(profile_uri)))
-        self.pubinfo.add((FDO_PROFILE_HANDLE_URI, RDFS.label, rdflib.Literal("FdoProfile")))
+        self.assertion.add((self.fdo_uri, HDL[FDO_PROFILE_HANDLE], rdflib.Literal(profile_uri)))
+        self.pubinfo.add((HDL[FDO_PROFILE_HANDLE], RDFS.label, rdflib.Literal("FdoProfile")))
 
     def add_fdo_data_ref(self, target_uri: rdflib.URIRef):
         target_uri = to_hdl_uri(target_uri)  
-        self.assertion.add((self.fdo_uri, FDO_DATA_REF_HANDLE_URI, target_uri))
-        self.pubinfo.add((FDO_DATA_REF_HANDLE_URI, RDFS.label, rdflib.Literal("DataRef")))
-
-    def add_fdo_type(self, type_json: str):
-        self.assertion.add((self.fdo_uri, FDO_TYPE_HANDLE_URI, rdflib.Literal(type_json, datatype=XSD.string)))
-        self.pubinfo.add((FDO_TYPE_HANDLE_URI, RDFS.label, rdflib.Literal("FdoType")))
-
-    def add_fdo_status(self, status: str):
-        self.assertion.add((self.fdo_uri, FDO_STATUS_HANDLE_URI, rdflib.Literal(status)))
-        self.pubinfo.add((FDO_STATUS_HANDLE_URI, RDFS.label, rdflib.Literal("FdoStatus")))
-
-    def add_fdo_service(self, service_uri: rdflib.URIRef):
-        service_uri = to_hdl_uri(service_uri)  
-        self.assertion.add((self.fdo_uri, FDO_SERVICE_HANDLE_URI, rdflib.Literal(service_uri)))
-        self.pubinfo.add((FDO_SERVICE_HANDLE_URI, RDFS.label, rdflib.Literal("FdoService")))
+        self.assertion.add((self.fdo_uri, HDL[FDO_DATA_REF_HANDLE], target_uri))
+        self.pubinfo.add((HDL[FDO_DATA_REF_HANDLE], RDFS.label, rdflib.Literal("DataRef")))
 
     def add_attribute(self, attr_HANDLE: rdflib.URIRef, value: rdflib.Literal):
         attr_HANDLE = to_hdl_uri(attr_HANDLE) 
