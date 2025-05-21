@@ -110,14 +110,13 @@ def resolve_handle_metadata(handle: str) -> dict:
     response.raise_for_status()
     return response.json()
 
-def create_fdo_nanopub_from_handle(handle: str) -> FDONanopub:
+def create_fdo_nanopub_from_handle(handle: str, **kwargs) -> FDONanopub:
     data = resolve_handle_metadata(handle)
     values = data.get("values", [])
 
     label = None
     profile = None
     other_attributes = []
-    print(values)
     for entry in values:
         entry_type = entry.get("type")
         entry_value = entry.get("data", {}).get("value")
@@ -134,7 +133,7 @@ def create_fdo_nanopub_from_handle(handle: str) -> FDONanopub:
     if not profile:
         raise ValueError("FDO profile missing in handle metadata")
     fdo_profile = profile
-    fdonp = FDONanopub(handle, label or "", fdo_profile)
+    fdonp = FDONanopub(fdo_id=handle, label=label or "", fdo_profile=fdo_profile, **kwargs)
     fdonp.add_fdo_profile(rdflib.URIRef(fdo_profile))
 
     for attr_type, attr_value in other_attributes:
