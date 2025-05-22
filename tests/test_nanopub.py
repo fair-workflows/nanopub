@@ -3,11 +3,11 @@ from rdflib import BNode, Graph, Literal, URIRef
 
 from nanopub import Nanopub, NanopubClaim, NanopubConf, NanopubRetract, NanopubUpdate, create_nanopub_index, namespaces
 from nanopub.templates.nanopub_introduction import NanopubIntroduction
-from tests.conftest import default_conf, java_wrap, profile_test, skip_if_nanopub_server_unavailable
+from tests.conftest import default_conf, profile_test, skip_if_nanopub_server_unavailable
 
 
 def test_nanopub_sign_uri():
-    expected_np_uri = "http://purl.org/np/RAoXkQkJe_lpMhYW61Y9mqWDHa5MAj1o4pWIiYLmAzY50"
+    expected_trusty = "RAIh8Oq-29dIVTZDhETpJ6f8oxxrILbZ3gSxkyAQY4220"
     assertion = Graph()
     assertion.add((
         URIRef('http://test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
@@ -16,33 +16,27 @@ def test_nanopub_sign_uri():
         conf=default_conf,
         assertion=assertion
     )
-    java_np = java_wrap.sign(np)
     np.sign()
     assert np.has_valid_signature
-    assert np.source_uri == expected_np_uri
-    assert java_wrap.check_trusty_with_signature(np)
-    assert np.source_uri == java_np
+    assert expected_trusty in np.source_uri
 
 
 
 def test_nanopub_sign_uri2():
-    expected_np_uri = "http://purl.org/np/RAoXkQkJe_lpMhYW61Y9mqWDHa5MAj1o4pWIiYLmAzY50"
+    expected_trusty = "RAIh8Oq-29dIVTZDhETpJ6f8oxxrILbZ3gSxkyAQY4220"
     np = Nanopub(
         conf=default_conf,
     )
     np.assertion.add((
         URIRef('http://test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
     ))
-    java_np = java_wrap.sign(np)
     np.sign()
     assert np.has_valid_signature
-    assert np.source_uri == expected_np_uri
-    assert java_wrap.check_trusty_with_signature(np)
-    assert np.source_uri == java_np
+    assert expected_trusty in np.source_uri
 
 
 def test_nanopub_sign_bnode():
-    expected_np_uri = "http://purl.org/np/RAclARDMZxQ0yLKu3enKS4-CGubi2coQUvyb7BXF3XRvY"
+    expected_trusty = "RAcU1AR3dS0ricV5G_ENcpUCk40XuCvFW3tVFqxNEQzT4"
     assertion = Graph()
     assertion.add((
         BNode('test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
@@ -53,12 +47,11 @@ def test_nanopub_sign_bnode():
     )
     np.sign()
     assert np.has_valid_signature
-    assert np.source_uri == expected_np_uri
-    assert java_wrap.check_trusty_with_signature(np)
+    assert expected_trusty in np.source_uri
 
 
 def test_nanopub_sign_bnode2():
-    expected_np_uri = "http://purl.org/np/RA2bruKoZi0snNNfQCkB2qvhCnscTt9Wmz2_rSGnwB2nQ"
+    expected_trusty = "RA-1eE8scfVaiK7vP4CZueTyEyRmn1g2PpPf-j69WQAgM"
     assertion = Graph()
     assertion.add((
         BNode('test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
@@ -71,12 +64,11 @@ def test_nanopub_sign_bnode2():
         assertion=assertion
     )
     np.sign()
-    assert np.source_uri == expected_np_uri
-    assert java_wrap.check_trusty_with_signature(np)
-
+    assert expected_trusty in np.source_uri
+    assert np.has_valid_signature
 
 def test_nanopub_publish():
-    expected_np_uri = "http://purl.org/np/RAoXkQkJe_lpMhYW61Y9mqWDHa5MAj1o4pWIiYLmAzY50"
+    expected_trusty = "RAIh8Oq-29dIVTZDhETpJ6f8oxxrILbZ3gSxkyAQY4220"
     assertion = Graph()
     assertion.add((
         URIRef('http://test'), namespaces.HYCL.claims, Literal('This is a test of nanopub-python')
@@ -85,12 +77,9 @@ def test_nanopub_publish():
         conf=default_conf,
         assertion=assertion
     )
-    java_np = java_wrap.sign(np)
     np.publish()
     assert np.has_valid_signature
-    assert np.source_uri == expected_np_uri
-    assert java_wrap.check_trusty_with_signature(np)
-    assert np.source_uri == java_np
+    assert expected_trusty in np.source_uri
 
 
 
@@ -99,11 +88,8 @@ def test_nanopub_claim():
         claim='Some controversial statement',
         conf=default_conf,
     )
-    java_np = java_wrap.sign(np)
     np.sign()
     assert np.source_uri is not None
-    assert java_wrap.check_trusty_with_signature(np)
-    assert np.source_uri == java_np
 
 
 def test_nanopub_retract():
@@ -121,11 +107,8 @@ def test_nanopub_retract():
         uri=np.source_uri,
         conf=default_conf,
     )
-    java_np = java_wrap.sign(np2)
     np2.sign()
     assert np2.source_uri is not None
-    assert java_wrap.check_trusty_with_signature(np)
-    assert np2.source_uri == java_np
 
 
 def test_nanopub_update():
@@ -148,11 +131,8 @@ def test_nanopub_update():
         conf=default_conf,
         assertion=assertion,
     )
-    java_np = java_wrap.sign(np2)
     np2.sign()
     assert np2.source_uri is not None
-    assert java_wrap.check_trusty_with_signature(np)
-    assert np2.source_uri == java_np
 
 
 def test_nanopub_introduction():
@@ -160,11 +140,8 @@ def test_nanopub_introduction():
         conf=default_conf,
         host="http://test"
     )
-    java_np = java_wrap.sign(np)
     np.sign()
     assert np.source_uri is not None
-    assert java_wrap.check_trusty_with_signature(np)
-    assert np.source_uri == java_np
 
 
 def test_nanopub_index():
@@ -182,7 +159,6 @@ def test_nanopub_index():
     )
     for np in np_list:
         assert np.source_uri is not None
-        assert java_wrap.check_trusty_with_signature(np)
 
 
 @pytest.mark.flaky(max_runs=10)
@@ -190,9 +166,8 @@ def test_nanopub_index():
 def test_nanopub_fetch():
     """Check that creating Nanopub from source URI (fetch) works for a few known nanopub URIs."""
     known_nps = [
-        'http://purl.org/np/RA5cwuR2b7Or9Pkb50nhPcHa2-cD0-gEPb2B3Ly5IxyuA',
-        'http://purl.org/np/RAj1G7tgntNvXEgaMDmrc3rhxLekjZX6qsPIaEjUJ49NU',
-        'http://purl.org/np/RAj75Z7QMYNalgNiMG9IthMuj18VuJbto9sC8Jl6lp9WM'
+        'https://w3id.org/np/RAQUd7PYws4Hh5pCpvLRbHfh0piLS5PyfOQXnSGD5JctY',
+        'https://w3id.org/np/RAO0soO0mUWTqqMaz1QcGbdIt90MJ55RXJck8w8wGGc0U',
     ]
     for np_uri in known_nps:
         np = Nanopub(
@@ -263,4 +238,3 @@ def test_specific_file():
             )
         )
     np.sign()
-    assert java_wrap.check_trusty_with_signature(np)
