@@ -29,19 +29,19 @@ class FDONanopub(Nanopub):
         self.assertion.add((self.fdo_uri, FDOF.hasMetadata, self.metadata.np_uri))
         if self.fdo_profile:
             profile_uri = to_hdl_uri(self.fdo_profile)
-            self.assertion.add((self.fdo_uri, FDOF.hasProfile, profile_uri))
+            self.assertion.add((self.fdo_uri, FDOF.hasFdoProfile, profile_uri))
 
         self.pubinfo.add((self.metadata.np_uri, RDFS.label, rdflib.Literal(f"FAIR Digital Object: {label}")))
         self.pubinfo.add((self.metadata.np_uri, NPX.introduces, self.fdo_uri))
 
     def add_fdo_profile(self, profile_uri: rdflib.URIRef):
         profile_uri = to_hdl_uri(profile_uri)
-        self.assertion.add((self.fdo_uri, HDL[FDO_PROFILE_HANDLE], rdflib.Literal(profile_uri)))
+        self.assertion.add((self.fdo_uri, FDOF.hasFdoProfile, rdflib.Literal(profile_uri)))
         self.pubinfo.add((HDL[FDO_PROFILE_HANDLE], RDFS.label, rdflib.Literal("FdoProfile")))
 
     def add_fdo_data_ref(self, target_uri: rdflib.URIRef):
         target_uri = to_hdl_uri(target_uri)  
-        self.assertion.add((self.fdo_uri, HDL[FDO_DATA_REF_HANDLE], target_uri))
+        self.assertion.add((self.fdo_uri, FDOF.isMaterializedBy, target_uri))
         self.pubinfo.add((HDL[FDO_DATA_REF_HANDLE], RDFS.label, rdflib.Literal("DataRef")))
 
     def add_attribute(self, attr_HANDLE: rdflib.URIRef, value: rdflib.Literal):
