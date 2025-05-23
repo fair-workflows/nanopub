@@ -150,13 +150,25 @@ def create_fdo_nanopub_from_handle(handle: str, **kwargs) -> FDONanopub:
 
     return fdonp
 
-def update_metadata(handle: str, metadata: FdoMetadata) -> None:
-#    TODO: Not implemented yet
-   raise NotImplementedError("Not implemented yet")
-
+def update_metadata(fdoNanopub: FDONanopub, metadata: FdoMetadata) -> URIRef:
+    fdo_record = fdoNanopub.assertion
+    subject_uri = get_fdo_uri_from_fdo_record(fdo_record)
+    for p, o in list(fdo_record.predicate_objects(subject=subject_uri)):
+        fdo_record.remove((subject_uri, p, o))
+    for triple in metadata.get_statements():
+        fdo_record.add(triple)
+    fdoNanopub.update()
+    return fdoNanopub.source_uri
 
 def update_content(handle: str, content: bytes) -> None:
 #    TODO: Not implemented yet
    raise NotImplementedError("Not implemented yet")
 
+def get_fdo_uri_from_fdo_record(fdo_record):
+    fdo_uris = list(fdo_record.subjects(RDF.type, FDOF.FAIRDigitalObject))
+    if not fdo_uris:
+        raise ValueError("No FAIRDigitalObject found in assertion.")
+    if len(fdo_uris) > 1:
+        raise ValueError("Multiple FAIRDigitalObjects found; cannot disambiguate.")
+    return fdo_uris[0]
    
