@@ -39,8 +39,8 @@ class FDONanopub(Nanopub):
         self.assertion.add((self.fdo_uri, FDOF.hasFdoProfile, rdflib.Literal(profile_uri)))
         self.pubinfo.add((HDL[FDO_PROFILE_HANDLE], RDFS.label, rdflib.Literal("FdoProfile")))
 
-    def add_fdo_data_ref(self, target_uri: rdflib.URIRef):
-        target_uri = to_hdl_uri(target_uri)  
+    def add_fdo_data_ref(self, data_ref: rdflib.Literal):
+        target_uri = to_hdl_uri(data_ref)  
         self.assertion.add((self.fdo_uri, FDOF.isMaterializedBy, target_uri))
         self.pubinfo.add((HDL[FDO_DATA_REF_HANDLE], RDFS.label, rdflib.Literal("DataRef")))
 
