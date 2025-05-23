@@ -4,7 +4,8 @@ import requests
 from pyshacl import validate
 from rdflib import RDF, URIRef, Literal, Namespace
 from rdflib.namespace import SH, XSD
-from nanopub.constants import FDO_PROFILE_HANDLE
+from nanopub.namespaces import FDOF
+from nanopub.constants import FDO_PROFILE_HANDLE, FDO_DATA_REF_HANDLE
 from nanopub.fdo_nanopub import FDONanopub
 from nanopub.fdo_metadata import FdoMetadata
 
@@ -116,6 +117,7 @@ def create_fdo_nanopub_from_handle(handle: str, **kwargs) -> FDONanopub:
 
     label = None
     profile = None
+    data_ref = None
     other_attributes = []
     for entry in values:
         entry_type = entry.get("type")
@@ -127,14 +129,19 @@ def create_fdo_nanopub_from_handle(handle: str, **kwargs) -> FDONanopub:
             label = entry_value
         elif entry_type == FDO_PROFILE_HANDLE:
             profile = entry_value
+        elif entry_type == FDO_DATA_REF_HANDLE:
+            data_ref = entry_value
         else:
             other_attributes.append((entry_type, entry_value))
 
     if not profile:
         raise ValueError("FDO profile missing in handle metadata")
     fdo_profile = profile
+    data_ref = data_ref
     fdonp = FDONanopub(fdo_id=handle, label=label or "", fdo_profile=fdo_profile, **kwargs)
-    fdonp.add_fdo_profile(rdflib.URIRef(fdo_profile))
+    
+    if data_ref:
+        fdonp.add_fdo_data_ref(rdflib.Literal(data_ref))
 
     for attr_type, attr_value in other_attributes:
         attr_uri = rdflib.URIRef(f"https://w3id.org/kpxl/handle/terms/{attr_type}")
