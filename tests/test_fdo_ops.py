@@ -1,9 +1,9 @@
 import json
 import pytest
 from unittest.mock import patch, MagicMock
-from nanopub.fdo_ops import validate_fdo_nanopub, create_fdo_nanopub_from_handle
-from nanopub.fdo_nanopub import FDONanopub, to_hdl_uri
-from rdflib import URIRef, Graph
+from nanopub.fdo.validate import validate_fdo_nanopub
+from nanopub.fdo.fdo_nanopub import FdoNanopub, to_hdl_uri
+from rdflib import URIRef
 from nanopub.namespaces import HDL, FDOF, NPX
 
 HANDLE_METADATA = {
@@ -43,7 +43,7 @@ JSON_SCHEMA = {
 
 @pytest.fixture
 def valid_fdo_nanopub():
-    fdonp = FDONanopub(fdo_id="21.T11966/82045bd97a0acce88378", label="", fdo_profile="21.T11966/996c38676da9ee56f8ab")
+    fdonp = FdoNanopub(fdo_id="21.T11966/82045bd97a0acce88378", label="", fdo_profile="21.T11966/996c38676da9ee56f8ab")
     return fdonp
 
 @patch("nanopub.fdo_ops.requests.get")
@@ -56,11 +56,11 @@ def test_validate_fdo_nanopub_success(mock_get, valid_fdo_nanopub):
     assert validate_fdo_nanopub(valid_fdo_nanopub) is True
 
 @patch("nanopub.fdo_ops.requests.get")
-def test_create_fdo_nanopub_from_handle(mock_get):
+def test_handle_to_nanopub(mock_get):
     mock_get.return_value = MagicMock(status_code=200, json=lambda: HANDLE_METADATA)
-    fdonp = create_fdo_nanopub_from_handle("21.T11966/82045bd97a0acce88378")
+    fdonp = FdoNanopub.handle_to_nanopub("21.T11966/82045bd97a0acce88378")
 
-    assert isinstance(fdonp, FDONanopub)
+    assert isinstance(fdonp, FdoNanopub)
     assert fdonp.fdo_uri == to_hdl_uri("21.T11966/82045bd97a0acce88378")
     assert fdonp.fdo_profile == "21.T11966/996c38676da9ee56f8ab"
 
@@ -133,7 +133,7 @@ HANDLE_METADATA_WITH_DATAREF =  {
 def test_create_fdo_nanopub_with_dataref(mock_get):
     mock_get.return_value = MagicMock(status_code=200, json=lambda: HANDLE_METADATA_WITH_DATAREF)
 
-    fdonp = create_fdo_nanopub_from_handle(FDO_HANDLE)
+    fdonp = FdoNanopub.handle_to_nanopub(FDO_HANDLE)
     g = fdonp.assertion  
     fdo_uri = fdonp.fdo_uri
     profile_uri = to_hdl_uri(fdonp.fdo_profile)
