@@ -2,10 +2,9 @@ from rdflib import Graph, URIRef, Literal
 from typing import Optional, Union
 from rdflib.namespace import RDFS
 from nanopub.namespaces import HDL, FDOF
-from nanopub.constants import FDO_PROFILE_HANDLE
 
 
-class FdoMetadata:
+class FdoRecord:
     """
     EXPERIMENTAL: This class is experimental and may change or be removed in future versions.
     """
@@ -28,7 +27,7 @@ class FdoMetadata:
 
     def get_statements(self) -> list[tuple[URIRef, URIRef, Union[Literal, URIRef]]]:
         """
-        Returns the metadata as a list of RDF triples.
+        Returns the record as a list of RDF triples.
         """
         if not self.id:
             raise ValueError("FDO ID is not set")
@@ -37,7 +36,7 @@ class FdoMetadata:
 
     def get_graph(self) -> Graph:
         """
-        Returns the metadata as an rdflib.Graph.
+        Returns the record as an rdflib.Graph.
         """
         g = Graph()
         for s, p, o in self.get_statements():
@@ -69,8 +68,8 @@ class FdoMetadata:
         obj = URIRef(value) if isinstance(value, str) and value.startswith("http") else Literal(value)
         self.tuples[pred] = obj
 
-    def copy(self) -> "FdoMetadata":
-        new_md = FdoMetadata()
-        new_md.id = self.id
-        new_md.tuples = self.tuples.copy()
-        return new_md
+    def copy(self) -> "FdoRecord":
+        new_record = FdoRecord()
+        new_record.id = self.id
+        new_record.tuples = self.tuples.copy()
+        return new_record
