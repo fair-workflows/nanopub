@@ -1,7 +1,7 @@
 import pytest
 import rdflib
 from rdflib import RDF, RDFS
-from nanopub.namespaces import HDL, FDOF, NPX
+from nanopub.namespaces import HDL, FDOF, FDOC, NPX
 from nanopub.fdo.fdo_nanopub import FdoNanopub, to_hdl_uri 
 from nanopub.constants import FDO_DATA_REF_HANDLE, FDO_PROFILE_HANDLE
 
@@ -30,7 +30,7 @@ def test_add_fdo_profile(fdo_profile):
     fdo = FdoNanopub(FAKE_HANDLE, FAKE_LABEL)
     uri = to_hdl_uri(fdo_profile)
     fdo.add_fdo_profile(fdo_profile)
-    assert (fdo.fdo_uri, FDOF.hasFdoProfile, uri) in fdo.assertion
+    assert (fdo.fdo_uri, FDOC.hasFdoProfile, uri) in fdo.assertion
     assert (HDL[FDO_PROFILE_HANDLE], RDFS.label, rdflib.Literal("FdoProfile")) in fdo.pubinfo
 
 @pytest.mark.parametrize("data_ref", [FAKE_HANDLE, HDL[FAKE_HANDLE]])
