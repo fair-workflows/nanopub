@@ -331,7 +331,7 @@ class NanopubClient:
         endpoint: str,
         query_url: str,
     ) -> List[dict]:
-
+        """Query a Nanopub Query endpoint and return parsed CSV response."""
         csv_text = self._query_api_csv(params, endpoint=endpoint, query_url=query_url)
         reader = csv.DictReader(StringIO(csv_text))
         return list(reader)
