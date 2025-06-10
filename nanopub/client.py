@@ -322,7 +322,6 @@ class NanopubClient:
         """Query a Nanopub Query endpoint and request CSV response."""
         headers = {"Accept": "text/csv"}
         url = query_url + endpoint
-        print(f"Querying {url} with params {params}")
         return requests.get(url, params=params, headers=headers).text
 
     def _query_api_parsed(
