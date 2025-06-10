@@ -4,7 +4,9 @@ This module includes a client for the nanopub server.
 
 import random
 import warnings
-from typing import List, Tuple, Union
+from typing import Dict, List, Tuple, Union
+import csv
+from io import StringIO
 
 import rdflib
 import requests
@@ -315,3 +317,21 @@ class NanopubClient:
             parsed["label"] = result["label"]["value"]
         parsed["date"] = result["date"]["value"]
         return parsed
+
+    def _query_api_csv(self, params: dict, endpoint: str, query_url: str) -> requests.Response:
+        """Query a Nanopub Query endpoint and request CSV response."""
+        headers = {"Accept": "text/csv"}
+        url = query_url + endpoint
+        print(f"Querying {url} with params {params}")
+        return requests.get(url, params=params, headers=headers).text
+
+    def _query_api_parsed(
+        self,
+        params: Dict[str, str],
+        endpoint: str,
+        query_url: str,
+    ) -> List[dict]:
+
+        csv_text = self._query_api_csv(params, endpoint=endpoint, query_url=query_url)
+        reader = csv.DictReader(StringIO(csv_text))
+        return list(reader)
