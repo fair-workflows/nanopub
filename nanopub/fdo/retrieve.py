@@ -9,7 +9,6 @@ from nanopub.namespaces import FDOF, FDOC
 def resolve_id(iri_or_handle: str) -> FdoRecord:
     try:
         np = resolve_in_nanopub_network(iri_or_handle)
-        print("Resolved nanopublication:", np)
         if np is not None:
             return FdoRecord(np.assertion)
 
