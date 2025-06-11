@@ -4,7 +4,7 @@ from unittest.mock import patch, MagicMock
 from nanopub.fdo.validate import validate_fdo_nanopub
 from nanopub.fdo.fdo_nanopub import FdoNanopub, to_hdl_uri
 from rdflib import URIRef
-from nanopub.namespaces import HDL, FDOF, NPX
+from nanopub.namespaces import HDL, FDOF, FDOC, NPX
 
 HANDLE_METADATA = {
     "responseCode": 1,
@@ -140,5 +140,5 @@ def test_create_fdo_nanopub_with_dataref(mock_get):
     assert (profile_uri) == to_hdl_uri("21.T11966/996c38676da9ee56f8ab")
     dataref_uri = URIRef(HDL_PREFIX + DATAREF_HANDLE)
 
-    assert (fdo_uri, FDOF.hasFdoProfile, profile_uri) in g
+    assert (fdo_uri, FDOC.hasFdoProfile, profile_uri) in g
     assert (fdo_uri, FDOF.isMaterializedBy, dataref_uri) in g

@@ -32,3 +32,6 @@ HDL = Namespace("https://hdl.handle.net/")
 
 FDOF = Namespace("https://w3id.org/fdof/ontology#")
 """FAIR Digital Object Framework namespace"""
+
+FDOC = Namespace("https://w3id.org/fdoc/o/terms/")
+"""FDO Connect namespace"""

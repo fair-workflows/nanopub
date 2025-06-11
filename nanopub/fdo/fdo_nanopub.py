@@ -1,7 +1,7 @@
 from nanopub import Nanopub
 import rdflib
 from rdflib.namespace import RDF, RDFS, XSD
-from nanopub.namespaces import HDL, FDOF, NPX
+from nanopub.namespaces import HDL, FDOF, NPX, FDOC
 from nanopub.constants import FDO_PROFILE_HANDLE, FDO_DATA_REF_HANDLE
 
 
@@ -31,7 +31,7 @@ class FdoNanopub(Nanopub):
         self.assertion.add((self.fdo_uri, FDOF.hasMetadata, self.metadata.np_uri))
         if self.fdo_profile:
             profile_uri = to_hdl_uri(self.fdo_profile)
-            self.assertion.add((self.fdo_uri, FDOF.hasFdoProfile, profile_uri))
+            self.assertion.add((self.fdo_uri, FDOC.hasFdoProfile, profile_uri))
 
         self.pubinfo.add((self.metadata.np_uri, RDFS.label, rdflib.Literal(f"FAIR Digital Object: {label}")))
         self.pubinfo.add((self.metadata.np_uri, NPX.introduces, self.fdo_uri))
@@ -80,7 +80,7 @@ class FdoNanopub(Nanopub):
 
     def add_fdo_profile(self, profile_uri: rdflib.URIRef | str):
         profile_uri = to_hdl_uri(profile_uri)
-        self.assertion.add((self.fdo_uri, FDOF.hasFdoProfile, profile_uri))
+        self.assertion.add((self.fdo_uri, FDOC.hasFdoProfile, profile_uri))
         self.pubinfo.add((HDL[FDO_PROFILE_HANDLE], RDFS.label, rdflib.Literal("FdoProfile")))
 
     def add_fdo_data_ref(self, data_ref: rdflib.Literal | str):

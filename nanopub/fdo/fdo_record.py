@@ -1,7 +1,7 @@
 from rdflib import Graph, URIRef, Literal
 from typing import Optional, Union
 from rdflib.namespace import RDFS
-from nanopub.namespaces import HDL, FDOF
+from nanopub.namespaces import HDL, FDOF, FDOC
 
 
 class FdoRecord:
@@ -15,7 +15,7 @@ class FdoRecord:
 
         if nanopub:
             for s, p, o in nanopub:
-                if p == FDOF.hasFdoProfile and self.id is None:
+                if p == FDOC.hasFdoProfile and self.id is None:
                     self.id = self.extract_handle(s)
                 self.tuples[p] = o
 
@@ -44,7 +44,7 @@ class FdoRecord:
         return g
 
     def get_profile(self) -> Optional[URIRef]:
-        val = self.tuples.get(FDOF.hasFdoProfile)
+        val = self.tuples.get(FDOC.hasFdoProfile)
         return URIRef(val) if val else None
 
     def get_label(self) -> Optional[str]:
@@ -61,7 +61,7 @@ class FdoRecord:
         self.tuples[RDFS.label] = Literal(label)
 
     def set_profile(self, uri: Union[str, URIRef]) -> None:
-        self.tuples[FDOF.hasFdoProfile] = URIRef(uri)
+        self.tuples[FDOC.hasFdoProfile] = URIRef(uri)
 
     def set_property(self, predicate: Union[str, URIRef], value: Union[str, URIRef, Literal]) -> None:
         pred = URIRef(predicate)

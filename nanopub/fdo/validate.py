@@ -1,13 +1,21 @@
 import json
 import requests
 from pyshacl import validate
+from rdflib import Graph
 from nanopub.fdo.utils import convert_jsonschema_to_shacl
+from nanopub.fdo.fdo_record import FdoRecord 
 
 
-def validate_fdo_nanopub(fdo_nanopub) -> bool:
+def validate_fdo_record(record: FdoRecord) -> bool:
     try:
-        profile_uri = f"https://hdl.handle.net/api/handles/{fdo_nanopub.fdo_profile}"
-        profile_response = requests.get(profile_uri)
+        profile_uri = record.get_profile()
+        if not profile_uri:
+            print("FDO profile URI not found in record.")
+            return False
+
+        handle = str(profile_uri).split("/")[-1]
+        profile_api_url = f"https://hdl.handle.net/api/handles/{handle}"
+        profile_response = requests.get(profile_api_url)
         profile_data = profile_response.json()
 
         jsonschema_entry = next(
@@ -31,8 +39,10 @@ def validate_fdo_nanopub(fdo_nanopub) -> bool:
         json_schema = schema_response.json()
         shape_graph = convert_jsonschema_to_shacl(json_schema)
 
+        graph = record.get_graph()
+
         conforms, _, results_text = validate(
-            fdo_nanopub.assertion,
+            graph,
             shacl_graph=shape_graph,
             inference='rdfs',
             abort_on_first=False,
