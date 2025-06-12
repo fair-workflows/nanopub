@@ -193,7 +193,7 @@ class Nanopub:
             raise MalformedNanopubError("The nanopub is not valid, cannot sign it")
 
 
-    def publish(self) -> None:
+    def publish(self) -> tuple(str, str, str | None):
         """Publish a Nanopub object"""
         if not self.source_uri:
             self.sign()
@@ -208,6 +208,9 @@ class Nanopub:
             # published with a URI that looks like [published nanopub URI]#step.
             self._concept_uri = f"{self.source_uri}#{str(self._introduces_concept)}"
             log.info(f"Published concept to {self._concept_uri}")
+            return self.source_uri, self._conf.use_server, self._concept_uri
+        
+        return self.source_uri, self._conf.use_server
 
 
     def update(self, publish=True) -> None:
