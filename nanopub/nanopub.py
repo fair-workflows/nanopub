@@ -167,7 +167,7 @@ class Nanopub:
             )
             assertion_attributed_to = self._conf.assertion_attributed_to
             if self._conf.attribute_assertion_to_profile:
-                assertion_attributed_to = URIRef(self.profile.orcid_id)
+                assertion_attributed_to = URIRef(self.profile.agent_id)
             self._handle_assertion_attributed_to(assertion_attributed_to)
             self._handle_publication_attributed_to(
                 self._conf.attribute_publication_to_profile,
@@ -490,7 +490,7 @@ class Nanopub:
                 raise MalformedNanopubError(
                     "No nanopub profile provided, but attribute_publication_to_profile is enabled")
             if publication_attributed_to is None:
-                publication_attributed_to = URIRef(self._profile.orcid_id)
+                publication_attributed_to = URIRef(self._profile.agent_id)
             else:
                 publication_attributed_to = URIRef(publication_attributed_to)
             self._pubinfo.add(

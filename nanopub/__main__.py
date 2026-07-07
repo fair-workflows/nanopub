@@ -31,15 +31,17 @@ ORCID_ID_REGEX = r'^https://orcid.org/(\d{4}-){3}\d{3}(\d|X)$'
 PLACEHOLDER_ORCID_ID = 'https://orcid.org/0000-0000-0000-0000'
 
 
-def validate_orcid_id(ctx, param, orcid_id: str):
-    """Check if valid ORCID iD, should be https://orcid.org/ + 16 digit in form:
-    https://orcid.org/0000-0000-0000-0000. ctx and param are necessary `click` callback args
+def validate_agent_id(ctx, param, agent_id: str):
+    """Accept any URI as the signer's agent id, taken at face value.
+
+    Only a value that claims to be an ORCID (starts with https://orcid.org/) is
+    format-checked; any other URI is trusted. ctx and param are necessary
+    `click` callback args.
     """
-    if re.match(ORCID_ID_REGEX, orcid_id):
-        return orcid_id
-    else:
-        raise ValueError('Your ORCID iD is not valid, please provide a valid ORCID iD that '
+    if agent_id.startswith('https://orcid.org/') and not re.match(ORCID_ID_REGEX, agent_id):
+        raise ValueError('This looks like an ORCID iD but is not valid; an ORCID iD '
                          'looks like: https://orcid.org/0000-0000-0000-0000')
+    return agent_id
 
 
 @cli.command(help='Get nanopub library version')
@@ -74,7 +76,7 @@ def sign(
     if private_key:
         config = NanopubConf(
             profile=Profile(
-                name='', orcid_id=orcid_id,
+                name='', agent_id=orcid_id,
                 private_key=private_key
             ),
         )
@@ -155,7 +157,7 @@ def setup(
             None,
             help="Your ORCID iD (i.e. https://orcid.org/0000-0000-0000-0000)",
             prompt='What is your ORCID iD (i.e. https://orcid.org/0000-0000-0000-0000)?',
-            callback=validate_orcid_id
+            callback=validate_agent_id
         ),
         name: str = typer.Option(
             None,
