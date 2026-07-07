@@ -41,7 +41,7 @@ def add_signature(g: Dataset, profile: Profile, dummy_namespace: Namespace, pubi
     g.add((
         dummy_namespace["sig"],
         NPX["signedBy"],
-        URIRef(profile.orcid_id),
+        URIRef(profile.agent_id),
         pubinfo_g,
     ))
     # Normalize RDF

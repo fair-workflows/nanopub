@@ -76,7 +76,7 @@ class NanopubUpdate(Nanopub):
         if np.metadata.public_key is None:
             raise MalformedNanopubError(f"Public key not found in the nanopub {np.source_uri}")
         if self._conf.profile.public_key is None:
-            raise ValueError(f"Public key not found for profile {self._conf.profile.orcid_id}")
+            raise ValueError(f"Public key not found for profile {self._conf.profile.agent_id}")
         if np.metadata.public_key != self._conf.profile.public_key is None:
             raise AssertionError(
                 "The public key in your profile does not match the public key"

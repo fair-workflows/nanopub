@@ -40,5 +40,5 @@ class NanopubClaim(Nanopub):
         self.assertion.add((this_statement, RDF.type, HYCL.Statement))
         self.assertion.add((this_statement, RDFS.label, Literal(claim)))
 
-        orcid_id_uri = URIRef(self.profile.orcid_id)
+        orcid_id_uri = URIRef(self.profile.agent_id)
         self.provenance.add((orcid_id_uri, HYCL.claims, this_statement))

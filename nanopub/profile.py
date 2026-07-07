@@ -32,46 +32,69 @@ ORCID_URL_PREFIX = "https://orcid.org/"
 _ORCID_ID_PATTERN = re.compile(r"\d{4}-\d{4}-\d{4}-\d{3}[\dX]")
 
 
-def _normalize_orcid_id(orcid_id: str) -> str:
-    """Validate an ORCID and normalize it to its canonical URI form.
+def _normalize_agent_id(agent_id: str) -> str:
+    """Validate and normalize the agent id (signer) to a URI.
 
-    Accepts either the full ORCID URI (``https://orcid.org/0000-0000-0000-0000``)
-    or the bare identifier (``0000-0000-0000-0000``), always returning the
-    canonical ``https://orcid.org/<id>`` URI. This URI is published verbatim in
-    a nanopub and matched exactly in SPARQL queries, so it must be consistent.
-    Raises ProfileError if no ORCID is provided.
+    The agent id identifies the signer and may be any URI — a person's ORCID, a
+    different identity provider, or a bot/agent URI. It is taken at face value
+    and never dereferenced. This URI is published verbatim in a nanopub and
+    matched exactly in SPARQL queries, so it must be consistent.
+
+    As a convenience a bare ORCID identifier (``0000-0000-0000-0000``) is
+    expanded to its canonical ``https://orcid.org/`` URI, and any value that
+    claims to be an ORCID (starts with that prefix) must be a well-formed one.
+    Raises ProfileError if no agent id is given, or a claimed ORCID is malformed.
     """
-    if not orcid_id or not orcid_id.strip():
+    if not agent_id or not agent_id.strip():
         raise ProfileError(
-            "An ORCID iD is required to create a nanopub profile.\n"
+            "An agent id (e.g. your ORCID iD) is required to create a nanopub profile.\n"
             f"{PROFILE_INSTRUCTIONS_MESSAGE}"
         )
-    orcid_id = orcid_id.strip()
-    if _ORCID_ID_PATTERN.fullmatch(orcid_id):
-        return f"{ORCID_URL_PREFIX}{orcid_id}"
-    return orcid_id
+    agent_id = agent_id.strip()
+    # Convenience: a bare ORCID identifier -> canonical ORCID URI.
+    if _ORCID_ID_PATTERN.fullmatch(agent_id):
+        return f"{ORCID_URL_PREFIX}{agent_id}"
+    # Only what claims to be an ORCID is format-checked; any other URI is trusted.
+    if agent_id.startswith(ORCID_URL_PREFIX) and not _ORCID_ID_PATTERN.fullmatch(
+            agent_id[len(ORCID_URL_PREFIX):]):
+        raise ProfileError(
+            f"'{agent_id}' looks like an ORCID URI but is not a valid ORCID iD "
+            "(expected https://orcid.org/0000-0000-0000-0000).\n"
+            f"{PROFILE_INSTRUCTIONS_MESSAGE}"
+        )
+    return agent_id
 
 
 class Profile:
 
     def __init__(
             self,
-            orcid_id: str,
-            name: str,
+            agent_id: Optional[str] = None,
+            name: Optional[str] = None,
             private_key: Optional[Union[Path, str]] = None,
             public_key: Optional[Union[Path, str]] = None,
-            introduction_nanopub_uri: Optional[str] = None
+            introduction_nanopub_uri: Optional[str] = None,
+            *,
+            orcid_id: Optional[str] = None,
     ) -> None:
         """Represents a user profile.
 
             Attributes:
-                orcid_id (str): The user's ORCID
+                agent_id (str): URI identifying the signer — an ORCID iD or any other agent URI
                 name (str): The user's name
                 private_key (Optional[Union[Path, str]]): Path to the user's private key, or the key as string
                 public_key (Optional[Union[Path, str]]): Path to the user's public key, or the key as string
                 introduction_nanopub_uri (Optional[str]): URI of the user's profile nanopub
+                orcid_id (str): Deprecated alias for ``agent_id``.
             """
-        self.orcid_id = orcid_id
+        if orcid_id is not None:
+            warnings.warn(
+                "The 'orcid_id' argument is deprecated; use 'agent_id' instead.",
+                DeprecationWarning, stacklevel=2,
+            )
+            if agent_id is None:
+                agent_id = orcid_id
+        self.agent_id = agent_id
         self._name = name
         self._introduction_nanopub_uri = introduction_nanopub_uri
 
@@ -116,7 +139,7 @@ class Profile:
 
         self._private_key = _encode_private_key(key)
         self._public_key = _encode_public_key(key)
-        logger.info(f"Public/private RSA key pair has been generated for {self.orcid_id} ({self.name})")
+        logger.info(f"Public/private RSA key pair has been generated for {self.agent_id} ({self.name})")
         return public_key_str
 
     def store(self, folder: Path = USER_CONFIG_DIR) -> str:
@@ -146,7 +169,7 @@ class Profile:
         if self.introduction_nanopub_uri:
             intro_uri = f" {self.introduction_nanopub_uri}"
         # Store profile.yml
-        profile_yaml = f"""orcid_id: {self.orcid_id}
+        profile_yaml = f"""agent_id: {self.agent_id}
 name: {self.name}
 public_key: {public_key_path}
 private_key: {private_key_path}
@@ -158,12 +181,28 @@ introduction_nanopub_uri:{intro_uri}
         return profile_path
 
     @property
+    def agent_id(self):
+        return self._agent_id
+
+    @agent_id.setter
+    def agent_id(self, value):
+        self._agent_id = _normalize_agent_id(value)
+
+    @property
     def orcid_id(self):
-        return self._orcid_id
+        warnings.warn(
+            "Profile.orcid_id is deprecated; use Profile.agent_id instead.",
+            DeprecationWarning, stacklevel=2,
+        )
+        return self._agent_id
 
     @orcid_id.setter
     def orcid_id(self, value):
-        self._orcid_id = _normalize_orcid_id(value)
+        warnings.warn(
+            "Profile.orcid_id is deprecated; use Profile.agent_id instead.",
+            DeprecationWarning, stacklevel=2,
+        )
+        self.agent_id = value
 
     @property
     def name(self):
@@ -198,7 +237,7 @@ introduction_nanopub_uri:{intro_uri}
         self._introduction_nanopub_uri = value
 
     def __repr__(self):
-        return f"""\033[1mORCID\033[0m: {self._orcid_id}
+        return f"""\033[1mAgent ID\033[0m: {self._agent_id}
 \033[1mName\033[0m: {self._name}
 \033[1mPrivate key\033[0m: {self._private_key}
 \033[1mPublic key\033[0m: {self._public_key}
@@ -210,15 +249,20 @@ class ProfileLoader(Profile):
 
     def __init__(
             self,
-            orcid_id: str,
             name: str,
             private_key: Path,
             public_key: Optional[Path],
+            agent_id: Optional[str] = None,
+            orcid_id: Optional[str] = None,
             introduction_nanopub_uri: Optional[str] = None
     ) -> None:
-        """Create a ProfileLoader."""
+        """Create a ProfileLoader.
+
+        Both the ``agent_id`` key and the legacy ``orcid_id`` key are accepted
+        from profile.yml; ``agent_id`` takes precedence when both are present.
+        """
         super().__init__(
-            orcid_id=orcid_id,
+            agent_id=agent_id if agent_id is not None else orcid_id,
             name=name,
             private_key=private_key,
             public_key=public_key,

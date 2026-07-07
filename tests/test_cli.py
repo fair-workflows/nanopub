@@ -7,7 +7,7 @@ from rdflib import Dataset, URIRef
 from typer.testing import CliRunner
 
 from nanopub import namespaces
-from nanopub.__main__ import cli, validate_orcid_id
+from nanopub.__main__ import cli, validate_agent_id
 from nanopub._version import __version__
 from nanopub.definitions import DEFAULT_PROFILE_PATH
 from nanopub.utils import MalformedNanopubError
@@ -15,20 +15,24 @@ from nanopub.utils import MalformedNanopubError
 runner = CliRunner()
 
 
-def test_validate_orcid_id():
-    valid_ids = ['https://orcid.org/1234-5678-1234-5678',
-                 'https://orcid.org/1234-5678-1234-567X']
-    for orcid_id in valid_ids:
-        assert validate_orcid_id(ctx=None, param=None, orcid_id=orcid_id) == orcid_id
+def test_validate_agent_id():
+    # Any URI is accepted at face value, including non-ORCID identities and bare
+    # ORCID identifiers (expanded later by the Profile).
+    accepted = ['https://orcid.org/1234-5678-1234-5678',
+                'https://orcid.org/1234-5678-1234-567X',
+                'https://other-url.org/1234-5678-1234-5678',
+                'https://example.org/agent/42',
+                '0000-0000-0000-0000']
+    for agent_id in accepted:
+        assert validate_agent_id(ctx=None, param=None, agent_id=agent_id) == agent_id
 
-    invalid_ids = ['https://orcid.org/abcd-efgh-abcd-efgh',
-                   'https://orcid.org/1234-5678-1234-567',
-                   'https://orcid.org/1234-5678-1234-56789',
-                   'https://other-url.org/1234-5678-1234-5678',
-                   '0000-0000-0000-0000']
-    for orcid_id in invalid_ids:
+    # Only values that claim to be an ORCID but are malformed are rejected.
+    invalid_orcids = ['https://orcid.org/abcd-efgh-abcd-efgh',
+                      'https://orcid.org/1234-5678-1234-567',
+                      'https://orcid.org/1234-5678-1234-56789']
+    for agent_id in invalid_orcids:
         with pytest.raises(ValueError):
-            validate_orcid_id(ctx=None, param=None, orcid_id=orcid_id)
+            validate_agent_id(ctx=None, param=None, agent_id=agent_id)
 
 
 def test_setup():
