@@ -152,7 +152,7 @@ def test_store_profile(tmpdir):
     privkey_path = test_folder / "id_rsa"
     with profile_path.open('r') as f:
         assert f.read() == (
-            f"orcid_id: {ORCID_ID}\n"
+            f"agent_id: {ORCID_ID}\n"
             'name: Python Tests\n'
             f"public_key: {pubkey_path}\n"
             f"private_key: {privkey_path}\n"
@@ -184,7 +184,7 @@ def test_generate_keys_store_profile(tmpdir):
     privkey_path = test_folder / "id_rsa"
     with profile_path.open('r') as f:
         assert f.read() == (
-            f"orcid_id: {ORCID_ID}\n"
+            f"agent_id: {ORCID_ID}\n"
             'name: Python Tests\n'
             f"public_key: {pubkey_path}\n"
             f"private_key: {privkey_path}\n"
@@ -209,6 +209,57 @@ def test_canonical_pubkey_literal_is_stable():
     assert normalize_private_key(_signing_key.private_key.read_text()) == _signing_key.private_key.read_text()
     # Public key derived from the private key yields the same canonical literal.
     assert normalize_public_key(_signing_key.private_key.read_text()) == _signing_key.public_key.read_text()
+
+
+class TestAgentId:
+    """The signer id may be any URI (issue #242): taken at face value, with an
+    ORCID-only format check and a deprecated ``orcid_id`` alias for back-compat."""
+
+    _pk = _signing_key.private_key
+    _pub = _signing_key.public_key
+
+    def _profile(self, **kwargs):
+        return Profile(name="Python Tests", private_key=self._pk,
+                       public_key=self._pub, **kwargs)
+
+    def test_accepts_any_uri_at_face_value(self):
+        uri = "https://example.org/agent/42"
+        assert self._profile(agent_id=uri).agent_id == uri
+
+    def test_expands_bare_orcid(self):
+        assert self._profile(agent_id="0000-0000-0000-0000").agent_id == ORCID_ID
+
+    def test_full_orcid_uri_is_kept(self):
+        assert self._profile(agent_id=ORCID_ID).agent_id == ORCID_ID
+
+    def test_rejects_malformed_orcid_uri(self):
+        with pytest.raises(ProfileError):
+            self._profile(agent_id="https://orcid.org/not-an-orcid")
+
+    def test_empty_agent_id_raises(self):
+        with pytest.raises(ProfileError):
+            self._profile(agent_id="")
+
+    def test_orcid_id_kwarg_is_deprecated_alias(self):
+        with pytest.warns(DeprecationWarning, match="orcid_id"):
+            p = self._profile(orcid_id=ORCID_ID)
+        assert p.agent_id == ORCID_ID
+
+    def test_orcid_id_property_is_deprecated_alias(self):
+        p = self._profile(agent_id=ORCID_ID)
+        with pytest.warns(DeprecationWarning, match="orcid_id"):
+            assert p.orcid_id == ORCID_ID
+
+    def test_legacy_orcid_id_yaml_still_loads(self, tmp_path):
+        profile_yml = tmp_path / "profile.yml"
+        profile_yml.write_text(
+            f"orcid_id: {ORCID_ID}\n"
+            "name: Python Tests\n"
+            f"public_key: {self._pub}\n"
+            f"private_key: {self._pk}\n"
+            "introduction_nanopub_uri:\n"
+        )
+        assert load_profile(profile_yml).agent_id == ORCID_ID
 
 
 def test_format_key_is_deprecated():
