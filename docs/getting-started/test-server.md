@@ -25,6 +25,6 @@ A manual workaround is:
 1. Open [http://purl.org/np/RA71u9tYPd7ZQifE_6hXjqVim6pkweuvjoi-8ehvLvzg8](http://purl.org/np/RA71u9tYPd7ZQifE_6hXjqVim6pkweuvjoi-8ehvLvzg8)
  in your browser
 2. Notice that the URL changed to [http://server.nanopubs.lod.labs.vu.nl/RA71u9tYPd7ZQifE_6hXjqVim6pkweuvjoi-8ehvLvzg8](http://server.nanopubs.lod.labs.vu.nl/RA71u9tYPd7ZQifE_6hXjqVim6pkweuvjoi-8ehvLvzg8).
-3. Replace 'server' with 'test-server': [https://np.test.knowledgepixels.com/RA71u9tYPd7ZQifE_6hXjqVim6pkweuvjoi-8ehvLvzg8](https://np.test.knowledgepixels.com/RA71u9tYPd7ZQifE_6hXjqVim6pkweuvjoi-8ehvLvzg8).
+3. Replace 'server' with 'test': [https://np.test.knowledgepixels.com/RA71u9tYPd7ZQifE_6hXjqVim6pkweuvjoi-8ehvLvzg8](https://np.test.knowledgepixels.com/RA71u9tYPd7ZQifE_6hXjqVim6pkweuvjoi-8ehvLvzg8).
 
 > **NB**: `NanopubClient.fetch()` does this for you if `use_test_server=True`.
