@@ -20,7 +20,7 @@ def test_validate_agent_id():
     # ORCID identifiers (expanded later by the Profile).
     accepted = ['https://orcid.org/0000-0000-0000-0001',
                 'https://orcid.org/1234-5678-1234-5673',
-                'https://orcid.org/0000-0000-0000-001X'
+                'https://orcid.org/0000-0000-0000-001X',
                 'https://other-url.org/1234-5678-1234-5678',
                 'https://example.org/agent/42'
                 ]

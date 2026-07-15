@@ -15,7 +15,7 @@ from typer import Argument, Option
 from nanopub import Nanopub, NanopubClaim, NanopubConf, NanopubRetract, load_profile
 from nanopub._version import __version__
 from nanopub.definitions import DEFAULT_PROFILE_PATH, USER_CONFIG_DIR
-from nanopub.profile import Profile, ProfileError, generate_keyfiles
+from nanopub.profile import Profile, ProfileError, generate_keyfiles, _ORCID_ID_PATTERN, ORCID_URL_PREFIX
 from nanopub.templates.nanopub_introduction import NanopubIntroduction
 from nanopub.utils import MalformedNanopubError
 
@@ -48,10 +48,13 @@ def validate_agent_id(ctx, param, agent_id: str):
     format-checked; any other URI is trusted. ctx and param are necessary
     `click` callback args.
     """
+    if _ORCID_ID_PATTERN.fullmatch(agent_id):
+        agent_id = f"{ORCID_URL_PREFIX}{agent_id}"
+
     if agent_id.startswith('https://orcid.org/'):
         if not re.match(ORCID_ID_REGEX, agent_id):
             raise ValueError('This looks like an ORCID iD but is not valid; an ORCID iD '
-                         'looks like: https://orcid.org/0000-0000-0000-0000')
+                             'looks like: https://orcid.org/0000-0000-0000-0000')
         else:
             digits = agent_id.removeprefix("https://orcid.org/").replace("-", "")
             base = digits[:-1]

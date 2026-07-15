@@ -48,7 +48,7 @@ class TestAddSignature:
         assert found_graph is not None
         ctx_graph = output_g.graph(found_graph)
         assert (sig_subject, NPX.hasPublicKey, Literal(profile_test.public_key)) in ctx_graph
-        assert (sig_subject, NPX.signedBy, URIRef(profile_test.orcid_id))
+        assert (sig_subject, NPX.signedBy, URIRef(profile_test.agent_id))
 
         sig_values = [o for _, _, o, _ in output_g.quads((sig_subject, NPX.hasSignature, None, None))]
         assert len(sig_values) == 1
