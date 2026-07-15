@@ -3,9 +3,11 @@ from unittest.mock import MagicMock
 
 import pytest
 from nanopub_testsuite_connector import TestSuiteSubfolder
+from rdflib import Dataset, URIRef
 from typer.testing import CliRunner
 
-from nanopub.__main__ import cli, validate_orcid_id
+from nanopub import namespaces
+from nanopub.__main__ import cli, validate_agent_id
 from nanopub._version import __version__
 from nanopub.definitions import DEFAULT_PROFILE_PATH
 from nanopub.utils import MalformedNanopubError
@@ -13,31 +15,37 @@ from nanopub.utils import MalformedNanopubError
 runner = CliRunner()
 
 
-def test_validate_orcid_id():
-    valid_ids = [
-        'https://orcid.org/0000-0000-0000-0001',
-        'https://orcid.org/1234-5678-1234-5673',
-        'https://orcid.org/0000-0000-0000-001X'
-    ]
-    for orcid_id in valid_ids:
-        assert validate_orcid_id(ctx=None, param=None, orcid_id=orcid_id) == orcid_id
+def test_validate_agent_id():
+    # Any URI is accepted at face value, including non-ORCID identities and bare
+    # ORCID identifiers (expanded later by the Profile).
+    accepted = ['https://orcid.org/0000-0000-0000-0001',
+                'https://orcid.org/1234-5678-1234-5673',
+                'https://orcid.org/0000-0000-0000-001X'
+                'https://other-url.org/1234-5678-1234-5678',
+                'https://example.org/agent/42'
+                ]
+    for agent_id in accepted:
+        assert validate_agent_id(ctx=None, param=None, agent_id=agent_id) == agent_id
 
-    invalid_ids = [
+    # Only values that claim to be an ORCID but are malformed are rejected.
+    invalid_orcids = [
         'https://orcid.org/abcd-efgh-abcd-efgh',  # invalid format
         'https://orcid.org/0000-0003-4112-6826',  # invalid checksum
         'https://orcid.org/',  # invalid checksum
+        'https://orcid.org/0000-0000-0000-0000',  # invalid checksum
         'https://orcid.org/1234-5678-1234-5678',  # invalid checksum
         'https://orcid.org/1234-5678-1234-56789',  # too long
-        'https://other-url.org/1234-5678-1234-5678',  # wrong domain
-        '0000-0000-0000-0000'  # missing prefix
+        'https://orcid.org/abcd-efgh-abcd-efgh',
+        'https://orcid.org/1234-5678-1234-567',
+        '0000-0000-0000-0000'  # orcid with invalid checksum
     ]
-    for orcid_id in invalid_ids:
+    for agent_id in invalid_orcids:
         with pytest.raises(ValueError):
-            validate_orcid_id(ctx=None, param=None, orcid_id=orcid_id)
+            validate_agent_id(ctx=None, param=None, agent_id=agent_id)
 
 
 def test_setup():
-    # np setup --orcid-id https://orcid.org/0000-0000-0000-0001 --name "Python test" --newkeys --no-publish
+    # np setup --orcid-id https://orcid.org/0000-0000-0000-0000 --name "Python test" --newkeys --no-publish
     result = runner.invoke(cli, [
         "setup",
         "--orcid-id", "https://orcid.org/0000-0000-0000-0001",
@@ -75,6 +83,28 @@ def test_sign_with_key(testsuite):
     ])
     assert result.exit_code == 0
     assert "Nanopub signed in" in result.stdout
+
+
+def test_sign_with_orcid(testsuite, tmp_path):
+    """A bare ORCID passed to --orcid is normalized and recorded as signedBy."""
+    tc = testsuite.get_transform_cases()[0]
+    test_file = tmp_path / "to_sign.trig"
+    test_file.write_text(tc.plain.path.read_text())
+    private_key = str(testsuite.get_signing_key(tc.key_name).private_key)
+
+    result = runner.invoke(cli, [
+        "sign", str(test_file),
+        "-k", private_key,
+        "-o", "1234-5678-1234-5678",
+    ])
+
+    assert result.exit_code == 0
+    signed = tmp_path / "signed.to_sign.trig"
+    assert signed.exists()
+    ds = Dataset()
+    ds.parse(signed, format="trig")
+    signed_by = {o for _, _, o, _ in ds.quads((None, namespaces.NPX.signedBy, None, None))}
+    assert URIRef("https://orcid.org/1234-5678-1234-5678") in signed_by
 
 
 def test_version():

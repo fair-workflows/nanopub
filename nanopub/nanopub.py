@@ -2,6 +2,7 @@
 This module holds code for representing the RDF of nanopublications, as well as helper functions to
 sign, publish, and make handling RDF easier.
 """
+import logging
 import re
 from copy import deepcopy
 from datetime import datetime
@@ -11,14 +12,17 @@ from typing import Optional, Union, Tuple
 import rdflib
 import requests
 from rdflib import BNode, Dataset, Graph, URIRef
-from rdflib.namespace import DC, DCTERMS, FOAF, PROV, RDF, XSD
+from rdflib import RDF, Literal
+from rdflib.namespace import DC, DCTERMS, FOAF, PROV, XSD
 
 from nanopub.definitions import MAX_TRIPLES_PER_NANOPUB, NANOPUB_FETCH_FORMAT, TEST_NANOPUB_REGISTRY_URL
 from nanopub.namespaces import HYCL, NP, NPX, NTEMPLATE, ORCID, PAV
 from nanopub.nanopub_conf import NanopubConf
 from nanopub.profile import ProfileError
 from nanopub.sign_utils import add_signature, publish_graph, verify_signature, verify_trusty
-from nanopub.utils import MalformedNanopubError, NanopubMetadata, extract_np_metadata, log
+from nanopub.utils import MalformedNanopubError, NanopubMetadata, extract_np_metadata
+
+logger = logging.getLogger(__name__)
 
 
 class Nanopub:
@@ -85,23 +89,31 @@ class Nanopub:
         else:
             # if provided as rdflib graph, or file
             if isinstance(rdf, Dataset):
+                logger.debug("Dataset provided by caller; making deepcopy to avoid mutating caller's store")
                 self._rdf = self._preformat_graph(deepcopy(rdf))
+                logger.debug("Deepcopied dataset quads: %d", sum(1 for _ in self._rdf.quads((None, None, None, None))))
                 self._metadata = extract_np_metadata(self._rdf)
             elif isinstance(rdf, Path):
                 self._rdf = self._preformat_graph(Dataset())
                 self._rdf.parse(rdf)
                 self._metadata = extract_np_metadata(self._rdf)
-            else:
+            elif rdf is None:
                 self._rdf = self._preformat_graph(Dataset())
-
-        if self._metadata.trusty:
-            self._source_uri = str(self._metadata.np_uri)
+            else:
+                raise TypeError(
+                    f"The 'rdf' argument must be an rdflib Dataset or a pathlib.Path, "
+                    f"but got {type(rdf).__name__}. If you have the nanopublication as a "
+                    f"string (a file path or inline RDF), wrap it first: pass "
+                    f"Path('your_file.trig'), or parse the RDF into a Dataset."
+                )
 
         # Instantiate the different graph from the provided RDF (trig/nquads)
         self._head = Graph(self._rdf.store, self._metadata.head)
         self._assertion = Graph(self._rdf.store, self._metadata.assertion)
         self._provenance = Graph(self._rdf.store, self._metadata.provenance)
         self._pubinfo = Graph(self._rdf.store, self._metadata.pubinfo)
+
+        self._check_named_graphs()
 
         self._assertion += assertion
         self._provenance += provenance
@@ -112,6 +124,11 @@ class Nanopub:
             if user_rdf is not None:
                 for prefix, namespace in user_rdf.namespaces():
                     self._rdf.bind(prefix, namespace)
+
+        if self._metadata.trusty:
+            self._source_uri = str(self._metadata.np_uri)
+            # if the newly created nanopub is trusty it means was fetched or read from a file therefore we need to ensure is a valid one and not taking that for granted
+            _ = self.is_valid
 
         # Add Head graph if the nanopub was not provided as trig/nquads
         if not rdf and not source_uri:
@@ -150,7 +167,7 @@ class Nanopub:
             )
             assertion_attributed_to = self._conf.assertion_attributed_to
             if self._conf.attribute_assertion_to_profile:
-                assertion_attributed_to = rdflib.URIRef(self.profile.orcid_id)
+                assertion_attributed_to = URIRef(self.profile.agent_id)
             self._handle_assertion_attributed_to(assertion_attributed_to)
             self._handle_publication_attributed_to(
                 self._conf.attribute_publication_to_profile,
@@ -158,12 +175,9 @@ class Nanopub:
             )
             self._handle_derived_from(derived_from=self._conf.derived_from)
 
-            # if the newly created nanopub is trusty it means was fetched or read from a file therefore we need to ensure is a valid one and not taking that for granted
-            if self._metadata.trusty:
-                _ = self.is_valid
-
     def _preformat_graph(self, g: Dataset) -> Dataset:
         """Add a few default namespaces"""
+        logger.debug("Preformat graph: incoming quads=%d", sum(1 for _ in g.quads((None, None, None, None))))
         g.bind("np", NP)
         g.bind("npx", NPX)
         g.bind("prov", PROV)
@@ -175,11 +189,17 @@ class Nanopub:
         g.bind("ntemplate", NTEMPLATE)
         g.bind("foaf", FOAF)
         g = self._replace_blank_nodes(g)
+        logger.debug("Preformat graph: after replace_blank_nodes quads=%d",
+                     sum(1 for _ in g.quads((None, None, None, None))))
         return g
 
     def update_from_signed(self, signed_g: Dataset) -> None:
         """Update the pub RDF to the signed one"""
+        logger.info("Updating Nanopub instance from signed graph; previous np_uri=%s",
+                    getattr(self._metadata, "np_uri", None))
         self._metadata = extract_np_metadata(signed_g)
+        logger.info("New metadata: namespace=%s, np_uri=%s, trusty=%s", self._metadata.namespace, self._metadata.np_uri,
+                    self._metadata.trusty)
         if self._metadata.trusty:
             self._source_uri = str(self._metadata.np_uri)
         # self._source_uri = self.get_source_uri_from_graph
@@ -200,10 +220,14 @@ class Nanopub:
             raise MalformedNanopubError(f"The nanopub have already been signed: {self.source_uri}")
 
         if self.is_valid:
+            logger.info("Signing nanopub %s (quads=%d)", self.source_uri or "<unpublished>",
+                        sum(1 for _ in self.rdf.quads((None, None, None, None))))
+            logger.debug("Calling _replace_blank_nodes prior to signing (bnode_count=%d)", self._bnode_count)
             self._replace_blank_nodes(self._rdf)
+            logger.debug("Calling add_signature on dataset...")
             signed_g = add_signature(self.rdf, self._conf.profile, self._metadata.namespace, self._pubinfo)
             self.update_from_signed(signed_g)
-            log.info(f"Signed {self.source_uri}")
+            logger.info("Nanopub signed; new source_uri=%s", self.source_uri)
         else:
             raise MalformedNanopubError("The nanopub is not valid, cannot sign it")
 
@@ -213,7 +237,7 @@ class Nanopub:
             self.sign()
 
         publish_graph(self.rdf, use_server=self._conf.use_server)
-        log.info(f'Published {self.source_uri} to {self._conf.use_server}')
+        logger.info(f'Published {self.source_uri} to {self._conf.use_server}')
         self.published = True
 
         if self._introduces_concept:
@@ -221,7 +245,7 @@ class Nanopub:
             # If a blank node with name 'step' was passed as introduces_concept, the concept will be
             # published with a URI that looks like [published nanopub URI]#step.
             self._concept_uri = f"{self.source_uri}#{str(self._introduces_concept)}"
-            log.info(f"Published concept to {self._concept_uri}")
+            logger.info(f"Published concept to {self._concept_uri}")
             return self.source_uri, self._conf.use_server, self._concept_uri
 
         return self.source_uri, self._conf.use_server
@@ -397,7 +421,7 @@ class Nanopub:
 
         This is usually something like: http://purl.org/np/RAnksi2yDP7jpe7F6BwWCpMOmzBEcUImkAKUeKEY_2Yus
         """
-        for s, _, _, _ in self._rdf.quads((None, rdflib.RDF.type, NP.Nanopublication, None)):
+        for s, _, _, _ in self._rdf.quads((None, RDF.type, NP.Nanopublication, None)):
             extract_trusty = re.search(
                 r'^[a-z0-9+.-]+:\/\/[a-zA-Z0-9\/._-]+\/(RA.*)$',
                 str(s),
@@ -429,17 +453,17 @@ class Nanopub:
             self, add_pubinfo_generated_time: bool, add_prov_generated_time: bool
     ) -> None:
         """Handler for `Nanopub` constructor."""
-        creationtime = rdflib.Literal(datetime.now(), datatype=XSD.dateTime)
+        creation_time = Literal(datetime.now().astimezone(), datatype=XSD.dateTime)
         if add_pubinfo_generated_time:
             self._pubinfo.add(
-                (self._metadata.namespace[""], PROV.generatedAtTime, creationtime)
+                (self._metadata.namespace[""], PROV.generatedAtTime, creation_time)
             )
         if add_prov_generated_time:
             self._provenance.add(
                 (
                     self._assertion.identifier,
                     PROV.generatedAtTime,
-                    creationtime,
+                    creation_time,
                 )
             )
 
@@ -466,9 +490,9 @@ class Nanopub:
                 raise MalformedNanopubError(
                     "No nanopub profile provided, but attribute_publication_to_profile is enabled")
             if publication_attributed_to is None:
-                publication_attributed_to = rdflib.URIRef(self._profile.orcid_id)
+                publication_attributed_to = URIRef(self._profile.agent_id)
             else:
-                publication_attributed_to = rdflib.URIRef(publication_attributed_to)
+                publication_attributed_to = URIRef(publication_attributed_to)
             self._pubinfo.add(
                 (
                     self._metadata.namespace[""],
@@ -486,7 +510,7 @@ class Nanopub:
                 list_of_uris = [derived_from]
 
             for derived_from_uri in list_of_uris:
-                derived_from_uri = rdflib.URIRef(derived_from_uri)
+                derived_from_uri = URIRef(derived_from_uri)
                 self._provenance.add((
                     self._assertion.identifier,
                     PROV.wasDerivedFrom,
@@ -603,7 +627,36 @@ class Nanopub:
                         bnode_map[str(o)] = self._bnode_count
                     else:
                         bnode_map[str(o)] = str(o)
+                old_o = o
                 o = self._metadata.namespace[f"_{bnode_map[str(o)]}"]
 
                 g.add((s, p, o, c))
+                logger.debug("Replaced object BNode %s -> %s (graph=%s, subj=%s, pred=%s)", old_o, o, c, s, p)
+        logger.debug("Blank node mapping: %s", bnode_map)
         return g
+
+    def _check_named_graphs(self) -> None:
+        """Ensures that names graphs are not using the same URI, and that they have the nanopub namespace as base URI"""
+        identifiers = [str(g.identifier) for g in (
+            self._head,
+            self._assertion,
+            self._provenance,
+            self._pubinfo,
+        )]
+
+        if len(identifiers) != len(set(identifiers)):
+            raise MalformedNanopubError(
+                f"All four nanopub graphs must have distinct identifiers; found {identifiers}"
+            )
+
+        for g in (
+                self._head,
+                self._assertion,
+                self._provenance,
+                self._pubinfo,
+        ):
+            gid = str(g.identifier)
+            if not gid.startswith(self.namespace):
+                raise MalformedNanopubError(
+                    f"The graph identifier must start with '{self.namespace}'; found {gid}"
+                )

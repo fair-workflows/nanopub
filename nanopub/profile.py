@@ -1,8 +1,11 @@
 """
 This module holds objects and functions to load a nanopub user profile.
 """
+import logging
 import os
-from base64 import decodebytes
+import re
+import warnings
+from base64 import b64encode, decodebytes
 from pathlib import Path
 from typing import Optional, Union
 
@@ -10,7 +13,8 @@ import yatiml
 from Crypto.PublicKey import RSA
 
 from nanopub.definitions import DEFAULT_PROFILE_PATH, RSA_KEY_SIZE, USER_CONFIG_DIR
-from nanopub.utils import log
+
+logger = logging.getLogger(__name__)
 
 PROFILE_INSTRUCTIONS_MESSAGE = '''
     Follow these instructions to correctly setup your nanopub profile:
@@ -24,29 +28,73 @@ class ProfileError(RuntimeError):
     """
 
 
+ORCID_URL_PREFIX = "https://orcid.org/"
+_ORCID_ID_PATTERN = re.compile(r"\d{4}-\d{4}-\d{4}-\d{3}[\dX]")
+
+
+def _normalize_agent_id(agent_id: str) -> str:
+    """Validate and normalize the agent id (signer) to a URI.
+
+    The agent id identifies the signer and may be any URI — a person's ORCID, a
+    different identity provider, or a bot/agent URI. It is taken at face value
+    and never dereferenced. This URI is published verbatim in a nanopub and
+    matched exactly in SPARQL queries, so it must be consistent.
+
+    As a convenience a bare ORCID identifier (``0000-0000-0000-0000``) is
+    expanded to its canonical ``https://orcid.org/`` URI, and any value that
+    claims to be an ORCID (starts with that prefix) must be a well-formed one.
+    Raises ProfileError if no agent id is given, or a claimed ORCID is malformed.
+    """
+    if not agent_id or not agent_id.strip():
+        raise ProfileError(
+            "An agent id (e.g. your ORCID iD) is required to create a nanopub profile.\n"
+            f"{PROFILE_INSTRUCTIONS_MESSAGE}"
+        )
+    agent_id = agent_id.strip()
+    # Convenience: a bare ORCID identifier -> canonical ORCID URI.
+    if _ORCID_ID_PATTERN.fullmatch(agent_id):
+        return f"{ORCID_URL_PREFIX}{agent_id}"
+    # Only what claims to be an ORCID is format-checked; any other URI is trusted.
+    if agent_id.startswith(ORCID_URL_PREFIX) and not _ORCID_ID_PATTERN.fullmatch(
+            agent_id[len(ORCID_URL_PREFIX):]):
+        raise ProfileError(
+            f"'{agent_id}' looks like an ORCID URI but is not a valid ORCID iD "
+            "(expected https://orcid.org/0000-0000-0000-0000).\n"
+            f"{PROFILE_INSTRUCTIONS_MESSAGE}"
+        )
+    return agent_id
+
+
 class Profile:
 
     def __init__(
             self,
-            orcid_id: str,
-            name: str,
+            agent_id: Optional[str] = None,
+            name: Optional[str] = None,
             private_key: Optional[Union[Path, str]] = None,
             public_key: Optional[Union[Path, str]] = None,
-            introduction_nanopub_uri: Optional[str] = None
+            introduction_nanopub_uri: Optional[str] = None,
+            *,
+            orcid_id: Optional[str] = None,
     ) -> None:
         """Represents a user profile.
 
             Attributes:
-                orcid_id (str): The user's ORCID
+                agent_id (str): URI identifying the signer — an ORCID iD or any other agent URI
                 name (str): The user's name
                 private_key (Optional[Union[Path, str]]): Path to the user's private key, or the key as string
                 public_key (Optional[Union[Path, str]]): Path to the user's public key, or the key as string
                 introduction_nanopub_uri (Optional[str]): URI of the user's profile nanopub
+                orcid_id (str): Deprecated alias for ``agent_id``.
             """
-        # TODO comment this out when we're ready to release this. the nanopub-testsuite must be updated first, as it currently contains nanopubs signed by a test user with ORCID 0000-0000-0000-0000 (not valid)
-        # from nanopub.__main__ import validate_orcid_id
-        # self._orcid_id = validate_orcid_id(None, None, orcid_id)
-        self._orcid_id = orcid_id
+        if orcid_id is not None:
+            warnings.warn(
+                "The 'orcid_id' argument is deprecated; use 'agent_id' instead.",
+                DeprecationWarning, stacklevel=2,
+            )
+            if agent_id is None:
+                agent_id = orcid_id
+        self.agent_id = agent_id
         self._name = name
         self._introduction_nanopub_uri = introduction_nanopub_uri
 
@@ -55,43 +103,43 @@ class Profile:
         elif isinstance(private_key, Path):
             try:
                 with open(private_key) as f:
-                    self._private_key = f.read().strip()
+                    raw_private_key = f.read()
             except FileNotFoundError:
                 raise ProfileError(
                     f'Private key file {private_key} for nanopub not found.\n'
                     f'Maybe your nanopub profile was not set up yet or not set up '
                     f'correctly. \n{PROFILE_INSTRUCTIONS_MESSAGE}'
                 )
+            self._private_key = normalize_private_key(raw_private_key)
         else:
-            self._private_key = private_key
+            self._private_key = normalize_private_key(private_key)
 
         if not public_key and private_key:
-            log.info(
+            logger.info(
                 'The public key was not provided when loading the Nanopub profile, generating it from the provided private key')
-            key = RSA.import_key(decodebytes(self._private_key.encode()))
-            self._public_key = format_key(key.publickey().export_key().decode('utf-8'))
+            self._public_key = normalize_public_key(self._private_key)
         elif isinstance(public_key, Path):
             try:
                 with open(public_key) as f:
-                    self._public_key = f.read().strip()
+                    raw_public_key = f.read()
             except FileNotFoundError:
                 raise ProfileError(
-                    f'Private key file {public_key} for nanopub not found.\n'
+                    f'Public key file {public_key} for nanopub not found.\n'
                     f'Maybe your nanopub profile was not set up yet or not set up '
                     f'correctly. \n{PROFILE_INSTRUCTIONS_MESSAGE}'
                 )
+            self._public_key = normalize_public_key(raw_public_key)
         elif public_key:
-            self._public_key = public_key
+            self._public_key = normalize_public_key(public_key)
 
     def generate_keys(self) -> str:
         """Generate private/public RSA key pair at the path specified in the profile.yml, to be used to sign nanopubs"""
         key = RSA.generate(RSA_KEY_SIZE)
-        private_key_str = key.export_key('PEM', pkcs=8).decode('utf-8')
         public_key_str = key.publickey().export_key().decode('utf-8')
 
-        self._private_key = format_key(private_key_str)
-        self._public_key = format_key(public_key_str)
-        log.info(f"Public/private RSA key pair has been generated for {self.orcid_id} ({self.name})")
+        self._private_key = _encode_private_key(key)
+        self._public_key = _encode_public_key(key)
+        logger.info(f"Public/private RSA key pair has been generated for {self.agent_id} ({self.name})")
         return public_key_str
 
     def store(self, folder: Path = USER_CONFIG_DIR) -> str:
@@ -121,7 +169,7 @@ class Profile:
         if self.introduction_nanopub_uri:
             intro_uri = f" {self.introduction_nanopub_uri}"
         # Store profile.yml
-        profile_yaml = f"""orcid_id: {self.orcid_id}
+        profile_yaml = f"""agent_id: {self.agent_id}
 name: {self.name}
 public_key: {public_key_path}
 private_key: {private_key_path}
@@ -133,12 +181,28 @@ introduction_nanopub_uri:{intro_uri}
         return profile_path
 
     @property
+    def agent_id(self):
+        return self._agent_id
+
+    @agent_id.setter
+    def agent_id(self, value):
+        self._agent_id = _normalize_agent_id(value)
+
+    @property
     def orcid_id(self):
-        return self._orcid_id
+        warnings.warn(
+            "Profile.orcid_id is deprecated; use Profile.agent_id instead.",
+            DeprecationWarning, stacklevel=2,
+        )
+        return self._agent_id
 
     @orcid_id.setter
     def orcid_id(self, value):
-        self._orcid_id = value
+        warnings.warn(
+            "Profile.orcid_id is deprecated; use Profile.agent_id instead.",
+            DeprecationWarning, stacklevel=2,
+        )
+        self.agent_id = value
 
     @property
     def name(self):
@@ -173,7 +237,7 @@ introduction_nanopub_uri:{intro_uri}
         self._introduction_nanopub_uri = value
 
     def __repr__(self):
-        return f"""\033[1mORCID\033[0m: {self._orcid_id}
+        return f"""\033[1mAgent ID\033[0m: {self._agent_id}
 \033[1mName\033[0m: {self._name}
 \033[1mPrivate key\033[0m: {self._private_key}
 \033[1mPublic key\033[0m: {self._public_key}
@@ -185,15 +249,20 @@ class ProfileLoader(Profile):
 
     def __init__(
             self,
-            orcid_id: str,
             name: str,
             private_key: Path,
             public_key: Optional[Path],
+            agent_id: Optional[str] = None,
+            orcid_id: Optional[str] = None,
             introduction_nanopub_uri: Optional[str] = None
     ) -> None:
-        """Create a ProfileLoader."""
+        """Create a ProfileLoader.
+
+        Both the ``agent_id`` key and the legacy ``orcid_id`` key are accepted
+        from profile.yml; ``agent_id`` takes precedence when both are present.
+        """
         super().__init__(
-            orcid_id=orcid_id,
+            agent_id=agent_id if agent_id is not None else orcid_id,
             name=name,
             private_key=private_key,
             public_key=public_key,
@@ -230,11 +299,8 @@ def generate_keyfiles(path: Path = USER_CONFIG_DIR) -> str:
         Path(path).mkdir()
 
     key = RSA.generate(RSA_KEY_SIZE)
-    private_key_str = key.export_key('PEM', pkcs=8).decode('utf-8')
-    public_key_str = key.publickey().export_key().decode('utf-8')
-
-    private_key_str = format_key(private_key_str)
-    public_key_str = format_key(public_key_str)
+    private_key_str = _encode_private_key(key)
+    public_key_str = _encode_public_key(key)
     private_path = path / "id_rsa"
     public_path = path / "id_rsa.pub"
 
@@ -246,14 +312,100 @@ def generate_keyfiles(path: Path = USER_CONFIG_DIR) -> str:
     public_key_file = open(public_path, "w")
     public_key_file.write(public_key_str)
     public_key_file.close()
-    log.info(f"Public/private RSA key pair has been generated in {private_path} and {public_path}")
+    logger.info(f"Public/private RSA key pair has been generated in {private_path} and {public_path}")
     return public_key_str
 
 
+def _encode_private_key(key: RSA.RsaKey) -> str:
+    """Encode an RSA key to nanopub's canonical private-key form.
+
+    The canonical form is the base64 of the PKCS#8 DER with no PEM armor and no
+    newlines, as required by nanopub-java and assumed by the signing code.
+    """
+    return b64encode(key.export_key(format='DER', pkcs=8)).decode('utf-8')
+
+
+def _encode_public_key(key: RSA.RsaKey) -> str:
+    """Encode an RSA key to nanopub's canonical public-key form.
+
+    The canonical form is the base64 of the SubjectPublicKeyInfo DER with no PEM
+    armor and no newlines.
+    """
+    return b64encode(key.publickey().export_key(format='DER')).decode('utf-8')
+
+
 def format_key(key: str) -> str:
-    """Format private and public keys to remove header/footer and all newlines, as this is required by nanopub-java"""
+    """Format private and public keys to remove header/footer and all newlines, as this is required by nanopub-java.
+
+    .. deprecated::
+        ``format_key`` is deprecated and will be removed in an upcoming major
+        version. It only strips PEM armor from a PKCS#8/SPKI key via string
+        replacement and silently mishandles PKCS#1 and CRLF input. Use
+        :func:`normalize_private_key` / :func:`normalize_public_key` instead,
+        which accept any standard PEM/DER/bare key and return the same canonical
+        single-line base64 form.
+    """
+    warnings.warn(
+        "format_key() is deprecated and will be removed in an upcoming major "
+        "version; use normalize_private_key() / normalize_public_key() instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     if key.startswith("-----BEGIN PRIVATE KEY-----"):
         key = key.replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "")
     if key.startswith("-----BEGIN PUBLIC KEY-----"):
         key = key.replace("-----BEGIN PUBLIC KEY-----", "").replace("-----END PUBLIC KEY-----", "")
     return key.replace("\n", "").strip()
+
+
+def _load_rsa_key(key_data: str) -> RSA.RsaKey:
+    """Parse an RSA key from any standard serialization.
+
+    Accepts PEM (PKCS#1 ``BEGIN RSA PRIVATE KEY`` or PKCS#8 ``BEGIN PRIVATE
+    KEY``), DER, or the bare single-line base64 that nanopub itself stores (DER
+    without the PEM armor), with any line endings. Raises a clear ProfileError
+    instead of letting an opaque base64/parsing error surface from deep inside
+    the crypto library.
+    """
+    key_data = key_data.strip()
+    # RSA.import_key handles PEM (PKCS#1/#8), DER and OpenSSH, and tolerates
+    # surrounding whitespace and CR/LF line endings.
+    try:
+        return RSA.import_key(key_data)
+    except (ValueError, IndexError, TypeError):
+        pass
+    # Fall back to nanopub's own format: bare base64 of the DER, no armor.
+    try:
+        return RSA.import_key(decodebytes(key_data.encode()))
+    except Exception as e:
+        raise ProfileError(
+            'Could not parse the RSA key. Provide a standard PEM or DER RSA key '
+            "(e.g. the output of `openssl genrsa`), or nanopub's base64 key "
+            f'string. If the key is passphrase-protected, decrypt it first.\n'
+            f'Underlying error: {e}\n{PROFILE_INSTRUCTIONS_MESSAGE}'
+        ) from None
+
+
+def normalize_private_key(key_data: str) -> str:
+    """Normalize any RSA private key to nanopub's canonical single-line base64.
+
+    The canonical form is the base64 of the PKCS#8 DER with no PEM armor and no
+    newlines, as required by nanopub-java and assumed by the signing code.
+    """
+    key = _load_rsa_key(key_data)
+    if not key.has_private():
+        raise ProfileError(
+            'A public key was provided where a private key was expected.'
+        )
+    return _encode_private_key(key)
+
+
+def normalize_public_key(key_data: str) -> str:
+    """Normalize any RSA public key to nanopub's canonical single-line base64.
+
+    The canonical form is the base64 of the SubjectPublicKeyInfo DER with no PEM
+    armor and no newlines. A private key may be passed in, in which case the
+    corresponding public key is derived.
+    """
+    key = _load_rsa_key(key_data)
+    return _encode_public_key(key)

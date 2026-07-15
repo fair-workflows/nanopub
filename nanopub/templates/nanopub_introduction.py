@@ -35,7 +35,7 @@ class NanopubIntroduction(Nanopub):
             raise ProfileError("No profile provided, cannot generate a Nanopub Introduction")
 
         key_declaration = self._metadata.namespace.keyDeclaration
-        orcid_node = URIRef(self.conf.profile.orcid_id)
+        orcid_node = URIRef(self.conf.profile.agent_id)
 
         self.assertion.add((key_declaration, NPX.declaredBy, orcid_node))
         self.assertion.add((key_declaration, NPX.hasAlgorithm, Literal("RSA")))

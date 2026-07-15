@@ -27,7 +27,8 @@ DEFAULT_KEYS_PATH_PREFIX = USER_CONFIG_DIR / 'id'
 DEFAULT_PRIVATE_KEY_PATH = USER_CONFIG_DIR / PRIVATE_KEY_FILE
 DEFAULT_PUBLIC_KEY_PATH = USER_CONFIG_DIR / PUBLIC_KEY_FILE
 RSA = 'RSA'
-ORCID_ID_REGEX = r"^https://orcid\.org/\d{4}-\d{4}-\d{4}-\d{3}[\dX]$"
+ORCID_ID_REGEX = r'^https://orcid.org/(\d{4}-){3}\d{3}(\d|X)$'
+PLACEHOLDER_ORCID_ID = 'https://orcid.org/0000-0000-0000-0000'
 
 
 def generate_check_digit(base_digits: str) -> str:
@@ -40,19 +41,24 @@ def generate_check_digit(base_digits: str) -> str:
     return "X" if result == 10 else str(result)
 
 
-def validate_orcid_id(ctx, param, orcid_id: str):
-    """Check if valid ORCID iD, should be https://orcid.org/ + 16 digit in form:
-    https://orcid.org/0000-0000-0000-0001. ctx and param are necessary `click` callback args
+def validate_agent_id(ctx, param, agent_id: str):
+    """Accept any URI as the signer's agent id, taken at face value.
+
+    Only a value that claims to be an ORCID (starts with https://orcid.org/) is
+    format-checked; any other URI is trusted. ctx and param are necessary
+    `click` callback args.
     """
-    if re.match(ORCID_ID_REGEX, orcid_id):
-        digits = orcid_id.removeprefix("https://orcid.org/").replace("-", "")
-        base = digits[:-1]
-        check = digits[-1].upper()
-        if not generate_check_digit(base) == check:
-            raise ValueError(f'The ORCID {orcid_id} is not valid, please provide a valid ORCID.')
-        return orcid_id
-    else:
-        raise ValueError(f'The ORCID {orcid_id} is not valid, please provide a valid ORCID.')
+    if agent_id.startswith('https://orcid.org/'):
+        if not re.match(ORCID_ID_REGEX, agent_id):
+            raise ValueError('This looks like an ORCID iD but is not valid; an ORCID iD '
+                         'looks like: https://orcid.org/0000-0000-0000-0000')
+        else:
+            digits = agent_id.removeprefix("https://orcid.org/").replace("-", "")
+            base = digits[:-1]
+            check_digit = digits[-1].upper()
+            if not generate_check_digit(base) == check_digit:
+                raise ValueError(f'The ORCID {agent_id} is not valid, please provide a valid ORCID.')
+    return agent_id
 
 
 @cli.command(help='Get nanopub library version')
@@ -79,12 +85,15 @@ def sign(
             None, "--private-key", "-k",
             help="Path to the RSA private key with which the nanopub will be signed."
         ),
+        orcid_id: str = typer.Option(
+            PLACEHOLDER_ORCID_ID, "--orcid", "-o",
+            help="ORCID iD to record as the signer (full URI or bare 0000-0000-0000-0000 form)."
+        ),
 ):
     if private_key:
         config = NanopubConf(
             profile=Profile(
-                # TODO: better handle Profile without name or orcid_id
-                name='', orcid_id='',
+                name='', agent_id=orcid_id,
                 private_key=private_key
             ),
         )
@@ -163,9 +172,9 @@ def check(filepath: Path):
 def setup(
         orcid_id: str = typer.Option(
             None,
-            help="Your ORCID iD (i.e. https://orcid.org/0000-0000-0000-0001)",
-            prompt='What is your ORCID iD (i.e. https://orcid.org/0000-0000-0000-0001)?',
-            callback=validate_orcid_id
+            help="Your ORCID iD (i.e. https://orcid.org/0000-0000-0000-0000)",
+            prompt='What is your ORCID iD (i.e. https://orcid.org/0000-0000-0000-0000)?',
+            callback=validate_agent_id
         ),
         name: str = typer.Option(
             None,

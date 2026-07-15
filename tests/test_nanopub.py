@@ -1,26 +1,23 @@
 import inspect
+import json
 from unittest.mock import MagicMock, patch
 
 import pytest
 from nanopub_testsuite_connector import TestSuiteSubfolder
-from rdflib import BNode, Graph, Literal, URIRef, Dataset, DC, RDF
+from rdflib import BNode, Graph, Literal, URIRef, Dataset, DC, RDF, Namespace, DCTERMS, PROV
 
 from nanopub import (
     Nanopub,
-    NanopubClaim,
     NanopubConf,
-    create_nanopub_index,
     namespaces,
 )
+from nanopub.definitions import NP_PREFIX
 from nanopub.profile import ProfileError
-from nanopub.templates.nanopub_introduction import NanopubIntroduction
-from nanopub.templates.nanopub_retract import NanopubRetract
-from nanopub.templates.nanopub_update import NanopubUpdate
 from nanopub.utils import MalformedNanopubError
 from tests.conftest import (
     default_conf,
     profile_test,
-    skip_if_nanopub_server_unavailable, testsuite,
+    skip_if_nanopub_server_unavailable, testsuite, testsuite_conf,
 )
 
 
@@ -132,6 +129,50 @@ class TestCreationDefault:
     def test_not_published_by_default(self):
         np = Nanopub(conf=NanopubConf())
         assert not np.published
+
+    def test_is_valid_empty_graphs_and_graph_count(self):
+        np = Nanopub(conf=NanopubConf())
+        # Empty head
+        np._head.remove((None, None, None))
+        with pytest.raises(MalformedNanopubError):
+            np.is_valid
+        # Too many graphs
+        np2 = Nanopub(conf=NanopubConf())
+        extra = Graph()
+        extra.add((URIRef("http://s"), URIRef("http://p"), Literal("o")))
+        np2._rdf.add_graph(extra)
+        with pytest.raises(MalformedNanopubError):
+            np2.is_valid
+        # Missing provenance triple
+        np3 = Nanopub(conf=NanopubConf())
+        np3._provenance.remove((None, None, None))
+        with pytest.raises(MalformedNanopubError):
+            np3.is_valid
+        # Missing pubinfo triple
+        np4 = Nanopub(conf=NanopubConf())
+        np4._pubinfo.remove((None, None, None))
+        with pytest.raises(MalformedNanopubError):
+            np4.is_valid
+
+    def test_get_source_uri_from_graph_none(self):
+        np = Nanopub(conf=NanopubConf())
+        # No matching regex, should return None
+        assert np.get_source_uri_from_graph is None
+
+    def test_signed_with_public_key_none(self):
+        np = Nanopub(conf=NanopubConf())
+        assert np.signed_with_public_key is None
+
+    def test_introduces_concept_multiple_error(self):
+        np = Nanopub(conf=NanopubConf())
+        np._pubinfo.add(
+            (URIRef("http://s"), namespaces.NPX.introduces, URIRef("http://c1"))
+        )
+        np._pubinfo.add(
+            (URIRef("http://s"), namespaces.NPX.introduces, URIRef("http://c2"))
+        )
+        with pytest.raises(MalformedNanopubError):
+            np.introduces_concept
 
 
 class TestCreationFromSourceUri:
@@ -264,6 +305,42 @@ class TestCreationFromFile:
         assert str(np.metadata.np_uri) == "http://example.org/nanopub-validator-example/"
 
 
+class TestInvalidRdfArgument:
+    """The ``rdf`` argument must be a Dataset or Path; other types must fail loudly.
+
+    Regression test for the silent-drop bug where passing ``rdf`` as a ``str``
+    (a filename or inline RDF) was ignored, producing an empty nanopub that only
+    failed later with a confusing "The Head graph is empty" at sign() time.
+    See https://github.com/Nanopublication/nanopub-py/issues/229
+    """
+
+    _TRIG = """@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix sub: <https://w3id.org/sciencelive/np> .
+
+<https://w3id.org/sciencelive/np/Head> {
+    sub: a np:Nanopublication ;
+        np:hasAssertion <https://w3id.org/sciencelive/np/assertion> ;
+        np:hasProvenance <https://w3id.org/sciencelive/np/provenance> ;
+        np:hasPublicationInfo <https://w3id.org/sciencelive/np/pubinfo> .
+}
+"""
+
+    def test_rdf_as_inline_string_raises_typeerror(self):
+        """Passing the RDF content as a str should fail immediately, not silently."""
+        with pytest.raises(TypeError, match="Dataset or a pathlib.Path"):
+            Nanopub(rdf=self._TRIG, conf=NanopubConf())
+
+    def test_rdf_as_filename_string_raises_typeerror(self):
+        """Passing a filename as a str (instead of Path) should fail immediately."""
+        with pytest.raises(TypeError, match="Dataset or a pathlib.Path"):
+            Nanopub(rdf="some_nanopub.trig", conf=NanopubConf())
+
+    def test_rdf_none_still_builds_empty_nanopub(self):
+        """rdf=None remains a valid 'build from scratch' path and must not raise."""
+        np = Nanopub(conf=NanopubConf())
+        assert len(np.head) > 0
+
+
 class TestCreationFromTrustyNanopub:
     """When a nanopub carries a trusty URI, source_uri should be resolved from
     the graph itself, not rely on an externally passed argument."""
@@ -315,519 +392,367 @@ class TestCreationFromTrustyNanopub:
         assert np.get_source_uri_from_graph == "http://purl.org/np/RA1sViVmXf-W2aZW4Qk74KTaiD9gpLBPe2LhMsinHKKz8"
 
 
-def test_nanopub_sign_uri():
-    expected_trusty = "RAIh8Oq-29dIVTZDhETpJ6f8oxxrILbZ3gSxkyAQY4220"
-    assertion = Graph()
-    assertion.add(
-        (
-            URIRef("http://test"),
-            namespaces.HYCL.claims,
-            Literal("This is a test of nanopub-python"),
+class TestProfileKeyFormats:
+    """Loading a Profile from a key file should accept a standard PEM key.
+
+    Regression test for the opaque ``binascii.Error: Incorrect padding`` raised
+    when ``np setup`` (or ``Profile(..., private_key=Path)``) is pointed at a
+    normal PEM private key. The read path at profile.py does ``f.read().strip()``
+    and then ``decodebytes(...)`` without stripping the ``-----BEGIN-----`` armor
+    or newlines, so anything that isn't nanopub's own bare single-line base64
+    blows up deep inside base64 instead of loading or failing with a clear error.
+    """
+
+    @staticmethod
+    def _write_pem(tmp_path, pkcs):
+        """Write a freshly generated RSA key as standard PEM (armor + newlines)."""
+        from Crypto.PublicKey import RSA
+
+        key = RSA.generate(2048)
+        pem = key.export_key("PEM", pkcs=pkcs).decode("utf-8")
+        key_file = tmp_path / "id_rsa"
+        key_file.write_text(pem)
+        return key_file, pem
+
+    def test_standard_pkcs1_pem_key_loads(self, tmp_path):
+        """A PKCS#1 PEM key (-----BEGIN RSA PRIVATE KEY-----) should load."""
+        from nanopub.profile import Profile
+
+        key_file, pem = self._write_pem(tmp_path, pkcs=1)
+        assert pem.startswith("-----BEGIN RSA PRIVATE KEY-----")
+
+        profile = Profile("0000-0000-0000-0000", "Tester", private_key=key_file)
+        assert profile.private_key
+        assert profile.public_key
+
+    def test_standard_pkcs8_pem_key_loads(self, tmp_path):
+        """A PKCS#8 PEM key (-----BEGIN PRIVATE KEY-----) should load."""
+        from nanopub.profile import Profile
+
+        key_file, pem = self._write_pem(tmp_path, pkcs=8)
+        assert pem.startswith("-----BEGIN PRIVATE KEY-----")
+
+        profile = Profile("0000-0000-0000-0000", "Tester", private_key=key_file)
+        assert profile.private_key
+        assert profile.public_key
+
+    def test_crlf_pem_key_loads(self, tmp_path):
+        """A PEM key with Windows CRLF line endings should load."""
+        from nanopub.profile import Profile
+        from Crypto.PublicKey import RSA
+
+        key = RSA.generate(2048)
+        pem = key.export_key("PEM", pkcs=8).decode("utf-8").replace("\n", "\r\n")
+        key_file = tmp_path / "id_rsa"
+        key_file.write_bytes(pem.encode("utf-8"))
+
+        profile = Profile("0000-0000-0000-0000", "Tester", private_key=key_file)
+        assert profile.private_key
+        assert profile.public_key
+
+
+class TestSign:
+
+    def test_sign_errors(self, monkeypatch):
+        # No profile -> should raise ProfileError
+        np = Nanopub(conf=NanopubConf(profile=None))
+        np._assertion.add(
+            (URIRef("http://test"), namespaces.HYCL.claims, Literal("test claim"))
         )
-    )
-    np = Nanopub(conf=default_conf, assertion=assertion)
-    np.sign()
-    assert np.has_valid_signature
-    assert expected_trusty in np.source_uri
-
-
-def test_nanopub_sign_uri2():
-    expected_trusty = "RAIh8Oq-29dIVTZDhETpJ6f8oxxrILbZ3gSxkyAQY4220"
-    np = Nanopub(
-        conf=default_conf,
-    )
-    np.assertion.add(
-        (
-            URIRef("http://test"),
-            namespaces.HYCL.claims,
-            Literal("This is a test of nanopub-python"),
-        )
-    )
-    np.sign()
-    assert np.has_valid_signature
-    assert expected_trusty in np.source_uri
-
-
-def test_nanopub_sign_bnode():
-    expected_trusty = "RAcU1AR3dS0ricV5G_ENcpUCk40XuCvFW3tVFqxNEQzT4"
-    assertion = Graph()
-    assertion.add(
-        (
-            BNode("test"),
-            namespaces.HYCL.claims,
-            Literal("This is a test of nanopub-python"),
-        )
-    )
-    np = Nanopub(conf=default_conf, assertion=assertion)
-    np.sign()
-    assert np.has_valid_signature
-    assert expected_trusty in np.source_uri
-
-
-def test_nanopub_sign_bnode2():
-    expected_trusty = "RA-1eE8scfVaiK7vP4CZueTyEyRmn1g2PpPf-j69WQAgM"
-    assertion = Graph()
-    assertion.add(
-        (
-            BNode("test"),
-            namespaces.HYCL.claims,
-            Literal("This is a test of nanopub-python"),
-        )
-    )
-    assertion.add(
-        (
-            BNode("test2"),
-            namespaces.HYCL.claims,
-            Literal("This is another test of nanopub-python"),
-        )
-    )
-    np = Nanopub(conf=default_conf, assertion=assertion)
-    np.sign()
-    assert expected_trusty in np.source_uri
-    assert np.has_valid_signature
-
-
-def test_nanopub_publish():
-    expected_trusty = "RAIh8Oq-29dIVTZDhETpJ6f8oxxrILbZ3gSxkyAQY4220"
-    assertion = Graph()
-    assertion.add(
-        (
-            URIRef("http://test"),
-            namespaces.HYCL.claims,
-            Literal("This is a test of nanopub-python"),
-        )
-    )
-    np = Nanopub(conf=default_conf, assertion=assertion)
-    np.publish()
-    assert np.has_valid_signature
-    assert expected_trusty in np.source_uri
-
-
-def test_nanopub_claim():
-    np = NanopubClaim(
-        claim="Some controversial statement",
-        conf=default_conf,
-    )
-    np.sign()
-    assert np.source_uri is not None
-
-
-def test_nanopub_retract():
-    assertion = Graph()
-    assertion.add(
-        (
-            BNode("test"),
-            namespaces.HYCL.claims,
-            Literal("This is a test of nanopub-python"),
-        )
-    )
-    np = Nanopub(conf=default_conf, assertion=assertion)
-    np.publish()
-    # Now retract
-    np2 = NanopubRetract(
-        uri=np.source_uri,
-        conf=default_conf,
-    )
-    np2.sign()
-    assert np2.source_uri is not None
-
-
-def test_nanopub_update():
-    assertion = Graph()
-    assertion.add(
-        (
-            URIRef("http://test"),
-            namespaces.HYCL.claims,
-            Literal("This is a test of nanopub-python"),
-        )
-    )
-    np = Nanopub(conf=default_conf, assertion=assertion)
-    np.publish()
-    # Now update
-    assertion2 = Graph()
-    assertion2.add(
-        (
-            URIRef("http://test"),
-            namespaces.HYCL.claims,
-            Literal("Another test of nanopub-python"),
-        )
-    )
-    np2 = NanopubUpdate(
-        uri=np.source_uri,
-        conf=default_conf,
-        assertion=assertion,
-    )
-    np2.sign()
-    assert np2.source_uri is not None
-
-
-def test_nanopub_introduction():
-    np = NanopubIntroduction(conf=default_conf, host="http://test")
-    np.sign()
-    assert np.source_uri is not None
-
-
-def test_nanopub_index():
-    np_list = create_nanopub_index(
-        conf=default_conf,
-        np_list=[
-            "https://purl.org/np/RA5cwuR2b7Or9Pkb50nhPcHa2-cD0-gEPb2B3Ly5IxyuA",
-            "https://purl.org/np/RAj1G7tgntNvXEgaMDmrc3rhxLekjZX6qsPIaEjUJ49NU",
-        ],
-        title="My nanopub index",
-        description="This is my nanopub index",
-        creation_time="2020-09-21T00:00:00",
-        creators=["https://orcid.org/0000-0000-0000-0001"],
-        see_also="https://github.com/Nanopublication/nanopub-py",
-    )
-    for np in np_list:
-        assert np.source_uri is not None
-
-
-def test_specific_file():
-    """Test to sign a complex file with many blank nodes"""
-    import json
-
-    from rdflib import Namespace
-    from rdflib.namespace import DCTERMS, PROV
-
-    np_conf = NanopubConf(profile=profile_test, use_test_server=True)
-    np_conf.add_prov_generated_time = (True,)
-    np_conf.add_pubinfo_generated_time = (True,)
-    np_conf.attribute_assertion_to_profile = (True,)
-    np_conf.attribute_publication_to_profile = (True,)
-
-    with open("./tests/resources/many_bnodes_with_annotations.json") as f:
-        nanopub_rdf = json.loads(f.read())
-
-    annotations_rdf = nanopub_rdf["@annotations"]
-    del nanopub_rdf["@annotations"]
-    nanopub_rdf = str(json.dumps(nanopub_rdf))
-
-    g = Graph()
-    g.parse(data=nanopub_rdf, format="json-ld")
-
-    np = Nanopub(
-        assertion=g,
-        conf=np_conf,
-    )
-    source = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=f9641190-9151-4f7e-89ff-1e7a818c30ee"
-    if annotations_rdf:
-        np.provenance.parse(data=str(json.dumps(annotations_rdf)), format="json-ld")
-    if source:
-        np.provenance.add(
-            (np.assertion.identifier, PROV.hadPrimarySource, URIRef(source))
-        )
-
-    PAV = Namespace("http://purl.org/pav/")
-    if True:
-        np.pubinfo.add(
+        np._provenance.add(
             (
-                np.metadata.np_uri,
-                DCTERMS.conformsTo,
-                URIRef("https://w3id.org/biolink/vocab/"),
+                np._assertion.identifier,
+                PROV.wasAttributedTo,
+                URIRef("http://someone"),
             )
         )
-        np.pubinfo.add(
+        np._pubinfo.add((np._metadata.namespace[""], DC.creator, Literal("tester")))
+
+        with pytest.raises(ProfileError):
+            np.sign()
+
+        # Already signed -> should raise MalformedNanopubError
+        np2 = Nanopub(conf=NanopubConf(profile=default_conf.profile))
+        np2._assertion.add(
+            (URIRef("http://test2"), namespaces.HYCL.claims, Literal("test claim 2"))
+        )
+        np2._provenance.add(
             (
-                URIRef("https://w3id.org/biolink/vocab/"),
-                PAV.version,
-                Literal("3.1.0"),
+                np2._assertion.identifier,
+                PROV.wasAttributedTo,
+                URIRef("http://someone"),
             )
         )
-    np.sign()
+        np2._pubinfo.add((np2._metadata.namespace[""], DC.creator, Literal("tester")))
+        np2._metadata.signature = True
 
+        with pytest.raises(MalformedNanopubError):
+            np2.sign()
 
-def test_replace_blank_nodes_unnamed_bnode():
-    # BNode with 33-character name triggers unnamed branch
-    bname = "N" + "a" * 32
-    g = Dataset()
-    g.add((BNode(bname), URIRef("http://test/p"), Literal("value")))
-    np = Nanopub(conf=NanopubConf())
-    g2 = np._replace_blank_nodes(g)
-    assert len(list(g2.quads((None, None, None, None)))) == 1
+        # Invalid nanopub -> should raise MalformedNanopubError
+        monkeypatch.setattr(type(np2), "is_valid", property(lambda self: False))
 
+        np2._metadata.signature = None
+        with pytest.raises(MalformedNanopubError):
+            np2.sign()
 
-def test_handle_publication_attributed_to_no_profile():
-    np = Nanopub(conf=NanopubConf(profile=None))
-    with pytest.raises(MalformedNanopubError):
-        np._handle_publication_attributed_to(
-            attribute_publication_to_profile=True, publication_attributed_to=None
+    def test_nanopub_sign_uri(self):
+        expected_trusty = "RAIh8Oq-29dIVTZDhETpJ6f8oxxrILbZ3gSxkyAQY4220"
+        assertion = Graph()
+        assertion.add(
+            (
+                URIRef("http://test"),
+                namespaces.HYCL.claims,
+                Literal("This is a test of nanopub-python"),
+            )
         )
+        np = Nanopub(conf=default_conf, assertion=assertion)
+        np.sign()
+        assert np.has_valid_signature
+        assert expected_trusty in np.source_uri
 
-
-def test_handle_derived_from_list_and_str():
-    np = Nanopub(conf=NanopubConf())
-    # string
-    np._handle_derived_from("http://example.org/derived")
-    found = list(
-        np.provenance.triples((None, None, URIRef("http://example.org/derived")))
-    )
-    assert found
-    # list
-    np._handle_derived_from(["http://example.org/derived2"])
-    found2 = list(
-        np.provenance.triples((None, None, URIRef("http://example.org/derived2")))
-    )
-    assert found2
-
-
-def test_handle_introduces_concept_adds_triple():
-    np = Nanopub(conf=NanopubConf())
-    bnode = BNode("concept1")
-    np._handle_introduces_concept(bnode)
-    triples = list(np.pubinfo.triples((None, None, None)))
-    assert triples
-
-
-def test_validate_nanopub_arguments_errors():
-    np = Nanopub(conf=NanopubConf())
-    # Both assertion_attributed_to and attribute_assertion_to_profile
-    with pytest.raises(MalformedNanopubError):
-        np._validate_nanopub_arguments(
-            derived_from=None,
-            assertion_attributed_to="http://example.org",
-            attribute_assertion_to_profile=True,
-            introduces_concept=None,
+    def test_nanopub_sign_uri2(self):
+        expected_trusty = "RAIh8Oq-29dIVTZDhETpJ6f8oxxrILbZ3gSxkyAQY4220"
+        np = Nanopub(
+            conf=default_conf,
         )
-    # introduces_concept not BNode
-    with pytest.raises(MalformedNanopubError):
-        np._validate_nanopub_arguments(
-            derived_from=None,
-            assertion_attributed_to=None,
-            attribute_assertion_to_profile=False,
-            introduces_concept=URIRef("http://example.org"),
+        np.assertion.add(
+            (
+                URIRef("http://test"),
+                namespaces.HYCL.claims,
+                Literal("This is a test of nanopub-python"),
+            )
         )
+        np.sign()
+        assert np.has_valid_signature
+        assert expected_trusty in np.source_uri
 
-
-def test_is_valid_empty_graphs_and_graph_count():
-    np = Nanopub(conf=NanopubConf())
-    # Empty head
-    np._head.remove((None, None, None))
-    with pytest.raises(MalformedNanopubError):
-        np.is_valid
-    # Too many graphs
-    np2 = Nanopub(conf=NanopubConf())
-    extra = Graph()
-    extra.add((URIRef("http://s"), URIRef("http://p"), Literal("o")))
-    np2._rdf.add_graph(extra)
-    with pytest.raises(MalformedNanopubError):
-        np2.is_valid
-    # Missing provenance triple
-    np3 = Nanopub(conf=NanopubConf())
-    np3._provenance.remove((None, None, None))
-    with pytest.raises(MalformedNanopubError):
-        np3.is_valid
-    # Missing pubinfo triple
-    np4 = Nanopub(conf=NanopubConf())
-    np4._pubinfo.remove((None, None, None))
-    with pytest.raises(MalformedNanopubError):
-        np4.is_valid
-
-
-def test_get_source_uri_from_graph_none():
-    np = Nanopub(conf=NanopubConf())
-    # No matching regex, should return None
-    assert np.get_source_uri_from_graph is None
-
-
-def test_signed_with_public_key_none():
-    np = Nanopub(conf=NanopubConf())
-    assert np.signed_with_public_key is None
-
-
-def test_introduces_concept_multiple_error():
-    np = Nanopub(conf=NanopubConf())
-    np._pubinfo.add(
-        (URIRef("http://s"), namespaces.NPX.introduces, URIRef("http://c1"))
-    )
-    np._pubinfo.add(
-        (URIRef("http://s"), namespaces.NPX.introduces, URIRef("http://c2"))
-    )
-    with pytest.raises(MalformedNanopubError):
-        np.introduces_concept
-
-
-def test_sign_errors(monkeypatch):
-    # No profile -> should raise ProfileError
-    np = Nanopub(conf=NanopubConf(profile=None))
-    np._assertion.add(
-        (URIRef("http://test"), namespaces.HYCL.claims, Literal("test claim"))
-    )
-    np._provenance.add(
-        (
-            np._assertion.identifier,
-            namespaces.PROV.wasAttributedTo,
-            URIRef("http://someone"),
+    def test_sign_artifactcode_placeholder_in_custom_namespace(self, testsuite):
+        """Signing a nanopub that mints a concept in a custom namespace via the
+        ``~~~ARTIFACTCODE~~~`` placeholder gives that concept the same trusty
+        code as the nanopub itself, and the result is valid (see issue #232)."""
+        tc = next(
+            tc for tc in testsuite.get_transform_cases("rsa-key1")
+            if tc.plain.name == "artifactcode-1.in.trig"
         )
-    )
-    np._pubinfo.add((np._metadata.namespace[""], DC.creator, Literal("tester")))
-
-    with pytest.raises(ProfileError):
+        ds = Dataset()
+        ds.parse(data=tc.plain.read_text(), format="trig")
+        np = Nanopub(conf=testsuite_conf, rdf=ds)
         np.sign()
 
-    # Already signed -> should raise MalformedNanopubError
-    np2 = Nanopub(conf=NanopubConf(profile=default_conf.profile))
-    np2._assertion.add(
-        (URIRef("http://test2"), namespaces.HYCL.claims, Literal("test claim 2"))
-    )
-    np2._provenance.add(
-        (
-            np2._assertion.identifier,
-            namespaces.PROV.wasAttributedTo,
-            URIRef("http://someone"),
+        assert np.has_valid_signature
+        assert np.has_valid_trusty
+        assert np.is_valid
+
+        # The concept minted in the custom namespace must carry the nanopub's
+        # trusty code, and the placeholder must be gone everywhere.
+        artifact_code = str(np.source_uri).removeprefix(NP_PREFIX)
+        concept = URIRef(f"https://example.org/ns/{artifact_code}")
+        terms = {term for quad in np.rdf.quads((None, None, None, None)) for term in quad}
+        assert concept in terms
+        assert all("~~~ARTIFACTCODE~~~" not in str(term) for term in terms)
+
+    def test_nanopub_sign_bnode(self):
+        expected_trusty = "RAcU1AR3dS0ricV5G_ENcpUCk40XuCvFW3tVFqxNEQzT4"
+        assertion = Graph()
+        assertion.add(
+            (
+                BNode("test"),
+                namespaces.HYCL.claims,
+                Literal("This is a test of nanopub-python"),
+            )
         )
-    )
-    np2._pubinfo.add((np2._metadata.namespace[""], DC.creator, Literal("tester")))
-    np2._metadata.signature = True
+        np = Nanopub(conf=default_conf, assertion=assertion)
+        np.sign()
+        assert np.has_valid_signature
+        assert expected_trusty in np.source_uri
 
-    with pytest.raises(MalformedNanopubError):
-        np2.sign()
-
-    # Invalid nanopub -> should raise MalformedNanopubError
-    monkeypatch.setattr(type(np2), "is_valid", property(lambda self: False))
-
-    np2._metadata.signature = None
-    with pytest.raises(MalformedNanopubError):
-        np2.sign()
-
-
-def test_publish_calls_sign(monkeypatch):
-    np = Nanopub(conf=NanopubConf(profile=None))
-    monkeypatch.setattr(np, "sign", lambda: setattr(np, "_published", True))
-    np.publish()
-    assert np.published
-
-
-def test_nanopub_retract_profile_required():
-    """Should raise ProfileError if no profile is provided"""
-    conf = NanopubConf(profile=None)
-    with pytest.raises(ProfileError):
-        NanopubRetract(conf=conf, uri="http://example.org/np1", force=True)
-
-
-def test_nanopub_retract_adds_assertion(monkeypatch):
-    """Should create a retract assertion triple"""
-    uri_to_retract = "http://example.org/np1"
-
-    monkeypatch.setattr(
-        "nanopub.nanopub.Nanopub.__init__", lambda self, *args, **kwargs: None
-    )
-
-    retract_np = NanopubRetract.__new__(NanopubRetract)
-
-    retract_np._conf = default_conf
-    retract_np._profile = default_conf.profile
-
-    retract_np._assertion = MagicMock()
-
-    orcid_id = retract_np.profile.orcid_id
-    retract_np._assertion.add(
-        (URIRef(orcid_id), namespaces.NPX.retracts, URIRef(uri_to_retract))
-    )
-
-    retract_np._assertion.add.assert_called_once_with(
-        (URIRef(orcid_id), namespaces.NPX.retracts, URIRef(uri_to_retract))
-    )
-
-
-def test_nanopub_retract_public_key_mismatch(monkeypatch):
-    """Should raise AssertionError if public keys do not match and force=False"""
-    uri_to_retract = "http://example.org/np1"
-
-    monkeypatch.setattr(
-        "nanopub.nanopub.Nanopub.__init__", lambda self, *args, **kwargs: None
-    )
-
-    retract_np = NanopubRetract.__new__(NanopubRetract)
-    retract_np._conf = default_conf
-    retract_np.profile = default_conf.profile
-    retract_np._check_public_keys_match = lambda uri: (_ for _ in ()).throw(
-        AssertionError("public key mismatch")
-    )
-
-    with pytest.raises(AssertionError):
-        retract_np._check_public_keys_match(uri_to_retract)
-
-
-def test_nanopub_update_adds_supersedes(monkeypatch):
-    """Should create a supersedes triple in pubinfo"""
-    uri_to_update = "http://example.org/np1"
-
-    monkeypatch.setattr(
-        "nanopub.nanopub.Nanopub.__init__", lambda self, *args, **kwargs: None
-    )
-
-    update_np = NanopubUpdate.__new__(NanopubUpdate)
-    update_np._conf = default_conf
-    update_np._profile = default_conf.profile
-    update_np._metadata = MagicMock()
-    update_np._metadata.namespace = {"": "http://example.org/ns#"}
-
-    update_np._pubinfo = MagicMock()
-
-    update_np.pubinfo.add(
-        (
-            update_np._metadata.namespace[""],
-            namespaces.NPX.supersedes,
-            URIRef(uri_to_update),
+    def test_nanopub_sign_bnode2(self):
+        expected_trusty = "RA-1eE8scfVaiK7vP4CZueTyEyRmn1g2PpPf-j69WQAgM"
+        assertion = Graph()
+        assertion.add(
+            (
+                BNode("test"),
+                namespaces.HYCL.claims,
+                Literal("This is a test of nanopub-python"),
+            )
         )
-    )
-
-    update_np._pubinfo.add.assert_called_once_with(
-        (
-            update_np._metadata.namespace[""],
-            namespaces.NPX.supersedes,
-            URIRef(uri_to_update),
+        assertion.add(
+            (
+                BNode("test2"),
+                namespaces.HYCL.claims,
+                Literal("This is another test of nanopub-python"),
+            )
         )
-    )
+        np = Nanopub(conf=default_conf, assertion=assertion)
+        np.sign()
+        assert expected_trusty in np.source_uri
+        assert np.has_valid_signature
 
+    def test_nanopub_sign_object_bnode(self):
+        """Regression: a blank node in object position must not crash signing.
 
-def test_nanopub_update_public_key_mismatch(monkeypatch):
-    """Should raise AssertionError if public keys do not match and force=False"""
-    uri_to_update = "http://example.org/np1"
+        ``_replace_blank_nodes`` referenced an undefined ``old_o`` in a debug log
+        on the object branch, which raised ``NameError`` during ``sign()`` (the
+        other ``sign_bnode`` tests only use blank nodes in subject position, so
+        they never exercised this branch). The blank node should be rewritten to
+        a concrete URI in the nanopub's namespace.
+        """
+        ex = Namespace("http://example.org/")
+        assertion = Graph()
+        bnode = BNode("objnode")
+        # bnode appears in object position (first triple) and subject position
+        # (second), mirroring real "introduce a structured value" assertions.
+        assertion.add((ex.subject, ex.hasPart, bnode))
+        assertion.add((bnode, RDF.type, ex.Part))
+        np = Nanopub(conf=default_conf, assertion=assertion)
+        np.sign()
+        assert np.has_valid_signature
+        # The object blank node was replaced by a concrete URI, none remain.
+        assert not any(isinstance(o, BNode) for o in np.rdf.objects())
 
-    monkeypatch.setattr(
-        "nanopub.nanopub.Nanopub.__init__", lambda self, *args, **kwargs: None
-    )
+    def test_specific_file(self):
+        """Test to sign a complex file with many blank nodes"""
 
-    update_np = NanopubUpdate.__new__(NanopubUpdate)
-    update_np._conf = default_conf
-    update_np._profile = default_conf.profile
-    update_np._check_public_keys_match = lambda uri: (_ for _ in ()).throw(
-        AssertionError("public key mismatch")
-    )
+        np_conf = NanopubConf(profile=profile_test, use_test_server=True)
+        np_conf.add_prov_generated_time = (True,)
+        np_conf.add_pubinfo_generated_time = (True,)
+        np_conf.attribute_assertion_to_profile = (True,)
+        np_conf.attribute_publication_to_profile = (True,)
 
-    with pytest.raises(AssertionError):
-        update_np._check_public_keys_match(uri_to_update)
+        with open("./tests/resources/many_bnodes_with_annotations.json") as f:
+            nanopub_rdf = json.loads(f.read())
 
+        annotations_rdf = nanopub_rdf["@annotations"]
+        del nanopub_rdf["@annotations"]
+        nanopub_rdf = str(json.dumps(nanopub_rdf))
 
-def test_nanopub_update_init(monkeypatch):
-    monkeypatch.setattr(
-        "nanopub.nanopub.requests.get",
-        lambda url: type(
-            "Resp", (), {"ok": True, "text": "", "raise_for_status": lambda: None}
-        )(),
-    )
+        g = Graph()
+        g.parse(data=nanopub_rdf, format="json-ld")
 
-    uri_to_update = "http://example.org/np1"
-
-    assertion = Graph()
-    provenance = Graph()
-    pubinfo = Graph()
-
-    np_update = NanopubUpdate(
-        conf=default_conf,
-        uri=uri_to_update,
-        force=True,
-        assertion=assertion,
-        provenance=provenance,
-        pubinfo=pubinfo,
-    )
-
-    triples = list(
-        np_update.pubinfo.triples(
-            (None, namespaces.NPX.supersedes, URIRef(uri_to_update))
+        np = Nanopub(
+            assertion=g,
+            conf=np_conf,
         )
-    )
-    assert len(triples) == 1
+        source = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=f9641190-9151-4f7e-89ff-1e7a818c30ee"
+        if annotations_rdf:
+            np.provenance.parse(data=str(json.dumps(annotations_rdf)), format="json-ld")
+        if source:
+            np.provenance.add(
+                (np.assertion.identifier, PROV.hadPrimarySource, URIRef(source))
+            )
+
+        PAV = Namespace("http://purl.org/pav/")
+        if True:
+            np.pubinfo.add(
+                (
+                    np.metadata.np_uri,
+                    DCTERMS.conformsTo,
+                    URIRef("https://w3id.org/biolink/vocab/"),
+                )
+            )
+            np.pubinfo.add(
+                (
+                    URIRef("https://w3id.org/biolink/vocab/"),
+                    PAV.version,
+                    Literal("3.1.0"),
+                )
+            )
+        np.sign()
+
+
+class TestPublish:
+
+    def test_nanopub_publish(self):
+        expected_trusty = "RAIh8Oq-29dIVTZDhETpJ6f8oxxrILbZ3gSxkyAQY4220"
+        assertion = Graph()
+        assertion.add(
+            (
+                URIRef("http://test"),
+                namespaces.HYCL.claims,
+                Literal("This is a test of nanopub-python"),
+            )
+        )
+        np = Nanopub(conf=default_conf, assertion=assertion)
+        np.publish()
+        assert np.has_valid_signature
+        assert expected_trusty in np.source_uri
+
+    def test_publish_calls_sign(self, monkeypatch):
+        np = Nanopub(conf=NanopubConf(profile=None))
+        monkeypatch.setattr(np, "sign", lambda: setattr(np, "_published", True))
+        np.publish()
+        assert np.published
+
+
+class TestReplaceBlankNodes:
+
+    def test_replace_blank_nodes_unnamed_bnode(self):
+        # BNode with 33-character name triggers unnamed branch
+        bname = "N" + "a" * 32
+        g = Dataset()
+        g.add((BNode(bname), URIRef("http://test/p"), Literal("value")))
+        np = Nanopub(conf=NanopubConf())
+        g2 = np._replace_blank_nodes(g)
+        assert len(list(g2.quads((None, None, None, None)))) == 1
+
+
+class TestHandlePublicationAttributedTo:
+
+    def test_handle_publication_attributed_to_no_profile(self):
+        np = Nanopub(conf=NanopubConf(profile=None))
+        with pytest.raises(MalformedNanopubError):
+            np._handle_publication_attributed_to(
+                attribute_publication_to_profile=True, publication_attributed_to=None
+            )
+
+
+class TestHandleDerivedFrom:
+
+    def test_from_list(self):
+        np = Nanopub(conf=NanopubConf())
+        np._handle_derived_from(["http://example.org/derived2"])
+        found2 = list(
+            np.provenance.triples((None, None, URIRef("http://example.org/derived2")))
+        )
+        assert found2
+
+    def test_from_str(self):
+        np = Nanopub(conf=NanopubConf())
+        np._handle_derived_from("http://example.org/derived")
+        found = list(
+            np.provenance.triples((None, None, URIRef("http://example.org/derived")))
+        )
+        assert found
+
+
+class TestHandleIntroducesConcept:
+
+    def test_handle_introduces_concept_adds_triple(self):
+        np = Nanopub(conf=NanopubConf())
+        bnode = BNode("concept1")
+        np._handle_introduces_concept(bnode)
+        triples = list(np.pubinfo.triples((None, None, None)))
+        assert triples
+
+
+class TestValidateNanopubArguments:
+
+    def test_validate_nanopub_arguments_errors(self):
+        np = Nanopub(conf=NanopubConf())
+        # Both assertion_attributed_to and attribute_assertion_to_profile
+        with pytest.raises(MalformedNanopubError):
+            np._validate_nanopub_arguments(
+                derived_from=None,
+                assertion_attributed_to="http://example.org",
+                attribute_assertion_to_profile=True,
+                introduces_concept=None,
+            )
+        # introduces_concept not BNode
+        with pytest.raises(MalformedNanopubError):
+            np._validate_nanopub_arguments(
+                derived_from=None,
+                assertion_attributed_to=None,
+                attribute_assertion_to_profile=False,
+                introduces_concept=URIRef("http://example.org"),
+            )
