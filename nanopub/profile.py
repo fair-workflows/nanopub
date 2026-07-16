@@ -3,7 +3,6 @@ This module holds objects and functions to load a nanopub user profile.
 """
 import logging
 import os
-import re
 import warnings
 from base64 import b64encode, decodebytes
 from pathlib import Path
@@ -13,6 +12,7 @@ import yatiml
 from Crypto.PublicKey import RSA
 
 from nanopub.definitions import DEFAULT_PROFILE_PATH, RSA_KEY_SIZE, USER_CONFIG_DIR
+from nanopub.orcid_id import ORCID_URL_PREFIX, _ORCID_ID_PATTERN
 
 logger = logging.getLogger(__name__)
 
@@ -26,10 +26,6 @@ class ProfileError(RuntimeError):
     """
     Error to be raised if profile is not setup correctly.
     """
-
-
-ORCID_URL_PREFIX = "https://orcid.org/"
-_ORCID_ID_PATTERN = re.compile(r"\d{4}-\d{4}-\d{4}-\d{3}[\dX]")
 
 
 def _normalize_agent_id(agent_id: str) -> str:

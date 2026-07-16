@@ -15,6 +15,7 @@ from typer import Argument, Option
 from nanopub import Nanopub, NanopubClaim, NanopubConf, NanopubRetract, load_profile
 from nanopub._version import __version__
 from nanopub.definitions import DEFAULT_PROFILE_PATH, USER_CONFIG_DIR
+from nanopub.orcid_id import generate_check_digit, ORCID_ID_REGEX
 from nanopub.profile import Profile, ProfileError, generate_keyfiles, _ORCID_ID_PATTERN, ORCID_URL_PREFIX
 from nanopub.templates.nanopub_introduction import NanopubIntroduction
 from nanopub.utils import MalformedNanopubError
@@ -27,18 +28,7 @@ DEFAULT_KEYS_PATH_PREFIX = USER_CONFIG_DIR / 'id'
 DEFAULT_PRIVATE_KEY_PATH = USER_CONFIG_DIR / PRIVATE_KEY_FILE
 DEFAULT_PUBLIC_KEY_PATH = USER_CONFIG_DIR / PUBLIC_KEY_FILE
 RSA = 'RSA'
-ORCID_ID_REGEX = r'^https://orcid.org/(\d{4}-){3}\d{3}(\d|X)$'
 PLACEHOLDER_ORCID_ID = 'https://orcid.org/0000-0000-0000-0000'
-
-
-def generate_check_digit(base_digits: str) -> str:
-    """Generates check digit as per ISO 7064 11,2."""
-    total = 0
-    for char in base_digits:
-        total = (total + int(char)) * 2
-    remainder = total % 11
-    result = (12 - remainder) % 11
-    return "X" if result == 10 else str(result)
 
 
 def validate_agent_id(ctx, param, agent_id: str):
