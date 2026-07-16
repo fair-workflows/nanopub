@@ -7,9 +7,10 @@ from rdflib import Dataset, URIRef
 from typer.testing import CliRunner
 
 from nanopub import namespaces
-from nanopub.__main__ import cli, validate_agent_id
+from nanopub.__main__ import cli
 from nanopub._version import __version__
 from nanopub.definitions import DEFAULT_PROFILE_PATH
+from nanopub.profile import _normalize_agent_id, ProfileError
 from nanopub.utils import MalformedNanopubError
 
 runner = CliRunner()
@@ -22,26 +23,25 @@ def test_validate_agent_id():
                 'https://orcid.org/1234-5678-1234-5673',
                 'https://orcid.org/0000-0000-0000-001X',
                 'https://other-url.org/1234-5678-1234-5678',
-                'https://example.org/agent/42'
+                'https://example.org/agent/42',
+                'https://orcid.org/0000-0000-0000-0000',
                 ]
     for agent_id in accepted:
-        assert validate_agent_id(ctx=None, param=None, agent_id=agent_id) == agent_id
+        assert _normalize_agent_id(agent_id=agent_id) == agent_id
 
     # Only values that claim to be an ORCID but are malformed are rejected.
     invalid_orcids = [
         'https://orcid.org/abcd-efgh-abcd-efgh',  # invalid format
         'https://orcid.org/0000-0003-4112-6826',  # invalid checksum
         'https://orcid.org/',  # invalid checksum
-        'https://orcid.org/0000-0000-0000-0000',  # invalid checksum
         'https://orcid.org/1234-5678-1234-5678',  # invalid checksum
         'https://orcid.org/1234-5678-1234-56789',  # too long
         'https://orcid.org/abcd-efgh-abcd-efgh',
         'https://orcid.org/1234-5678-1234-567',
-        '0000-0000-0000-0000'  # orcid with invalid checksum
     ]
     for agent_id in invalid_orcids:
-        with pytest.raises(ValueError):
-            validate_agent_id(ctx=None, param=None, agent_id=agent_id)
+        with pytest.raises(ProfileError):
+            _normalize_agent_id(agent_id=agent_id)
 
 
 def test_setup():
@@ -95,7 +95,7 @@ def test_sign_with_orcid(testsuite, tmp_path):
     result = runner.invoke(cli, [
         "sign", str(test_file),
         "-k", private_key,
-        "-o", "1234-5678-1234-5678",
+        "-o", "1234-5678-1234-5673",
     ])
 
     assert result.exit_code == 0
@@ -104,7 +104,7 @@ def test_sign_with_orcid(testsuite, tmp_path):
     ds = Dataset()
     ds.parse(signed, format="trig")
     signed_by = {o for _, _, o, _ in ds.quads((None, namespaces.NPX.signedBy, None, None))}
-    assert URIRef("https://orcid.org/1234-5678-1234-5678") in signed_by
+    assert URIRef("https://orcid.org/1234-5678-1234-5673") in signed_by
 
 
 def test_version():

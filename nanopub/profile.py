@@ -12,7 +12,7 @@ import yatiml
 from Crypto.PublicKey import RSA
 
 from nanopub.definitions import DEFAULT_PROFILE_PATH, RSA_KEY_SIZE, USER_CONFIG_DIR
-from nanopub.orcid_id import ORCID_URL_PREFIX, _ORCID_ID_PATTERN
+from nanopub.orcid_id import OrcidID, _ORCID_ID_PATTERN, ORCID_URL_PREFIX
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +28,18 @@ class ProfileError(RuntimeError):
     """
 
 
+def _looks_like_orcid(agent_id: str) -> bool:
+    """Whether ``agent_id`` claims to be an ORCID (bare digits or an orcid.org URI).
+
+    Anything matching this must be validated as a well-formed ORCID; it is not
+    eligible for the "treat as an opaque URI" fallback in ``_normalize_agent_id``.
+    """
+    return bool(
+        _ORCID_ID_PATTERN.fullmatch(agent_id)
+        or agent_id.startswith(ORCID_URL_PREFIX)
+    )
+
+
 def _normalize_agent_id(agent_id: str) -> str:
     """Validate and normalize the agent id (signer) to a URI.
 
@@ -39,7 +51,6 @@ def _normalize_agent_id(agent_id: str) -> str:
     As a convenience a bare ORCID identifier (``0000-0000-0000-0000``) is
     expanded to its canonical ``https://orcid.org/`` URI, and any value that
     claims to be an ORCID (starts with that prefix) must be a well-formed one.
-    Raises ProfileError if no agent id is given, or a claimed ORCID is malformed.
     """
     if not agent_id or not agent_id.strip():
         raise ProfileError(
@@ -47,18 +58,12 @@ def _normalize_agent_id(agent_id: str) -> str:
             f"{PROFILE_INSTRUCTIONS_MESSAGE}"
         )
     agent_id = agent_id.strip()
-    # Convenience: a bare ORCID identifier -> canonical ORCID URI.
-    if _ORCID_ID_PATTERN.fullmatch(agent_id):
-        return f"{ORCID_URL_PREFIX}{agent_id}"
-    # Only what claims to be an ORCID is format-checked; any other URI is trusted.
-    if agent_id.startswith(ORCID_URL_PREFIX) and not _ORCID_ID_PATTERN.fullmatch(
-            agent_id[len(ORCID_URL_PREFIX):]):
-        raise ProfileError(
-            f"'{agent_id}' looks like an ORCID URI but is not a valid ORCID iD "
-            "(expected https://orcid.org/0000-0000-0000-0000).\n"
-            f"{PROFILE_INSTRUCTIONS_MESSAGE}"
-        )
-    return agent_id
+    try:
+        return str(OrcidID(agent_id))
+    except ValueError as e:
+        if _looks_like_orcid(agent_id):
+            raise ProfileError(f'{e}\n{PROFILE_INSTRUCTIONS_MESSAGE}') from e
+        return agent_id
 
 
 class Profile:

@@ -1,6 +1,5 @@
 #! /usr/bin/env python3
 import os
-import re
 import shutil
 import sys
 from dataclasses import dataclass
@@ -15,8 +14,7 @@ from typer import Argument, Option
 from nanopub import Nanopub, NanopubClaim, NanopubConf, NanopubRetract, load_profile
 from nanopub._version import __version__
 from nanopub.definitions import DEFAULT_PROFILE_PATH, USER_CONFIG_DIR
-from nanopub.orcid_id import generate_check_digit, ORCID_ID_REGEX
-from nanopub.profile import Profile, ProfileError, generate_keyfiles, _ORCID_ID_PATTERN, ORCID_URL_PREFIX
+from nanopub.profile import Profile, ProfileError, generate_keyfiles, _normalize_agent_id
 from nanopub.templates.nanopub_introduction import NanopubIntroduction
 from nanopub.utils import MalformedNanopubError
 
@@ -29,29 +27,6 @@ DEFAULT_PRIVATE_KEY_PATH = USER_CONFIG_DIR / PRIVATE_KEY_FILE
 DEFAULT_PUBLIC_KEY_PATH = USER_CONFIG_DIR / PUBLIC_KEY_FILE
 RSA = 'RSA'
 PLACEHOLDER_ORCID_ID = 'https://orcid.org/0000-0000-0000-0000'
-
-
-def validate_agent_id(ctx, param, agent_id: str):
-    """Accept any URI as the signer's agent id, taken at face value.
-
-    Only a value that claims to be an ORCID (starts with https://orcid.org/) is
-    format-checked; any other URI is trusted. ctx and param are necessary
-    `click` callback args.
-    """
-    if _ORCID_ID_PATTERN.fullmatch(agent_id):
-        agent_id = f"{ORCID_URL_PREFIX}{agent_id}"
-
-    if agent_id.startswith('https://orcid.org/'):
-        if not re.match(ORCID_ID_REGEX, agent_id):
-            raise ValueError('This looks like an ORCID iD but is not valid; an ORCID iD '
-                             'looks like: https://orcid.org/0000-0000-0000-0000')
-        else:
-            digits = agent_id.removeprefix("https://orcid.org/").replace("-", "")
-            base = digits[:-1]
-            check_digit = digits[-1].upper()
-            if not generate_check_digit(base) == check_digit:
-                raise ValueError(f'The ORCID {agent_id} is not valid, please provide a valid ORCID.')
-    return agent_id
 
 
 @cli.command(help='Get nanopub library version')
@@ -80,7 +55,7 @@ def sign(
         ),
         orcid_id: str = typer.Option(
             PLACEHOLDER_ORCID_ID, "--orcid", "-o",
-            help="ORCID iD to record as the signer (full URI or bare 0000-0000-0000-0000 form)."
+            help="ORCID iD to record as the signer (full URI or bare 0000-0000-0000-0001 form)."
         ),
 ):
     if private_key:
@@ -167,7 +142,7 @@ def setup(
             None,
             help="Your ORCID iD (i.e. https://orcid.org/0000-0000-0000-0000)",
             prompt='What is your ORCID iD (i.e. https://orcid.org/0000-0000-0000-0000)?',
-            callback=validate_agent_id
+            callback=_normalize_agent_id
         ),
         name: str = typer.Option(
             None,
