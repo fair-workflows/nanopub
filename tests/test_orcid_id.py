@@ -1,6 +1,6 @@
 import pytest
 
-from nanopub.orcid_id import OrcidID, generate_check_digit, ORCID_URL_PREFIX
+from nanopub.orcid_id import OrcidID, generate_check_digit, ORCID_URL_PREFIX, looks_like_orcid
 
 
 class TestOrcidID:
@@ -47,3 +47,17 @@ class TestOrcidID:
         full_orcid = "0000-0000-0000-0000"
         o = OrcidID(full_orcid)
         assert str(o) == f"{ORCID_URL_PREFIX}{full_orcid}"
+
+    def test_lowercase_x_bare(self):
+        o = OrcidID("0000-0000-0000-001x")
+        assert str(o) == "https://orcid.org/0000-0000-0000-001X"
+
+    def test_invalid_orcid_raises(self):
+        with pytest.raises(ValueError):
+            OrcidID("0000-0002-1825-0099")  # invalid check digit
+
+    def test_looks_like_orcid_bare_lower_x(self):
+        assert looks_like_orcid("0000-0000-0000-001x")
+
+    def test_looks_like_orcid_url_uppercase_host_and_lower_x(self):
+        assert looks_like_orcid("https://ORCID.ORG/0000-0000-0000-001x")

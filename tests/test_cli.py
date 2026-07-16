@@ -10,7 +10,7 @@ from nanopub import namespaces
 from nanopub.__main__ import cli
 from nanopub._version import __version__
 from nanopub.definitions import DEFAULT_PROFILE_PATH
-from nanopub.profile import _normalize_agent_id, ProfileError
+from nanopub.profile import _validate_agent_id, ProfileError
 from nanopub.utils import MalformedNanopubError
 
 runner = CliRunner()
@@ -27,7 +27,7 @@ def test_validate_agent_id():
                 'https://orcid.org/0000-0000-0000-0000',
                 ]
     for agent_id in accepted:
-        assert _normalize_agent_id(agent_id=agent_id) == agent_id
+        assert _validate_agent_id(agent_id=agent_id) == agent_id
 
     # Only values that claim to be an ORCID but are malformed are rejected.
     invalid_orcids = [
@@ -41,7 +41,7 @@ def test_validate_agent_id():
     ]
     for agent_id in invalid_orcids:
         with pytest.raises(ProfileError):
-            _normalize_agent_id(agent_id=agent_id)
+            _validate_agent_id(agent_id=agent_id)
 
 
 def test_setup():

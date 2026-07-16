@@ -14,7 +14,7 @@ from typer import Argument, Option
 from nanopub import Nanopub, NanopubClaim, NanopubConf, NanopubRetract, load_profile
 from nanopub._version import __version__
 from nanopub.definitions import DEFAULT_PROFILE_PATH, USER_CONFIG_DIR
-from nanopub.profile import Profile, ProfileError, generate_keyfiles, _normalize_agent_id
+from nanopub.profile import Profile, ProfileError, generate_keyfiles, _validate_agent_id
 from nanopub.templates.nanopub_introduction import NanopubIntroduction
 from nanopub.utils import MalformedNanopubError
 
@@ -142,7 +142,7 @@ def setup(
             None,
             help="Your ORCID iD (i.e. https://orcid.org/0000-0000-0000-0000)",
             prompt='What is your ORCID iD (i.e. https://orcid.org/0000-0000-0000-0000)?',
-            callback=_normalize_agent_id
+            callback=_validate_agent_id
         ),
         name: str = typer.Option(
             None,

@@ -12,7 +12,7 @@ import yatiml
 from Crypto.PublicKey import RSA
 
 from nanopub.definitions import DEFAULT_PROFILE_PATH, RSA_KEY_SIZE, USER_CONFIG_DIR
-from nanopub.orcid_id import OrcidID, _ORCID_ID_PATTERN, ORCID_URL_PREFIX
+from nanopub.orcid_id import OrcidID, looks_like_orcid
 
 logger = logging.getLogger(__name__)
 
@@ -28,19 +28,7 @@ class ProfileError(RuntimeError):
     """
 
 
-def _looks_like_orcid(agent_id: str) -> bool:
-    """Whether ``agent_id`` claims to be an ORCID (bare digits or an orcid.org URI).
-
-    Anything matching this must be validated as a well-formed ORCID; it is not
-    eligible for the "treat as an opaque URI" fallback in ``_normalize_agent_id``.
-    """
-    return bool(
-        _ORCID_ID_PATTERN.fullmatch(agent_id)
-        or agent_id.startswith(ORCID_URL_PREFIX)
-    )
-
-
-def _normalize_agent_id(agent_id: str) -> str:
+def _validate_agent_id(agent_id: str) -> str:
     """Validate and normalize the agent id (signer) to a URI.
 
     The agent id identifies the signer and may be any URI — a person's ORCID, a
@@ -61,7 +49,7 @@ def _normalize_agent_id(agent_id: str) -> str:
     try:
         return str(OrcidID(agent_id))
     except ValueError as e:
-        if _looks_like_orcid(agent_id):
+        if looks_like_orcid(agent_id):
             raise ProfileError(f'{e}\n{PROFILE_INSTRUCTIONS_MESSAGE}') from e
         return agent_id
 
@@ -187,7 +175,7 @@ introduction_nanopub_uri:{intro_uri}
 
     @agent_id.setter
     def agent_id(self, value):
-        self._agent_id = _normalize_agent_id(value)
+        self._agent_id = _validate_agent_id(value)
 
     @property
     def orcid_id(self):
