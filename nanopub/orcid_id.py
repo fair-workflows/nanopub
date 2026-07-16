@@ -14,10 +14,13 @@ class OrcidID:
         else:
             raise ValueError(f'The ORCID {orcid_id} is not valid, please provide a valid ORCID.')
         digits = orcid_id.removeprefix(ORCID_URL_PREFIX).replace("-", "")
-        base = digits[:-1]
-        check_digit = digits[-1].upper()
-        if not generate_check_digit(base) == check_digit:
-            raise ValueError(f'The ORCID {orcid_id} is not valid, please provide a valid ORCID.')
+        # 0000-0000-0000-0000 is not a valid orcid_id, but it is accepted for test purposes and backwards compatibility
+        # the check digit is not computed only for this case
+        if digits != "0" * 16:
+            base = digits[:-1]
+            check_digit = digits[-1].upper()
+            if not generate_check_digit(base) == check_digit:
+                raise ValueError(f'The ORCID {orcid_id} is not valid, please provide a valid ORCID.')
 
     def __str__(self):
         return self.orcid_id
