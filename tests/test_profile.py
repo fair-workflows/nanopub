@@ -26,7 +26,7 @@ class TestProfileInstantiation:
         with pytest.raises(ProfileError):
             Profile(
                 name='Python Tests',
-                orcid_id='',
+                agent_id='',
                 private_key=self._private_key,
                 public_key=self._public_key
             )
@@ -34,22 +34,22 @@ class TestProfileInstantiation:
     def test_instantiate_profile_with_url_orcid_id(self):
         p = Profile(
             name='Python Tests',
-            orcid_id=ORCID_ID,
+            agent_id=ORCID_ID,
             private_key=self._private_key,
             public_key=self._public_key
         )
 
-        assert p.orcid_id == ORCID_ID
+        assert p.agent_id == ORCID_ID
 
     def test_instantiate_profile_with_raw_orcid_id(self):
         p = Profile(
             name='Python Tests',
-            orcid_id='0000-0000-0000-0000',
+            agent_id='0000-0000-0000-0000',
             private_key=self._private_key,
             public_key=self._public_key
         )
 
-        assert p.orcid_id == ORCID_ID
+        assert p.agent_id == ORCID_ID
 
     def test_instantiate_profile_path(self):
         assert isinstance(self._private_key, Path)
@@ -57,12 +57,12 @@ class TestProfileInstantiation:
 
         p = Profile(
             name='Python Tests',
-            orcid_id=ORCID_ID,
+            agent_id=ORCID_ID,
             private_key=self._private_key,
             public_key=self._public_key
         )
 
-        assert p.orcid_id == ORCID_ID
+        assert p.agent_id == ORCID_ID
         assert p.name == 'Python Tests'
         assert p.introduction_nanopub_uri is None
         assert p.private_key == self._private_key_str
@@ -74,12 +74,12 @@ class TestProfileInstantiation:
 
         p = Profile(
             name='Python Tests',
-            orcid_id=ORCID_ID,
+            agent_id=ORCID_ID,
             private_key=self._private_key_str,
             public_key=self._public_key_str
         )
 
-        assert p.orcid_id == ORCID_ID
+        assert p.agent_id == ORCID_ID
         assert p.name == 'Python Tests'
         assert p.introduction_nanopub_uri is None
         assert p.private_key == self._private_key_str
@@ -89,7 +89,7 @@ class TestProfileInstantiation:
         missing = tmp_path / "does_not_exist_id_rsa"
         with pytest.raises(ProfileError, match="Private key file"):
             Profile(
-                orcid_id=ORCID_ID,
+                agent_id=ORCID_ID,
                 name="Python Tests",
                 private_key=missing,
             )
@@ -98,7 +98,7 @@ class TestProfileInstantiation:
         missing_public = tmp_path / "does_not_exist_id_rsa.pub"
         with pytest.raises(ProfileError, match="Public key file"):
             Profile(
-                orcid_id=ORCID_ID,
+                agent_id=ORCID_ID,
                 name="Python Tests",
                 private_key=_signing_key.private_key,
                 public_key=missing_public,
@@ -115,7 +115,7 @@ class TestProfileLoader:
     def test_load_profile(self):
         p = load_profile(profile_test_path)
 
-        assert p.orcid_id == ORCID_ID
+        assert p.agent_id == ORCID_ID
         assert p.name == 'Python Tests'
         assert p.introduction_nanopub_uri is None
         assert p.private_key == self._private_key_str
@@ -141,7 +141,7 @@ def test_store_profile(tmpdir):
 
     p = Profile(
         name='Python Tests',
-        orcid_id=ORCID_ID,
+        agent_id=ORCID_ID,
         private_key=_signing_key.private_key.read_text(),
         public_key=_signing_key.public_key.read_text()
     )
@@ -162,7 +162,7 @@ def test_store_profile(tmpdir):
 def test_generate_keys(tmpdir):
     p = Profile(
         name='Python Tests',
-        orcid_id=ORCID_ID,
+        agent_id=ORCID_ID,
     )
     assert p.private_key is not None
     assert p.public_key is not None
@@ -171,7 +171,7 @@ def test_generate_keys(tmpdir):
 def test_generate_keys_store_profile(tmpdir):
     p = Profile(
         name='Python Tests',
-        orcid_id=ORCID_ID,
+        agent_id=ORCID_ID,
     )
     assert p.private_key is not None
     assert p.public_key is not None

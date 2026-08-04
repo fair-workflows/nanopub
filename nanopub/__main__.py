@@ -1,6 +1,5 @@
 #! /usr/bin/env python3
 import os
-import re
 import shutil
 import sys
 from dataclasses import dataclass
@@ -15,7 +14,7 @@ from typer import Argument, Option
 from nanopub import Nanopub, NanopubClaim, NanopubConf, NanopubRetract, load_profile
 from nanopub._version import __version__
 from nanopub.definitions import DEFAULT_PROFILE_PATH, USER_CONFIG_DIR
-from nanopub.profile import Profile, ProfileError, generate_keyfiles
+from nanopub.profile import Profile, ProfileError, generate_keyfiles, _validate_agent_id
 from nanopub.templates.nanopub_introduction import NanopubIntroduction
 from nanopub.utils import MalformedNanopubError
 
@@ -27,21 +26,7 @@ DEFAULT_KEYS_PATH_PREFIX = USER_CONFIG_DIR / 'id'
 DEFAULT_PRIVATE_KEY_PATH = USER_CONFIG_DIR / PRIVATE_KEY_FILE
 DEFAULT_PUBLIC_KEY_PATH = USER_CONFIG_DIR / PUBLIC_KEY_FILE
 RSA = 'RSA'
-ORCID_ID_REGEX = r'^https://orcid.org/(\d{4}-){3}\d{3}(\d|X)$'
 PLACEHOLDER_ORCID_ID = 'https://orcid.org/0000-0000-0000-0000'
-
-
-def validate_agent_id(ctx, param, agent_id: str):
-    """Accept any URI as the signer's agent id, taken at face value.
-
-    Only a value that claims to be an ORCID (starts with https://orcid.org/) is
-    format-checked; any other URI is trusted. ctx and param are necessary
-    `click` callback args.
-    """
-    if agent_id.startswith('https://orcid.org/') and not re.match(ORCID_ID_REGEX, agent_id):
-        raise ValueError('This looks like an ORCID iD but is not valid; an ORCID iD '
-                         'looks like: https://orcid.org/0000-0000-0000-0000')
-    return agent_id
 
 
 @cli.command(help='Get nanopub library version')
@@ -70,7 +55,7 @@ def sign(
         ),
         orcid_id: str = typer.Option(
             PLACEHOLDER_ORCID_ID, "--orcid", "-o",
-            help="ORCID iD to record as the signer (full URI or bare 0000-0000-0000-0000 form)."
+            help="ORCID iD to record as the signer (full URI or bare 0000-0000-0000-0001 form)."
         ),
 ):
     if private_key:
@@ -157,7 +142,7 @@ def setup(
             None,
             help="Your ORCID iD (i.e. https://orcid.org/0000-0000-0000-0000)",
             prompt='What is your ORCID iD (i.e. https://orcid.org/0000-0000-0000-0000)?',
-            callback=validate_agent_id
+            callback=_validate_agent_id
         ),
         name: str = typer.Option(
             None,
@@ -182,7 +167,7 @@ def setup(
 
     Args:
         orcid_id: the users ORCID iD or other form of universal identifier. Example:
-            `https://orcid.org/0000-0000-0000-0000`
+            `https://orcid.org/0000-0000-0000-0001`
         name: the name of the user
         newkeys: True if you want to generate new keys, False if you want to use existing keys. By default, new keys are not generated.
         keypair: a tuple containing the paths to the public and private RSA key to be used to sign

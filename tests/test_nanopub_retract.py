@@ -31,13 +31,13 @@ class TestCreation:
 
         retract_np._assertion = MagicMock()
 
-        orcid_id = retract_np.profile.orcid_id
+        agent_id = retract_np.profile.agent_id
         retract_np._assertion.add(
-            (URIRef(orcid_id), namespaces.NPX.retracts, URIRef(uri_to_retract))
+            (URIRef(agent_id), namespaces.NPX.retracts, URIRef(uri_to_retract))
         )
 
         retract_np._assertion.add.assert_called_once_with(
-            (URIRef(orcid_id), namespaces.NPX.retracts, URIRef(uri_to_retract))
+            (URIRef(agent_id), namespaces.NPX.retracts, URIRef(uri_to_retract))
         )
 
     def test_nanopub_retract_public_key_mismatch(self, monkeypatch):

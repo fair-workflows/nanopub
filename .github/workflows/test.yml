@@ -2,9 +2,9 @@ name: Tests and Coverage
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   test:
@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ "3.12.4" ]
+        python-version: ["3.12.4"]
         rdflib-version:
           - rdflib==6.3.2
           - rdflib==7.1.4
@@ -34,7 +34,7 @@ jobs:
 
       - name: Setup nanopub profile (including RSA keys)
         run: |
-          uv run np setup --orcid-id https://orcid.org/0000-0000-0000-0000 --no-publish --name test --newkeys
+          uv run np setup --orcid-id https://orcid.org/0000-0000-0000-0001 --no-publish --name test --newkeys
 
       - name: Test with pytest
         run: uv run pytest -v --cov

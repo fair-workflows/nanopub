@@ -3,7 +3,6 @@ This module holds objects and functions to load a nanopub user profile.
 """
 import logging
 import os
-import re
 import warnings
 from base64 import b64encode, decodebytes
 from pathlib import Path
@@ -13,6 +12,7 @@ import yatiml
 from Crypto.PublicKey import RSA
 
 from nanopub.definitions import DEFAULT_PROFILE_PATH, RSA_KEY_SIZE, USER_CONFIG_DIR
+from nanopub.orcid_id import OrcidID, looks_like_orcid
 
 logger = logging.getLogger(__name__)
 
@@ -28,11 +28,7 @@ class ProfileError(RuntimeError):
     """
 
 
-ORCID_URL_PREFIX = "https://orcid.org/"
-_ORCID_ID_PATTERN = re.compile(r"\d{4}-\d{4}-\d{4}-\d{3}[\dX]")
-
-
-def _normalize_agent_id(agent_id: str) -> str:
+def _validate_agent_id(agent_id: str) -> str:
     """Validate and normalize the agent id (signer) to a URI.
 
     The agent id identifies the signer and may be any URI — a person's ORCID, a
@@ -43,7 +39,6 @@ def _normalize_agent_id(agent_id: str) -> str:
     As a convenience a bare ORCID identifier (``0000-0000-0000-0000``) is
     expanded to its canonical ``https://orcid.org/`` URI, and any value that
     claims to be an ORCID (starts with that prefix) must be a well-formed one.
-    Raises ProfileError if no agent id is given, or a claimed ORCID is malformed.
     """
     if not agent_id or not agent_id.strip():
         raise ProfileError(
@@ -51,18 +46,12 @@ def _normalize_agent_id(agent_id: str) -> str:
             f"{PROFILE_INSTRUCTIONS_MESSAGE}"
         )
     agent_id = agent_id.strip()
-    # Convenience: a bare ORCID identifier -> canonical ORCID URI.
-    if _ORCID_ID_PATTERN.fullmatch(agent_id):
-        return f"{ORCID_URL_PREFIX}{agent_id}"
-    # Only what claims to be an ORCID is format-checked; any other URI is trusted.
-    if agent_id.startswith(ORCID_URL_PREFIX) and not _ORCID_ID_PATTERN.fullmatch(
-            agent_id[len(ORCID_URL_PREFIX):]):
-        raise ProfileError(
-            f"'{agent_id}' looks like an ORCID URI but is not a valid ORCID iD "
-            "(expected https://orcid.org/0000-0000-0000-0000).\n"
-            f"{PROFILE_INSTRUCTIONS_MESSAGE}"
-        )
-    return agent_id
+    try:
+        return str(OrcidID(agent_id))
+    except ValueError as e:
+        if looks_like_orcid(agent_id):
+            raise ProfileError(f'{e}\n{PROFILE_INSTRUCTIONS_MESSAGE}') from e
+        return agent_id
 
 
 class Profile:
@@ -186,7 +175,7 @@ introduction_nanopub_uri:{intro_uri}
 
     @agent_id.setter
     def agent_id(self, value):
-        self._agent_id = _normalize_agent_id(value)
+        self._agent_id = _validate_agent_id(value)
 
     @property
     def orcid_id(self):

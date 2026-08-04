@@ -7,9 +7,10 @@ from rdflib import Dataset, URIRef
 from typer.testing import CliRunner
 
 from nanopub import namespaces
-from nanopub.__main__ import cli, validate_agent_id
+from nanopub.__main__ import cli
 from nanopub._version import __version__
 from nanopub.definitions import DEFAULT_PROFILE_PATH
+from nanopub.profile import _validate_agent_id, ProfileError
 from nanopub.utils import MalformedNanopubError
 
 runner = CliRunner()
@@ -18,28 +19,36 @@ runner = CliRunner()
 def test_validate_agent_id():
     # Any URI is accepted at face value, including non-ORCID identities and bare
     # ORCID identifiers (expanded later by the Profile).
-    accepted = ['https://orcid.org/1234-5678-1234-5678',
-                'https://orcid.org/1234-5678-1234-567X',
+    accepted = ['https://orcid.org/0000-0000-0000-0001',
+                'https://orcid.org/1234-5678-1234-5673',
+                'https://orcid.org/0000-0000-0000-001X',
                 'https://other-url.org/1234-5678-1234-5678',
                 'https://example.org/agent/42',
-                '0000-0000-0000-0000']
+                'https://orcid.org/0000-0000-0000-0000',
+                ]
     for agent_id in accepted:
-        assert validate_agent_id(ctx=None, param=None, agent_id=agent_id) == agent_id
+        assert _validate_agent_id(agent_id=agent_id) == agent_id
 
     # Only values that claim to be an ORCID but are malformed are rejected.
-    invalid_orcids = ['https://orcid.org/abcd-efgh-abcd-efgh',
-                      'https://orcid.org/1234-5678-1234-567',
-                      'https://orcid.org/1234-5678-1234-56789']
+    invalid_orcids = [
+        'https://orcid.org/abcd-efgh-abcd-efgh',  # invalid format
+        'https://orcid.org/0000-0003-4112-6826',  # invalid checksum
+        'https://orcid.org/',  # invalid checksum
+        'https://orcid.org/1234-5678-1234-5678',  # invalid checksum
+        'https://orcid.org/1234-5678-1234-56789',  # too long
+        'https://orcid.org/abcd-efgh-abcd-efgh',
+        'https://orcid.org/1234-5678-1234-567',
+    ]
     for agent_id in invalid_orcids:
-        with pytest.raises(ValueError):
-            validate_agent_id(ctx=None, param=None, agent_id=agent_id)
+        with pytest.raises(ProfileError):
+            _validate_agent_id(agent_id=agent_id)
 
 
 def test_setup():
     # np setup --orcid-id https://orcid.org/0000-0000-0000-0000 --name "Python test" --newkeys --no-publish
     result = runner.invoke(cli, [
         "setup",
-        "--orcid-id", "https://orcid.org/0000-0000-0000-0000",
+        "--orcid-id", "https://orcid.org/0000-0000-0000-0001",
         "--name", "Python test",
         "--newkeys", "--no-publish"
     ])
@@ -86,7 +95,7 @@ def test_sign_with_orcid(testsuite, tmp_path):
     result = runner.invoke(cli, [
         "sign", str(test_file),
         "-k", private_key,
-        "-o", "1234-5678-1234-5678",
+        "-o", "1234-5678-1234-5673",
     ])
 
     assert result.exit_code == 0
@@ -95,7 +104,7 @@ def test_sign_with_orcid(testsuite, tmp_path):
     ds = Dataset()
     ds.parse(signed, format="trig")
     signed_by = {o for _, _, o, _ in ds.quads((None, namespaces.NPX.signedBy, None, None))}
-    assert URIRef("https://orcid.org/1234-5678-1234-5678") in signed_by
+    assert URIRef("https://orcid.org/1234-5678-1234-5673") in signed_by
 
 
 def test_version():
@@ -117,7 +126,7 @@ def test_setup_with_keypair(monkeypatch, tmp_path):
 
     result = runner.invoke(cli, [
         "setup",
-        "--orcid-id", "https://orcid.org/0000-0000-0000-0000",
+        "--orcid-id", "https://orcid.org/0000-0000-0000-0001",
         "--name", "Python test",
         "--keypair", str(pub_key), str(priv_key),
         "--no-publish"
@@ -138,7 +147,7 @@ def test_setup_publish_yes(monkeypatch):
 
     result = runner.invoke(cli, [
         "setup",
-        "--orcid-id", "https://orcid.org/0000-0000-0000-0000",
+        "--orcid-id", "https://orcid.org/0000-0000-0000-0001",
         "--name", "Python test",
         "--newkeys"
     ])
@@ -158,7 +167,7 @@ def test_setup_publish_no(monkeypatch):
 
     result = runner.invoke(cli, [
         "setup",
-        "--orcid-id", "https://orcid.org/0000-0000-0000-0000",
+        "--orcid-id", "https://orcid.org/0000-0000-0000-0001",
         "--name", "Python test",
         "--newkeys"
     ])
