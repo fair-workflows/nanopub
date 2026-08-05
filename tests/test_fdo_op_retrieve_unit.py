@@ -43,13 +43,13 @@ def test_retrieve_record_from_id(mock_handle):
     assert record is not None
 
 
-@patch("nanopub.fdo.retrieve.requests.get")
+@patch("nanopub.fdo.retrieve.get_session")
 @patch("nanopub.fdo.retrieve.resolve_id")
-def test_retrieve_content_from_id(mock_resolve_id, mock_requests_get):
+def test_retrieve_content_from_id(mock_resolve_id, mock_get_session):
     mock_response = MagicMock()
     mock_response.content = b"fake content"
     mock_response.raise_for_status = MagicMock()
-    mock_requests_get.return_value = mock_response
+    mock_get_session.return_value.get.return_value = mock_response
 
     mock_record = MagicMock()
     mock_record.get_data_ref.return_value = "https://example.org/file.txt"
@@ -59,12 +59,12 @@ def test_retrieve_content_from_id(mock_resolve_id, mock_requests_get):
     assert content == b"fake content"
 
 
-@patch("nanopub.fdo.retrieve.requests.get")
+@patch("nanopub.fdo.retrieve.get_session")
 def test_resolve_handle_metadata(mock_get):
     mock_response = MagicMock()
     mock_response.json.return_value = {"values": []}
     mock_response.raise_for_status = MagicMock()
-    mock_get.return_value = mock_response
+    mock_get.return_value.get.return_value = mock_response
 
     result = resolve_handle_metadata("21.T11966/abc")
     assert isinstance(result, dict)
@@ -128,7 +128,7 @@ def test_resolve_in_nanopub_network_no_data(mock_query):
     assert result is None
 
 
-@patch("nanopub.fdo.retrieve.requests.get")
+@patch("nanopub.fdo.retrieve.get_session")
 @patch("nanopub.fdo.retrieve.resolve_id")
 def test_retrieve_content_from_id_list_case(mock_resolve_id, mock_get):
     mock_record = MagicMock()
@@ -138,7 +138,7 @@ def test_retrieve_content_from_id_list_case(mock_resolve_id, mock_get):
     ]
     mock_resolve_id.return_value = mock_record
     mock_resp = MagicMock(content=b"abc", raise_for_status=lambda: None)
-    mock_get.return_value = mock_resp
+    mock_get.return_value.get.return_value = mock_resp
     content_list = retrieve_content_from_id("some-id")
     assert content_list == [b"abc", b"abc"]
 
@@ -155,7 +155,7 @@ def test_retrieve_content_from_id_no_data_ref(mock_resolve_id):
 @patch("nanopub.fdo.retrieve.resolve_id")
 def test_retrieve_content_from_id_unexpected_type(mock_resolve_id):
     mock_record = MagicMock()
-    mock_record.get_data_ref.return_value = 12345  
+    mock_record.get_data_ref.return_value = 12345
     mock_resolve_id.return_value = mock_record
     with pytest.raises(TypeError):
         retrieve_content_from_id("id")
@@ -164,7 +164,7 @@ def test_retrieve_content_from_id_unexpected_type(mock_resolve_id):
 def test_get_fdo_uri_from_fdo_record_fallback_subjects():
     g = Graph()
     uri = URIRef("https://example.org/other")
-    g.add((uri, URIRef("p"), URIRef("o"))) 
+    g.add((uri, URIRef("p"), URIRef("o")))
     assert get_fdo_uri_from_fdo_record(g) == uri
 
 
