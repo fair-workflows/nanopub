@@ -295,12 +295,10 @@ class NanopubClient:
             JSONDecodeError: in case response can't be serialized as JSON, this can happen due to a
                 virtuoso error.
         """
-        # First try different servers
-        r, query_url = self._query_api_try_servers(params, endpoint)
-        # If we have found a Nanopub Query server we should use that for further queries (so
-        # pagination works properly)
-        r = self._query_api(params, endpoint, query_url)
-        r.raise_for_status()
+        # Try the servers until one of them answers successfully. The response of
+        # that server is used directly: repeating the identical request would only
+        # double the load and the exposure to unresponsive servers.
+        r, _ = self._query_api_try_servers(params, endpoint)
 
         # Check if JSON was actually returned. HTML can be returned instead
         # if e.g. virtuoso errors on the backend (due to spaces in the search

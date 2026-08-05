@@ -396,6 +396,27 @@ def test_query_api_try_servers_all_time_out(monkeypatch, client):
         client._query_api_try_servers({}, "endpoint")
 
 
+def test_search_uses_response_from_successful_server(monkeypatch, client, no_shuffle):
+    """_search must not repeat the request that _query_api_try_servers already made."""
+    client.query_urls = ["server1", "server2"]
+    calls = []
+    results = {
+        "results": {"bindings": [{"np": {"value": "np1"}, "date": {"value": "01-01-2001"}}]}
+    }
+
+    def fake_query_api(params, endpoint, query_url):
+        calls.append(query_url)
+        if query_url == "server1":
+            raise requests.exceptions.Timeout("timed out")
+        return DummyResponse(200, json_data=results)
+
+    monkeypatch.setattr(client, "_query_api", fake_query_api)
+
+    parsed = list(client._search("endpoint", {}))
+    assert [p["np"] for p in parsed] == ["np1"]
+    assert calls == ["server1", "server2"]
+
+
 def test_query_api_parsed_and_csv(monkeypatch, client):
     csv_text = "a,b\n1,2\n3,4\n"
     monkeypatch.setattr(client, "_query_api_csv", lambda p, e, q: csv_text)
