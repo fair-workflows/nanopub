@@ -7,7 +7,7 @@ import re
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Union, Tuple
+from typing import Any, Optional, Union, Tuple
 
 import rdflib
 import requests
@@ -19,6 +19,7 @@ from nanopub.definitions import MAX_TRIPLES_PER_NANOPUB, NANOPUB_FETCH_FORMAT, T
 from nanopub.namespaces import HYCL, NP, NPX, NTEMPLATE, ORCID, PAV
 from nanopub.nanopub_conf import NanopubConf
 from nanopub.profile import ProfileError
+from nanopub.serialize import serialize_nanopub_trig
 from nanopub.sign_utils import add_signature, publish_graph, verify_signature, verify_trusty
 from nanopub.utils import MalformedNanopubError, NanopubMetadata, extract_np_metadata
 
@@ -268,9 +269,19 @@ class Nanopub:
         else:
             self.sign()
 
+    def serialize(self, destination: Optional[Path] = None, format: str = 'trig', **kwargs) -> Any:
+        """Serialize the Nanopub, returning it as a string if no destination is given.
+
+        TriG output lists the graphs in the conventional Head, assertion, provenance,
+        pubinfo order; other formats are serialized by rdflib as-is.
+        """
+        if format == 'trig':
+            return serialize_nanopub_trig(self._rdf, destination, metadata=self._metadata, **kwargs)
+        return self._rdf.serialize(destination, format=format, **kwargs)
+
     def store(self, filepath: Path, format: str = 'trig') -> None:
         """Store the Nanopub object at the given path"""
-        self._rdf.serialize(filepath, format=format)
+        self.serialize(filepath, format=format)
 
     @property
     def has_valid_signature(self) -> bool:
@@ -446,7 +457,7 @@ class Nanopub:
         s = ""
         if self._source_uri:
             s += f"Nanopub URI: \033[1m{self._source_uri}\033[0m\n"
-        s += self._rdf.serialize(format='trig')
+        s += self.serialize(format='trig')
         return s
 
     def _handle_generated_at_time(
