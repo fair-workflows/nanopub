@@ -4,6 +4,7 @@ import requests
 from rdflib import RDF, URIRef, Graph
 
 from nanopub import NanopubClient, Nanopub, NanopubConf
+from nanopub.definitions import DEFAULT_HTTP_TIMEOUT
 from nanopub.fdo import FdoNanopub
 from nanopub.fdo.fdo_record import FdoRecord
 from nanopub.fdo.utils import looks_like_handle
@@ -65,14 +66,14 @@ def resolve_in_nanopub_network(
 
     try:
         # fetch .trig RDF
-        r = requests.get(np_uri + ".trig", allow_redirects=True)
+        r = requests.get(np_uri + ".trig", allow_redirects=True, timeout=DEFAULT_HTTP_TIMEOUT)
         r.raise_for_status()
 
         content_type = r.headers.get("Content-Type", "").lower()
         if "html" in content_type or r.text.lstrip().startswith("<!DOCTYPE html>"):
             # retry with the effective URL returned by the redirect - this is a dirty workaround for the server somehow returning html when redirecting (strips out the format suffix)
             redirected_url = r.url
-            r = requests.get(redirected_url + ".trig")
+            r = requests.get(redirected_url + ".trig", timeout=DEFAULT_HTTP_TIMEOUT)
             r.raise_for_status()
 
             np = Nanopub(source_uri=redirected_url)
@@ -103,14 +104,14 @@ def retrieve_content_from_id(iri_or_handle: str) -> Union[bytes, List[bytes]]:
     if isinstance(content_ref, URIRef) or isinstance(content_ref, str):
         if isinstance(content_ref, str):
             content_ref = URIRef(content_ref)
-        response = requests.get(str(content_ref))
+        response = requests.get(str(content_ref), timeout=DEFAULT_HTTP_TIMEOUT)
         response.raise_for_status()
         return response.content
 
     elif isinstance(content_ref, list):
         contents = []
         for uri in content_ref:
-            response = requests.get(str(uri))
+            response = requests.get(str(uri), timeout=DEFAULT_HTTP_TIMEOUT)
             response.raise_for_status()
             contents.append(response.content)
         return contents
@@ -121,7 +122,7 @@ def retrieve_content_from_id(iri_or_handle: str) -> Union[bytes, List[bytes]]:
 
 def resolve_handle_metadata(handle: str) -> dict:
     url = f"https://hdl.handle.net/api/handles/{handle}"
-    response = requests.get(url)
+    response = requests.get(url, timeout=DEFAULT_HTTP_TIMEOUT)
     response.raise_for_status()
     return response.json()
 

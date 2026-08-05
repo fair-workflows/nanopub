@@ -8,7 +8,12 @@ from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
 from rdflib import BNode, Dataset, Graph, Literal, Namespace, URIRef
 
-from nanopub.definitions import NANOPUB_REGISTRY_URLS, NP_PREFIX, NP_TEMP_PREFIX
+from nanopub.definitions import (
+    DEFAULT_HTTP_TIMEOUT,
+    NANOPUB_REGISTRY_URLS,
+    NP_PREFIX,
+    NP_TEMP_PREFIX,
+)
 from nanopub.namespaces import NPX
 from nanopub.profile import Profile
 from nanopub.trustyuri.rdf import RdfHasher, RdfUtils
@@ -125,7 +130,12 @@ def publish_graph(g: Dataset, use_server: str = NANOPUB_REGISTRY_URLS[0]) -> boo
     headers = {'Content-Type': 'application/trig'}
     # NOTE: nanopub-java uses {'Content-Type': 'application/x-www-form-urlencoded'}
     data = g.serialize(format="trig")
-    r = requests.post(use_server, headers=headers, data=data.encode('utf-8'))
+    r = requests.post(
+        use_server,
+        headers=headers,
+        data=data.encode('utf-8'),
+        timeout=DEFAULT_HTTP_TIMEOUT,
+    )
     r.raise_for_status()
     return True
 
