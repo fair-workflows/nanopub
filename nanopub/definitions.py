@@ -40,3 +40,9 @@ NANOPUB_QUERY_URLS = [
     # 'https://query.np.trustyuri.net/api/',
 ]
 TEST_NANOPUB_QUERY_URL = 'https://query.knowledgepixels.com/api/'  # we don't yet have a test server for this
+
+# Timeout for HTTP requests, as a (connect, read) tuple in seconds. Without a
+# timeout an unresponsive server blocks indefinitely; the short connect timeout
+# lets us fail over to another server quickly, while the longer read timeout
+# leaves room for slow queries to complete (see issue #163).
+DEFAULT_HTTP_TIMEOUT = (5, 30)
