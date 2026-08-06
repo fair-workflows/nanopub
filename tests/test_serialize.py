@@ -115,7 +115,7 @@ class TestNothingIsLost:
         extra.add((URIRef("http://example.org/a"), RDF.type, RDFS.Class))
 
         order = _graph_order(ds.serialize(format=NANOPUB_TRIG_FORMAT))
-        assert order == CONVENTIONAL_ORDER
+        assert order == CONVENTIONAL_ORDER + ["extra"]
 
     def test_non_nanopub_rdf_is_serialized_instead_of_raising(self):
         """The ordering does not apply, but serializing must still work."""
