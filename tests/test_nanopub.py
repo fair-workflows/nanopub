@@ -1,5 +1,6 @@
 import inspect
 import json
+import logging
 from typing import Optional
 from unittest.mock import MagicMock, patch
 
@@ -773,9 +774,10 @@ def _minimal_valid_nanopub(conf: Optional[NanopubConf] = None) -> Nanopub:
 
 
 class TestIllTypedLiterals:
-    """A literal whose lexical form does not fit its datatype must not pass validation
-    (see issue #249): strict RDF stores reject such nanopubs, leaving them published but
-    invisible in the SPARQL endpoint."""
+    """A literal whose lexical form does not fit its datatype must not be signed or
+    published (see issue #249): strict RDF stores reject such nanopubs, leaving them
+    published but invisible in the SPARQL endpoint. Reading one is still allowed, since
+    nanopubs carrying such literals are already out there."""
 
     def test_ill_typed_literal_in_assertion(self):
         np = _minimal_valid_nanopub()
@@ -786,8 +788,7 @@ class TestIllTypedLiterals:
                 Literal("not-a-number", datatype=XSD.integer),
             )
         )
-        with pytest.raises(MalformedNanopubError, match="not-a-number"):
-            np.is_valid
+        assert [str(o) for o, _ in np.ill_typed_literals] == ["not-a-number"]
 
     def test_ill_typed_literal_in_pubinfo(self):
         np = _minimal_valid_nanopub()
@@ -798,8 +799,25 @@ class TestIllTypedLiterals:
                 Literal("yesterday", datatype=XSD.dateTime),
             )
         )
-        with pytest.raises(MalformedNanopubError, match="yesterday"):
-            np.is_valid
+        literals = np.ill_typed_literals
+        assert [str(o) for o, _ in literals] == ["yesterday"]
+        assert str(literals[0][1]) == str(np.pubinfo.identifier)
+
+    def test_ill_typed_literal_only_warns_when_validating(self, caplog):
+        """An existing nanopub carrying an ill-typed literal must stay readable: the test
+        suite lists such nanopubs as valid (e.g. "2019-02-26"^^xsd:dateTime in
+        fair-maturity-1.trig)."""
+        np = _minimal_valid_nanopub()
+        np.assertion.add(
+            (
+                URIRef("http://test"),
+                URIRef("http://example.org/count"),
+                Literal("not-a-number", datatype=XSD.integer),
+            )
+        )
+        with caplog.at_level(logging.WARNING, logger="nanopub.nanopub"):
+            assert np.is_valid
+        assert "not-a-number" in caplog.text
 
     def test_ill_typed_literal_parsed_from_trig(self):
         np = _minimal_valid_nanopub()
@@ -812,8 +830,7 @@ class TestIllTypedLiterals:
         )
         ds = Dataset()
         ds.parse(data=np.serialize(format="trig"), format="trig")
-        with pytest.raises(MalformedNanopubError, match="not-a-number"):
-            Nanopub(conf=NanopubConf(), rdf=ds).is_valid
+        assert Nanopub(conf=NanopubConf(), rdf=ds).ill_typed_literals
 
     def test_well_typed_literals_are_accepted(self):
         np = _minimal_valid_nanopub()
@@ -830,6 +847,7 @@ class TestIllTypedLiterals:
             np.assertion.add(
                 (URIRef("http://test"), URIRef(f"http://example.org/p{i}"), literal)
             )
+        assert np.ill_typed_literals == []
         assert np.is_valid
 
     def test_sign_rejects_ill_typed_literal(self):
@@ -845,8 +863,9 @@ class TestIllTypedLiterals:
             np.sign()
         assert np.source_uri is None
 
-    def test_publish_validates_already_signed_nanopub(self):
-        """publish() used to skip validation entirely for a nanopub that was already signed."""
+    def test_publish_rejects_ill_typed_literal_in_signed_nanopub(self, monkeypatch):
+        """publish() used to run no validation at all on an already-signed nanopub, such as
+        one read from a file or fetched from the registry."""
         np = _minimal_valid_nanopub(conf=default_conf)
         np.sign()
         np.pubinfo.add(
@@ -856,6 +875,10 @@ class TestIllTypedLiterals:
                 Literal("not-a-number", datatype=XSD.integer),
             )
         )
+        # editing the graph after signing breaks the trusty artefact, which is not what
+        # this test is about
+        monkeypatch.setattr(type(np), "is_valid", property(lambda self: True))
+
         with patch("nanopub.nanopub.publish_graph") as mock_publish:
             with pytest.raises(MalformedNanopubError, match="not-a-number"):
                 np.publish()

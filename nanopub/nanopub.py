@@ -7,7 +7,7 @@ import re
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional, Union, Tuple
+from typing import Any, List, Optional, Union, Tuple
 
 import rdflib
 import requests
@@ -228,6 +228,7 @@ class Nanopub:
             raise ProfileError("Profile not available, cannot sign the nanopub")
         if self._metadata.signature:
             raise MalformedNanopubError(f"The nanopub have already been signed: {self.source_uri}")
+        self._check_ill_typed_literals()
 
         if self.is_valid:
             logger.info("Signing nanopub %s (quads=%d)", self.source_uri or "<unpublished>",
@@ -246,8 +247,10 @@ class Nanopub:
         if not self.source_uri:
             # sign() validates the nanopub before signing it
             self.sign()
-        elif not self.is_valid:
-            raise MalformedNanopubError("The nanopub is not valid, cannot publish it")
+        else:
+            if not self.is_valid:
+                raise MalformedNanopubError("The nanopub is not valid, cannot publish it")
+            self._check_ill_typed_literals()
 
         publish_graph(self.rdf, use_server=self._conf.use_server)
         logger.info(f'Published {self.source_uri} to {self._conf.use_server}')
@@ -346,7 +349,16 @@ class Nanopub:
             raise MalformedNanopubError(
                 f"The pubinfo graph should contain at least one triple that has the nanopub URI as subject: \033[1m{self._source_uri}\033[0m")
 
-        self._check_ill_typed_literals()
+        # Ill-typed literals do not make an existing nanopub unreadable, and some published
+        # ones carry them, so they are only reported here and refused when signing/publishing
+        ill_typed = self.ill_typed_literals
+        if ill_typed:
+            logger.warning(
+                "Ill-typed literal(s) found in %s: %s. The lexical form of a literal must be valid "
+                "for its datatype; signing or publishing this nanopub will be refused",
+                self._source_uri or self._metadata.np_uri,
+                ", ".join(o.n3() for o, _ in ill_typed),
+            )
 
         if self._metadata.signature:
             if not self.has_valid_signature:
@@ -355,6 +367,20 @@ class Nanopub:
             if not self.has_valid_trusty:
                 raise MalformedNanopubError("The trusty nanopub is not valid")
         return True
+
+    @property
+    def ill_typed_literals(self) -> List[Tuple[Literal, URIRef]]:
+        """The literals whose lexical form is not valid for their declared datatype.
+
+        Returns a list of ``(literal, graph)`` pairs, empty when the nanopub is fine.
+        Literals without a datatype, with a language tag, or with a datatype rdflib does
+        not recognize cannot be checked and are never reported.
+        """
+        return [
+            (o, c)
+            for s, p, o, c in self._rdf.quads((None, None, None, None))
+            if isinstance(o, Literal) and o.ill_typed
+        ]
 
     @property
     def rdf(self) -> Dataset:
@@ -661,17 +687,13 @@ class Nanopub:
         return g
 
     def _check_ill_typed_literals(self) -> None:
-        """Ensures no literal carries a lexical form that its datatype does not allow.
+        """Refuses to let an ill-typed literal be signed or published.
 
         Such literals (e.g. ``"not-a-number"^^xsd:integer``) are accepted by rdflib, but
-        strict RDF stores reject the whole nanopub, so it ends up published yet invisible
-        in the SPARQL endpoint.
+        strict RDF stores reject the whole nanopub, so it would end up published yet
+        invisible in the SPARQL endpoint.
         """
-        ill_typed = [
-            (o, c)
-            for s, p, o, c in self._rdf.quads((None, None, None, None))
-            if isinstance(o, Literal) and o.ill_typed
-        ]
+        ill_typed = self.ill_typed_literals
         if ill_typed:
             details = ", ".join(f"{o.n3()} in graph {c}" for o, c in ill_typed)
             raise MalformedNanopubError(
