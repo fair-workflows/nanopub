@@ -244,7 +244,10 @@ class Nanopub:
     def publish(self) -> Tuple[str, str, str | None]:
         """Publish a Nanopub object"""
         if not self.source_uri:
+            # sign() validates the nanopub before signing it
             self.sign()
+        elif not self.is_valid:
+            raise MalformedNanopubError("The nanopub is not valid, cannot publish it")
 
         publish_graph(self.rdf, use_server=self._conf.use_server)
         logger.info(f'Published {self.source_uri} to {self._conf.use_server}')
@@ -342,6 +345,8 @@ class Nanopub:
         if not found_pubinfo:
             raise MalformedNanopubError(
                 f"The pubinfo graph should contain at least one triple that has the nanopub URI as subject: \033[1m{self._source_uri}\033[0m")
+
+        self._check_ill_typed_literals()
 
         if self._metadata.signature:
             if not self.has_valid_signature:
@@ -654,6 +659,25 @@ class Nanopub:
                 logger.debug("Replaced object BNode %s -> %s (graph=%s, subj=%s, pred=%s)", old_o, o, c, s, p)
         logger.debug("Blank node mapping: %s", bnode_map)
         return g
+
+    def _check_ill_typed_literals(self) -> None:
+        """Ensures no literal carries a lexical form that its datatype does not allow.
+
+        Such literals (e.g. ``"not-a-number"^^xsd:integer``) are accepted by rdflib, but
+        strict RDF stores reject the whole nanopub, so it ends up published yet invisible
+        in the SPARQL endpoint.
+        """
+        ill_typed = [
+            (o, c)
+            for s, p, o, c in self._rdf.quads((None, None, None, None))
+            if isinstance(o, Literal) and o.ill_typed
+        ]
+        if ill_typed:
+            details = ", ".join(f"{o.n3()} in graph {c}" for o, c in ill_typed)
+            raise MalformedNanopubError(
+                f"\033[1mIll-typed literal(s) found\033[0m: {details}. "
+                "The lexical form of a literal must be valid for its datatype"
+            )
 
     def _check_named_graphs(self) -> None:
         """Ensures that names graphs are not using the same URI, and that they have the nanopub namespace as base URI"""
