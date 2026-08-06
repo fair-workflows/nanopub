@@ -36,6 +36,7 @@ class NanopubMetadata:
 def extract_np_metadata(g: Dataset) -> NanopubMetadata:
     """Extract a nanopub URI, namespace and head/assertion/prov/pubinfo contexts from a Graph"""
     get_np_query = """prefix np: <http://www.nanopub.org/nschema#>
+prefix npx: <http://purl.org/nanopub/x/>
 
 SELECT DISTINCT ?np ?head ?assertion ?provenance ?pubinfo ?sigUri ?signature ?pubkey ?algo
 WHERE {
