@@ -15,6 +15,7 @@ from SPARQLWrapper import SPARQLWrapper, JSON, CSV
 
 from nanopub import namespaces
 from nanopub.definitions import (
+    DEFAULT_HTTP_TIMEOUT,
     DUMMY_NANOPUB_URI,
     NANOPUB_QUERY_URLS,
     NANOPUB_REGISTRY_URLS,
@@ -37,6 +38,10 @@ class NanopubClient:
     Args:
         use_test_server (bool): Toggle using the test nanopub server.
         use_server (str): Provide the URL of a nanopub server to use
+        query_urls (list): Provide the URLs of the Nanopub Query servers to use
+        query_timeout: Timeout for requests to the Nanopub Query servers, either
+            a number of seconds or a (connect, read) tuple. Servers that do not
+            answer within this time are skipped in favour of the next one.
     """
 
     def __init__(
@@ -44,8 +49,10 @@ class NanopubClient:
             use_test_server=False,
             use_server=NANOPUB_REGISTRY_URLS[0],
             query_urls=None,
+            query_timeout=DEFAULT_HTTP_TIMEOUT,
     ):
         self.use_test_server = use_test_server
+        self.query_timeout = query_timeout
         if use_test_server:
             self.query_urls = [TEST_NANOPUB_QUERY_URL]
             self.use_server = TEST_NANOPUB_REGISTRY_URL
@@ -221,12 +228,15 @@ class NanopubClient:
         )
         return [result["np"] for result in results]
 
-    @staticmethod
-    def _query_api(params: dict, endpoint: str, query_url: str) -> requests.Response:
+    def _query_api(
+            self, params: dict, endpoint: str, query_url: str, timeout=None
+    ) -> requests.Response:
         """Query a specific Nanopub Query endpoint."""
         headers = {"Accept": "application/json"}
         url = query_url + endpoint
-        return requests.get(url, params=params, headers=headers)
+        if timeout is None:
+            timeout = self.query_timeout
+        return requests.get(url, params=params, headers=headers, timeout=timeout)
 
     def _query_api_try_servers(
             self, params: dict, endpoint: str
@@ -234,25 +244,39 @@ class NanopubClient:
         """Query the Nanopub Query endpoint.
 
         Query a Nanopub Query endpoint (for example: 'RARqGauUpDMEA1o4KBSKC8AeP694qJjpbf7x7FOWHDfM8/find-valid-things').
-        Try several of the Nanopub Query servers.
+        Try several of the Nanopub Query servers, moving on to the next one on
+        any failure: a timeout, a connection error, or any non-successful HTTP
+        status. Only when every server has failed is an error raised.
 
         Returns:
             tuple of: r: request response, query_url: url of the Nanopub Query server used.
         """
-        r = None
+        last_error = None
         random.shuffle(self.query_urls)  # To balance load across servers
         for query_url in self.query_urls:
-            r = self._query_api(params, endpoint, query_url)
-            if r.status_code == 502:  # Server is likely down
+            try:
+                r = self._query_api(params, endpoint, query_url)
+            except requests.RequestException as e:
+                # Timeouts, connection errors, etc.: the server is unusable
+                last_error = f"{query_url} raised {type(e).__name__}: {e}"
                 warnings.warn(
-                    f"Could not get response from {query_url}, trying other servers"
+                    f"Could not get response from {query_url} ({type(e).__name__}), "
+                    f"trying other servers"
                 )
-            else:
-                r.raise_for_status()  # For non-502 errors we don't want to try other servers
+                continue
+
+            if r.ok:
                 return r, query_url
-        resp = ""
-        if r:
-            resp = f" Last response: {r.status_code}:{r.reason}"
+
+            # Any non-successful status (server down, overloaded, endpoint not
+            # available on this server, ...) means we try the next server
+            last_error = f"{query_url} returned {r.status_code}:{r.reason}"
+            warnings.warn(
+                f"Could not get response from {query_url} "
+                f"({r.status_code}:{r.reason}), trying other servers"
+            )
+
+        resp = f" Last error: {last_error}" if last_error else ""
         raise requests.HTTPError(
             f"Could not get response from any of the Nanopub Query servers "
             f"endpoints.{resp}"
@@ -271,12 +295,10 @@ class NanopubClient:
             JSONDecodeError: in case response can't be serialized as JSON, this can happen due to a
                 virtuoso error.
         """
-        # First try different servers
-        r, query_url = self._query_api_try_servers(params, endpoint)
-        # If we have found a Nanopub Query server we should use that for further queries (so
-        # pagination works properly)
-        r = self._query_api(params, endpoint, query_url)
-        r.raise_for_status()
+        # Try the servers until one of them answers successfully. The response of
+        # that server is used directly: repeating the identical request would only
+        # double the load and the exposure to unresponsive servers.
+        r, _ = self._query_api_try_servers(params, endpoint)
 
         # Check if JSON was actually returned. HTML can be returned instead
         # if e.g. virtuoso errors on the backend (due to spaces in the search
@@ -320,10 +342,18 @@ class NanopubClient:
     def _query_api_csv(self, params, endpoint, query_url) -> str:
         headers = {"Accept": "text/csv"}
         url = query_url + endpoint
-        response = requests.get(url, params=params, headers=headers)
+        response = requests.get(
+            url, params=params, headers=headers, timeout=self.query_timeout
+        )
         response.raise_for_status()
         response.encoding = 'utf-8-sig'
         return response.text
+
+    def _read_timeout(self) -> float:
+        """The read part of the configured timeout, as a single number of seconds."""
+        if isinstance(self.query_timeout, (tuple, list)):
+            return self.query_timeout[-1]
+        return self.query_timeout
 
     def _query_api_parsed(self, params, endpoint, query_url):
         csv_text = self._query_api_csv(params, endpoint, query_url)
@@ -350,6 +380,8 @@ class NanopubClient:
                 sparql = SPARQLWrapper(endpoint_url)
                 sparql.setQuery(query)
                 sparql.setReturnFormat(JSON if return_format == "json" else CSV)
+                # SPARQLWrapper only accepts a single number, so use the read timeout
+                sparql.setTimeout(int(self._read_timeout()))
                 response = sparql.query().convert()
 
                 if return_format == "json":

@@ -25,6 +25,14 @@ def prod_client():
     return NanopubClient(use_test_server=False)
 
 
+@pytest.fixture
+def no_shuffle(monkeypatch):
+    """Keep the query server order fixed, so failover tests are deterministic."""
+    import nanopub.client as client_module
+
+    monkeypatch.setattr(client_module.random, "shuffle", lambda seq: None)
+
+
 # ----------------------
 # Integration tests
 # ----------------------
@@ -225,6 +233,14 @@ class DummyResponse:
         self.text = text_data or ""
         self.reason = reason
 
+    @property
+    def ok(self):
+        return self.status_code < 400
+
+    def raise_for_status(self):
+        if not self.ok:
+            raise requests.HTTPError(f"{self.status_code} error")
+
     def json(self):
         return self._json
 
@@ -233,7 +249,7 @@ class DummyResponse:
 # Unit tests
 # ----------------------
 def test_query_api_success(monkeypatch, client):
-    def fake_get(url, params=None, headers=None):
+    def fake_get(url, params=None, headers=None, timeout=None):
         return DummyResponse(json_data={"ok": True})
 
     monkeypatch.setattr(requests, "get", fake_get)
@@ -242,12 +258,39 @@ def test_query_api_success(monkeypatch, client):
 
 
 def test_query_api_returns_text(monkeypatch, client):
-    def fake_get(url, params=None, headers=None):
+    def fake_get(url, params=None, headers=None, timeout=None):
         return DummyResponse(text_data="Hello World", status_code=200)
 
     monkeypatch.setattr(requests, "get", fake_get)
     resp = client._query_api({"q": "x"}, "endpoint", "http://example.org/")
     assert resp.text == "Hello World"
+
+
+def test_query_api_passes_timeout(monkeypatch, client):
+    """A request must never be made without a timeout (see issue #163)."""
+    recorded = {}
+
+    def fake_get(url, params=None, headers=None, timeout=None):
+        recorded["timeout"] = timeout
+        return DummyResponse(json_data={})
+
+    monkeypatch.setattr(requests, "get", fake_get)
+    client.query_timeout = (1, 2)
+    client._query_api({"q": "x"}, "endpoint", "http://example.org/")
+    assert recorded["timeout"] == (1, 2)
+
+
+def test_query_api_csv_passes_timeout(monkeypatch, client):
+    recorded = {}
+
+    def fake_get(url, params=None, headers=None, timeout=None):
+        recorded["timeout"] = timeout
+        return DummyResponse(text_data="a,b\n1,2\n")
+
+    monkeypatch.setattr(requests, "get", fake_get)
+    client.query_timeout = (1, 2)
+    client._query_api_csv({}, "endpoint", "http://example.org/")
+    assert recorded["timeout"] == (1, 2)
 
 
 def test_find_retractions_raises_if_no_pubkey(monkeypatch, client):
@@ -265,43 +308,113 @@ def test_find_retractions_raises_if_no_pubkey(monkeypatch, client):
         client.find_retractions_of("http://example.org/np", valid_only=True)
 
 
-def test_query_api_try_servers_502(monkeypatch, client):
+def test_query_api_try_servers_502(monkeypatch, client, no_shuffle):
     client.query_urls = ["server1", "server2"]
     calls = []
-
-    class DummyResp:
-        def __init__(self, status_code):
-            self.status_code = status_code
-            self.reason = "Bad Gateway"
-
-        def raise_for_status(self):
-            if self.status_code != 200:
-                raise requests.HTTPError(f"{self.status_code} error")
 
     def fake_query_api(params, endpoint, query_url):
         calls.append(query_url)
         if query_url == "server1":
-            return DummyResp(502)
-        return DummyResp(200)
+            return DummyResponse(502, reason="Bad Gateway")
+        return DummyResponse(200)
 
     monkeypatch.setattr(client, "_query_api", fake_query_api)
 
     resp, url = client._query_api_try_servers({}, "endpoint")
     assert resp.status_code == 200
     assert url == "server2"
+    assert calls == ["server1", "server2"]
+
+
+@pytest.mark.parametrize("status_code", [500, 503, 504, 404, 429])
+def test_query_api_try_servers_non_502_status(monkeypatch, client, no_shuffle, status_code):
+    """Any non-successful status makes us fail over, not just 502 (issue #163)."""
+    client.query_urls = ["server1", "server2"]
+    calls = []
+
+    def fake_query_api(params, endpoint, query_url):
+        calls.append(query_url)
+        if query_url == "server1":
+            return DummyResponse(status_code, reason="Server error")
+        return DummyResponse(200)
+
+    monkeypatch.setattr(client, "_query_api", fake_query_api)
+
+    resp, url = client._query_api_try_servers({}, "endpoint")
+    assert resp.status_code == 200
+    assert url == "server2"
+    assert calls == ["server1", "server2"]
+
+
+@pytest.mark.parametrize(
+    "exception",
+    [
+        requests.exceptions.Timeout("timed out"),
+        requests.exceptions.ConnectTimeout("connect timed out"),
+        requests.exceptions.ConnectionError("connection refused"),
+    ],
+)
+def test_query_api_try_servers_transport_error(monkeypatch, client, no_shuffle, exception):
+    """A timing-out server must not bring the whole search down (issue #163)."""
+    client.query_urls = ["server1", "server2"]
+    calls = []
+
+    def fake_query_api(params, endpoint, query_url):
+        calls.append(query_url)
+        if query_url == "server1":
+            raise exception
+        return DummyResponse(200)
+
+    monkeypatch.setattr(client, "_query_api", fake_query_api)
+
+    resp, url = client._query_api_try_servers({}, "endpoint")
+    assert resp.status_code == 200
+    assert url == "server2"
+    assert calls == ["server1", "server2"]
 
 
 def test_query_api_try_servers_all_fail(monkeypatch, client):
-    class DummyResp:
-        status_code = 500
-        reason = "Internal Server Error"
-
-        def raise_for_status(self):
-            raise requests.HTTPError("fail")
-
-    monkeypatch.setattr(client, "_query_api", lambda params, endpoint, url: DummyResp())
-    with pytest.raises(requests.HTTPError):
+    monkeypatch.setattr(
+        client,
+        "_query_api",
+        lambda params, endpoint, url: DummyResponse(500, reason="Internal Server Error"),
+    )
+    with pytest.raises(requests.HTTPError, match="500"):
         client._query_api_try_servers({}, "endpoint")
+
+
+def test_query_api_try_servers_all_time_out(monkeypatch, client):
+    """When every server times out we get one clear error, not a raw Timeout."""
+    client.query_urls = ["server1", "server2"]
+
+    def fake_query_api(params, endpoint, query_url):
+        raise requests.exceptions.Timeout("timed out")
+
+    monkeypatch.setattr(client, "_query_api", fake_query_api)
+
+    with pytest.raises(requests.HTTPError, match="Timeout"):
+        client._query_api_try_servers({}, "endpoint")
+
+
+def test_search_uses_response_from_successful_server(monkeypatch, client, no_shuffle):
+    """_search must not repeat the request that _query_api_try_servers already made."""
+    client.query_urls = ["server1", "server2"]
+    calls = []
+    results = {
+        "results": {"bindings": [{"np": {"value": "np1"}, "date": {"value": "01-01-2001"}}]}
+    }
+
+    def fake_query_api(params, endpoint, query_url):
+        calls.append(query_url)
+        if query_url == "server1":
+            raise requests.exceptions.Timeout("timed out")
+        return DummyResponse(200, json_data=results)
+
+    monkeypatch.setattr(client, "_query_api", fake_query_api)
+
+    parsed = list(client._search("endpoint", {}))
+    assert [p["np"] for p in parsed] == ["np1"]
+    assert calls == ["server1", "server2"]
 
 
 def test_query_api_parsed_and_csv(monkeypatch, client):
@@ -322,7 +435,7 @@ def test_query_api_csv_raises(monkeypatch, client):
         encoding = None
 
     monkeypatch.setattr(
-        requests, "get", lambda url, params=None, headers=None: DummyResp()
+        requests, "get", lambda url, params=None, headers=None, timeout=None: DummyResp()
     )
     # Should not raise
     client._query_api_csv({}, "endpoint", "http://dummy")
@@ -362,6 +475,8 @@ def test_query_sparql_json_csv(monkeypatch, client):
 
         def setReturnFormat(self, fmt): pass
 
+        def setTimeout(self, timeout): pass
+
         def query(self):
             return DummyRes()
 
@@ -379,6 +494,8 @@ def test_query_sparql_json_csv(monkeypatch, client):
         def setQuery(self, q): pass
 
         def setReturnFormat(self, fmt): pass
+
+        def setTimeout(self, timeout): pass
 
         def query(self):
             return DummyResCSV()

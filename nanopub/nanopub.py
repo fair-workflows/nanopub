@@ -15,7 +15,12 @@ from rdflib import BNode, Dataset, Graph, URIRef
 from rdflib import RDF, Literal
 from rdflib.namespace import DC, DCTERMS, FOAF, PROV, XSD
 
-from nanopub.definitions import MAX_TRIPLES_PER_NANOPUB, NANOPUB_FETCH_FORMAT, TEST_NANOPUB_REGISTRY_URL
+from nanopub.definitions import (
+    DEFAULT_HTTP_TIMEOUT,
+    MAX_TRIPLES_PER_NANOPUB,
+    NANOPUB_FETCH_FORMAT,
+    TEST_NANOPUB_REGISTRY_URL,
+)
 from nanopub.namespaces import HYCL, NP, NPX, NTEMPLATE, ORCID, PAV
 from nanopub.nanopub_conf import NanopubConf
 from nanopub.profile import ProfileError
@@ -77,11 +82,15 @@ class Nanopub:
         # source URI, rdflib graph, or file
         if source_uri:
             # If source URI provided we retrieve the nanopub from the servers
-            r = requests.get(source_uri + "." + NANOPUB_FETCH_FORMAT)
+            r = requests.get(
+                source_uri + "." + NANOPUB_FETCH_FORMAT, timeout=DEFAULT_HTTP_TIMEOUT
+            )
             if not r.ok and self._conf.use_test_server:
                 nanopub_id = source_uri.rsplit("/", 1)[-1]
                 uri_test = TEST_NANOPUB_REGISTRY_URL + nanopub_id
-                r = requests.get(uri_test + "." + NANOPUB_FETCH_FORMAT)
+                r = requests.get(
+                    uri_test + "." + NANOPUB_FETCH_FORMAT, timeout=DEFAULT_HTTP_TIMEOUT
+                )
             r.raise_for_status()
             self._rdf = self._preformat_graph(Dataset())
             self._rdf.parse(data=r.text, format=NANOPUB_FETCH_FORMAT)

@@ -7,6 +7,7 @@ import requests
 from pyshacl import validate as _pyshacl_validate
 from rdflib.namespace import SH
 
+from nanopub.definitions import DEFAULT_HTTP_TIMEOUT
 from nanopub.fdo.fdo_nanopub import FdoNanopub
 from nanopub.fdo.fdo_record import FdoRecord
 from nanopub.fdo.retrieve import resolve_in_nanopub_network
@@ -59,14 +60,18 @@ def validate_fdo_record(record: FdoRecord, profile_np: FdoNanopub = None) -> Val
 
             if str(profile_uri).startswith("https://doi.org/"):
                 # DTR-style profile: follow DOI to get DTR JSON, then fetch schema.url
-                resp = requests.get(str(profile_uri), headers={"Accept": "application/json"})
+                resp = requests.get(
+                    str(profile_uri),
+                    headers={"Accept": "application/json"},
+                    timeout=DEFAULT_HTTP_TIMEOUT,
+                )
                 if resp.status_code != 200:
                     return ValidationResult(False, [f"Could not fetch DTR profile for {profile_uri}"], [])
                 dtr_json = resp.json()
                 schema_url = dtr_json.get("schema", {}).get("url")
                 if not schema_url:
                     return ValidationResult(False, [f"No schema URL found in DTR profile for {profile_uri}"], [])
-                schema_resp = requests.get(schema_url)
+                schema_resp = requests.get(schema_url, timeout=DEFAULT_HTTP_TIMEOUT)
                 if schema_resp.status_code != 200:
                     return ValidationResult(False, [f"Could not fetch JSON schema from {schema_url}"], [])
                 schema_json = schema_resp.json()
@@ -74,7 +79,7 @@ def validate_fdo_record(record: FdoRecord, profile_np: FdoNanopub = None) -> Val
 
             elif looks_like_handle(profile_uri) or str(profile_uri).startswith("https://hdl.handle.net/"):
                 api_url = _profile_landing_page_uri_to_api_url(str(profile_uri))
-                resp = requests.get(api_url)
+                resp = requests.get(api_url, timeout=DEFAULT_HTTP_TIMEOUT)
                 if resp.status_code != 200:
                     return ValidationResult(False, [f"Could not fetch handle metadata for {api_url}"], [])
                 metadata = resp.json()
