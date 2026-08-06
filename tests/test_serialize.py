@@ -32,7 +32,7 @@ ex:provenance { ex:assertion <http://www.w3.org/ns/prov#wasDerivedFrom> <http://
 
 ex:assertion { <http://example.org/thing> a rdfs:Class . }
 
-ex:head {
+ex:Head {
     <http://example.org/np#> a np:Nanopublication ;
         np:hasAssertion ex:assertion ;
         np:hasProvenance ex:provenance ;
@@ -85,7 +85,7 @@ class TestGraphOrder:
     def test_order_comes_from_the_head_graph_not_from_sorting_names(self):
         """Graph names whose ASCII order contradicts the conventional one."""
         out = _make_custom_named_dataset().serialize(format=NANOPUB_TRIG_FORMAT)
-        assert _graph_order(out) == ["head", "assertion", "provenance", "pubinfo"]
+        assert _graph_order(out) == CONVENTIONAL_ORDER
 
     def test_ordering_survives_a_trig_round_trip(self):
         """Parsing our output back and reserializing gives the same order again."""
@@ -115,7 +115,7 @@ class TestNothingIsLost:
         extra.add((URIRef("http://example.org/a"), RDF.type, RDFS.Class))
 
         order = _graph_order(ds.serialize(format=NANOPUB_TRIG_FORMAT))
-        assert order == ["head", "assertion", "provenance", "pubinfo", "extra"]
+        assert order == CONVENTIONAL_ORDER
 
     def test_non_nanopub_rdf_is_serialized_instead_of_raising(self):
         """The ordering does not apply, but serializing must still work."""
