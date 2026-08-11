@@ -1,0 +1,24 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+      "local>ashleycaselli/renovate-config:node",
+  ],
+  "automerge": false,
+  "packageRules": [
+    {
+      "description": "Updates to the dependencies should trigger a new patch release",
+      "matchFileNames": [
+        "pyproject.toml"
+      ],
+      "semanticCommitScope": "core-deps"
+    },
+    {
+      "description": "Updates to the dependencies under the package.json file should not trigger any release",
+      "matchFileNames": [
+        "package.json"
+      ],
+      "semanticCommitType": "build",
+      "semanticCommitScope": "deps"
+    }
+  ]
+}
