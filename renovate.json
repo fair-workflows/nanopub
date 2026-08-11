@@ -11,6 +11,14 @@
         "pyproject.toml"
       ],
       "semanticCommitScope": "core-deps"
+    },
+    {
+      "description": "Updates to the dependencies under the package.json file should not trigger any release",
+      "matchFileNames": [
+        "package.json"
+      ],
+      "semanticCommitType": "build",
+      "semanticCommitScope": "deps"
     }
   ]
 }
