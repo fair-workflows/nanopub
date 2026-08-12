@@ -1,7 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-      "local>ashleycaselli/renovate-config:node",
+      "local>ashleycaselli/renovate-config:node"
   ],
   "automerge": false,
   "packageRules": [
@@ -11,6 +11,29 @@
         "pyproject.toml"
       ],
       "semanticCommitScope": "core-deps"
+    },
+    {
+      "description": "Updates to the docs and dev dependency groups are not shipped to users, so they should not trigger any release",
+      "matchFileNames": [
+        "pyproject.toml"
+      ],
+      "matchJsonata": [
+        "managerData.depGroup = 'docs'",
+        "managerData.depGroup = 'dev'"
+      ],
+      "semanticCommitType": "build",
+      "semanticCommitScope": "deps"
+    },
+    {
+      "description": "Updates to the test dependency group are not shipped to users, so they should not trigger any release",
+      "matchFileNames": [
+        "pyproject.toml"
+      ],
+      "matchJsonata": [
+        "managerData.depGroup = 'test'"
+      ],
+      "semanticCommitType": "test",
+      "semanticCommitScope": "deps"
     },
     {
       "description": "Updates to the dependencies under the package.json file should not trigger any release",
