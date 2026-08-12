@@ -349,16 +349,20 @@ class Nanopub:
             raise MalformedNanopubError(
                 f"The pubinfo graph should contain at least one triple that has the nanopub URI as subject: \033[1m{self._source_uri}\033[0m")
 
-        # Ill-typed literals do not make an existing nanopub unreadable, and some published
-        # ones carry them, so they are only reported here and refused when signing/publishing
+        # An already signed or trusty nanopub is immutable and, if it is out there, has to
+        # stay readable and verifiable, so its ill-typed literals are only reported. One that
+        # is still plain is on its way to being signed, so they make it invalid right away.
         ill_typed = self.ill_typed_literals
         if ill_typed:
-            logger.warning(
-                "Ill-typed literal(s) found in %s: %s. The lexical form of a literal must be valid "
-                "for its datatype; signing or publishing this nanopub will be refused",
-                self._source_uri or self._metadata.np_uri,
-                ", ".join(o.n3() for o, _ in ill_typed),
-            )
+            if self._metadata.signature or self._metadata.trusty:
+                logger.warning(
+                    "Ill-typed literal(s) found in %s: %s. The lexical form of a literal must be "
+                    "valid for its datatype; this nanopub may be missing from strict RDF stores",
+                    self._source_uri or self._metadata.np_uri,
+                    ", ".join(o.n3() for o, _ in ill_typed),
+                )
+            else:
+                self._check_ill_typed_literals()
 
         if self._metadata.signature:
             if not self.has_valid_signature:
@@ -687,7 +691,7 @@ class Nanopub:
         return g
 
     def _check_ill_typed_literals(self) -> None:
-        """Refuses to let an ill-typed literal be signed or published.
+        """Refuses an ill-typed literal in a nanopub that is not signed yet.
 
         Such literals (e.g. ``"not-a-number"^^xsd:integer``) are accepted by rdflib, but
         strict RDF stores reject the whole nanopub, so it would end up published yet

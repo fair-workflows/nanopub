@@ -776,7 +776,8 @@ def _minimal_valid_nanopub(conf: Optional[NanopubConf] = None) -> Nanopub:
 class TestIllTypedLiterals:
     """A literal whose lexical form does not fit its datatype must not be signed or
     published (see issue #249): strict RDF stores reject such nanopubs, leaving them
-    published but invisible in the SPARQL endpoint. Reading one is still allowed, since
+    published but invisible in the SPARQL endpoint. A nanopub that is still plain is
+    therefore invalid, while an already signed one stays readable and verifiable, since
     nanopubs carrying such literals are already out there."""
 
     def test_ill_typed_literal_in_assertion(self):
@@ -789,6 +790,8 @@ class TestIllTypedLiterals:
             )
         )
         assert [str(o) for o, _ in np.ill_typed_literals] == ["not-a-number"]
+        with pytest.raises(MalformedNanopubError, match="not-a-number"):
+            np.is_valid
 
     def test_ill_typed_literal_in_pubinfo(self):
         np = _minimal_valid_nanopub()
@@ -802,11 +805,13 @@ class TestIllTypedLiterals:
         literals = np.ill_typed_literals
         assert [str(o) for o, _ in literals] == ["yesterday"]
         assert str(literals[0][1]) == str(np.pubinfo.identifier)
+        with pytest.raises(MalformedNanopubError, match="yesterday"):
+            np.is_valid
 
-    def test_ill_typed_literal_only_warns_when_validating(self, caplog):
-        """An existing nanopub carrying an ill-typed literal must stay readable: the test
-        suite lists such nanopubs as valid (e.g. "2019-02-26"^^xsd:dateTime in
-        fair-maturity-1.trig)."""
+    def test_ill_typed_literal_in_signed_nanopub_only_warns(self, caplog):
+        """A signed nanopub is immutable and already out there, so it has to stay readable:
+        the test suite lists such nanopubs as valid (e.g. "2019-02-26"^^xsd:dateTime in
+        fair-maturity-1.trig, which rdflib 6.3.2 flags and rdflib 7 does not)."""
         np = _minimal_valid_nanopub()
         np.assertion.add(
             (
@@ -815,7 +820,9 @@ class TestIllTypedLiterals:
                 Literal("not-a-number", datatype=XSD.integer),
             )
         )
-        with caplog.at_level(logging.WARNING, logger="nanopub.nanopub"):
+        np._metadata.signature = "dummy-signature"
+        with patch.object(Nanopub, "has_valid_signature", True), \
+                caplog.at_level(logging.WARNING, logger="nanopub.nanopub"):
             assert np.is_valid
         assert "not-a-number" in caplog.text
 
@@ -830,7 +837,8 @@ class TestIllTypedLiterals:
         )
         ds = Dataset()
         ds.parse(data=np.serialize(format="trig"), format="trig")
-        assert Nanopub(conf=NanopubConf(), rdf=ds).ill_typed_literals
+        with pytest.raises(MalformedNanopubError, match="not-a-number"):
+            Nanopub(conf=NanopubConf(), rdf=ds).is_valid
 
     def test_well_typed_literals_are_accepted(self):
         np = _minimal_valid_nanopub()
