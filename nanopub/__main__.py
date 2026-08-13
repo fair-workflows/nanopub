@@ -129,6 +129,9 @@ def check(filepath: Path):
     try:
         np.is_valid
         print(f"\033[1m✅ Valid nanopub\033[0m {np.source_uri}")
+        for literal, graph in np.ill_typed_literals:
+            print(f"\033[1m⚠️  Ill-typed literal\033[0m {literal.n3()} in graph {graph}: "
+                  "strict RDF stores may be missing this nanopub")
     except MalformedNanopubError as e:
         print(f"\033[1m❌ Invalid nanopub\033[0m: {e}")
 

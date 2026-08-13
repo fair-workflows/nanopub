@@ -1,10 +1,12 @@
 import inspect
 import json
+import logging
+from typing import Optional
 from unittest.mock import MagicMock, patch
 
 import pytest
 from nanopub_testsuite_connector import TestSuiteSubfolder
-from rdflib import BNode, Graph, Literal, URIRef, Dataset, DC, RDF, Namespace, DCTERMS, PROV
+from rdflib import BNode, Graph, Literal, URIRef, Dataset, DC, RDF, Namespace, DCTERMS, PROV, XSD
 
 from nanopub import (
     Nanopub,
@@ -756,3 +758,137 @@ class TestValidateNanopubArguments:
                 attribute_assertion_to_profile=False,
                 introduces_concept=URIRef("http://example.org"),
             )
+
+
+def _minimal_valid_nanopub(conf: Optional[NanopubConf] = None) -> Nanopub:
+    """A nanopub with the bare minimum needed to pass ``is_valid``."""
+    np = Nanopub(conf=conf if conf is not None else NanopubConf())
+    np.assertion.add(
+        (URIRef("http://test"), namespaces.HYCL.claims, Literal("test claim"))
+    )
+    np.provenance.add(
+        (np.assertion.identifier, PROV.wasAttributedTo, URIRef("http://someone"))
+    )
+    np.pubinfo.add((np._metadata.namespace[""], DC.creator, Literal("tester")))
+    return np
+
+
+class TestIllTypedLiterals:
+    """A literal whose lexical form does not fit its datatype must not be signed or
+    published (see issue #249): strict RDF stores reject such nanopubs, leaving them
+    published but invisible in the SPARQL endpoint. A nanopub that is still plain is
+    therefore invalid, while an already signed one stays readable and verifiable, since
+    nanopubs carrying such literals are already out there."""
+
+    def test_ill_typed_literal_in_assertion(self):
+        np = _minimal_valid_nanopub()
+        np.assertion.add(
+            (
+                URIRef("http://test"),
+                URIRef("http://example.org/count"),
+                Literal("not-a-number", datatype=XSD.integer),
+            )
+        )
+        assert [str(o) for o, _ in np.ill_typed_literals] == ["not-a-number"]
+        with pytest.raises(MalformedNanopubError, match="not-a-number"):
+            np.is_valid
+
+    def test_ill_typed_literal_in_pubinfo(self):
+        np = _minimal_valid_nanopub()
+        np.pubinfo.add(
+            (
+                np._metadata.namespace[""],
+                DCTERMS.created,
+                Literal("yesterday", datatype=XSD.dateTime),
+            )
+        )
+        literals = np.ill_typed_literals
+        assert [str(o) for o, _ in literals] == ["yesterday"]
+        assert str(literals[0][1]) == str(np.pubinfo.identifier)
+        with pytest.raises(MalformedNanopubError, match="yesterday"):
+            np.is_valid
+
+    def test_ill_typed_literal_in_signed_nanopub_only_warns(self, caplog):
+        """A signed nanopub is immutable and already out there, so it has to stay readable:
+        the test suite lists such nanopubs as valid (e.g. "2019-02-26"^^xsd:dateTime in
+        fair-maturity-1.trig, which rdflib 6.3.2 flags and rdflib 7 does not)."""
+        np = _minimal_valid_nanopub()
+        np.assertion.add(
+            (
+                URIRef("http://test"),
+                URIRef("http://example.org/count"),
+                Literal("not-a-number", datatype=XSD.integer),
+            )
+        )
+        np._metadata.signature = "dummy-signature"
+        with patch.object(Nanopub, "has_valid_signature", True), \
+                caplog.at_level(logging.WARNING, logger="nanopub.nanopub"):
+            assert np.is_valid
+        assert "not-a-number" in caplog.text
+
+    def test_ill_typed_literal_parsed_from_trig(self):
+        np = _minimal_valid_nanopub()
+        np.assertion.add(
+            (
+                URIRef("http://test"),
+                URIRef("http://example.org/count"),
+                Literal("not-a-number", datatype=XSD.integer),
+            )
+        )
+        ds = Dataset()
+        ds.parse(data=np.serialize(format="trig"), format="trig")
+        with pytest.raises(MalformedNanopubError, match="not-a-number"):
+            Nanopub(conf=NanopubConf(), rdf=ds).is_valid
+
+    def test_well_typed_literals_are_accepted(self):
+        np = _minimal_valid_nanopub()
+        for i, literal in enumerate([
+            Literal("42", datatype=XSD.integer),
+            Literal(42),
+            Literal("2020-01-01T00:00:00", datatype=XSD.dateTime),
+            Literal("false", datatype=XSD.boolean),
+            Literal("plain string"),
+            Literal("a string", lang="en"),
+            # Unrecognized datatypes cannot be checked, and must not be rejected
+            Literal("whatever", datatype=URIRef("http://example.org/myDatatype")),
+        ]):
+            np.assertion.add(
+                (URIRef("http://test"), URIRef(f"http://example.org/p{i}"), literal)
+            )
+        assert np.ill_typed_literals == []
+        assert np.is_valid
+
+    def test_sign_rejects_ill_typed_literal(self):
+        np = _minimal_valid_nanopub(conf=default_conf)
+        np.assertion.add(
+            (
+                URIRef("http://test"),
+                URIRef("http://example.org/count"),
+                Literal("not-a-number", datatype=XSD.integer),
+            )
+        )
+        with pytest.raises(MalformedNanopubError, match="not-a-number"):
+            np.sign()
+        assert np.source_uri is None
+
+    def test_publish_rejects_ill_typed_literal_in_signed_nanopub(self, monkeypatch):
+        """publish() used to run no validation at all on an already-signed nanopub, such as
+        one read from a file or fetched from the registry."""
+        np = _minimal_valid_nanopub(conf=default_conf)
+        np.sign()
+        np.pubinfo.add(
+            (
+                np._metadata.namespace[""],
+                URIRef("http://example.org/count"),
+                Literal("not-a-number", datatype=XSD.integer),
+            )
+        )
+        # editing the graph after signing breaks the trusty artefact, which is not what
+        # this test is about
+        monkeypatch.setattr(type(np), "is_valid", property(lambda self: True))
+
+        with patch("nanopub.nanopub.publish_graph") as mock_publish:
+            with pytest.raises(MalformedNanopubError, match="not-a-number"):
+                np.publish()
+        mock_publish.assert_not_called()
+        assert not np.published
