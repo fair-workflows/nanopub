@@ -55,7 +55,11 @@ def sign(
         ),
         orcid_id: str = typer.Option(
             PLACEHOLDER_ORCID_ID, "--orcid", "-o",
-            help="ORCID iD to record as the signer (full URI or bare 0000-0000-0000-0001 form)."
+            help=(
+                "IRI of the signer, typically an ORCID iD (full URI or bare "
+                "0000-0000-0000-0001 form). It can also be a sub-IRI of the nanopub "
+                "being signed, to self-sign an agent's own introduction."
+            )
         ),
 ):
     if private_key:
